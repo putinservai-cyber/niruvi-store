@@ -32,9 +32,9 @@ export interface AppMetadata {
   };
   sha256: string;
   downloadUrl: string;
-  iconBg?: string;
-  iconName: string;
-  screenshots: string[];
+  brandColor?: string;
+  iconSlug: string;
+  features?: string[];
   homepageUrl?: string;
   sourceUrl?: string;
   tags: string[];
@@ -43,6 +43,15 @@ export interface AppMetadata {
   rating: number;
   changelog?: string[];
   requirements?: string;
+  isUserAdded?: boolean;
+}
+
+export interface InstalledAppRecord {
+  appId: string;
+  installedVersion: string;
+  installedAt: string;
+  installMethod: 'protocol' | 'direct' | 'cli';
+  installDirectory: string;
 }
 
 export interface FilterState {
@@ -52,3 +61,4 @@ export interface FilterState {
   licenseCategory: LicenseType;
   sortBy: 'featured' | 'popular' | 'rating' | 'name' | 'recent';
 }
+

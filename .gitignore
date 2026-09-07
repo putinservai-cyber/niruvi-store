@@ -1,0 +1,49 @@
+# Environment & Secrets (NEVER commit to version control)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+*.id_rsa
+*.crt
+
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Production Build Artifacts
+dist/
+dist-ssr/
+*.local
+
+# Logs & Diagnostics
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# System & Editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# TypeScript Cache
+tsconfig.tsbuildinfo
+
+# Local Firebase emulators & config
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*

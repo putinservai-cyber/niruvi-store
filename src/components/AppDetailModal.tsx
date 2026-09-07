@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppMetadata } from '../types';
 import { AppIcon } from './AppIcon';
 import { generateNiruviProtocolUrl } from '../data/apps';
+import { useAuth } from '../context/AuthContext';
 import {
   X,
   CheckCircle2,
@@ -12,39 +13,146 @@ import {
   Copy,
   Check,
   ShieldCheck,
-  Cpu,
   Calendar,
   HardDrive,
-  FileCode2,
   Terminal,
-  AlertCircle
+  AlertCircle,
+  Sparkles,
+  Layers,
+  Cpu,
+  Star,
+  ThumbsUp,
+  MessageSquarePlus,
+  Loader2,
+  Heart
 } from 'lucide-react';
 
 interface AppDetailModalProps {
   app: AppMetadata | null;
   onClose: () => void;
+  onOpenInstall: (app: AppMetadata) => void;
+  isInstalled?: boolean;
+  onOpenSponsor?: (app: AppMetadata) => void;
 }
 
-export const AppDetailModal: React.FC<AppDetailModalProps> = ({ app, onClose }) => {
+interface ReviewItem {
+  id: string;
+  rating: number;
+  title: string;
+  body: string;
+  isVerifiedPurchase: boolean;
+  helpfulCount: number;
+  createdAt: string;
+  userDisplayName?: string;
+  userAvatarUrl?: string;
+}
+
+export const AppDetailModal: React.FC<AppDetailModalProps> = ({ 
+  app, 
+  onClose,
+  onOpenInstall,
+  isInstalled = false,
+  onOpenSponsor
+}) => {
   if (!app) return null;
 
-  const [copiedProtocol, setCopiedProtocol] = useState(false);
+  const { user, token, openAuthModal } = useAuth();
   const [copiedSha, setCopiedSha] = useState(false);
+  const [copiedProtocol, setCopiedProtocol] = useState(false);
   const [copiedCli, setCopiedCli] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'security' | 'cli' | 'changelog'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'security' | 'cli' | 'changelog' | 'reviews'>('overview');
+
+  // Reviews state
+  const [reviewsList, setReviewsList] = useState<ReviewItem[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewTitle, setReviewTitle] = useState('');
+  const [reviewBody, setReviewBody] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [reviewSuccess, setReviewSuccess] = useState(false);
+
+  useEffect(() => {
+    if (!app) return;
+    setLoadingReviews(true);
+    fetch(`/api/apps/${app.id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.reviews) {
+          setReviewsList(data.reviews);
+        }
+      })
+      .catch((err) => console.error('Error fetching app reviews:', err))
+      .finally(() => setLoadingReviews(false));
+  }, [app]);
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token) {
+      openAuthModal();
+      return;
+    }
+    setSubmittingReview(true);
+    setReviewError(null);
+    try {
+      const res = await fetch(`/api/apps/${app.id}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          rating: reviewRating,
+          title: reviewTitle,
+          body: reviewBody,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to submit review');
+      }
+      setReviewsList((prev) => [data.review, ...prev]);
+      setReviewTitle('');
+      setReviewBody('');
+      setReviewSuccess(true);
+      setTimeout(() => setReviewSuccess(false), 3000);
+    } catch (err: any) {
+      setReviewError(err?.message || 'Error submitting review');
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  const handleHelpfulVote = async (reviewId: string) => {
+    if (!token) {
+      openAuthModal();
+      return;
+    }
+    try {
+      await fetch(`/api/reviews/${reviewId}/vote`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ isHelpful: true }),
+      });
+      setReviewsList((prev) =>
+        prev.map((r) => (r.id === reviewId ? { ...r, helpfulCount: r.helpfulCount + 1 } : r))
+      );
+    } catch (err) {
+      console.error('Vote error:', err);
+    }
+  };
 
   const protocolUrl = generateNiruviProtocolUrl(app);
+  const appImageFileName = `${app.id}-${app.version}-x86_64.AppImage`;
   const cliCommand = `niruvi install ${app.id}`;
-  const appImageFileName = `${app.name.toLowerCase().replace(/\s+/g, '-')}-${app.version}-x86_64.AppImage`;
 
   const copyToClipboard = (text: string, setCopied: (v: boolean) => void) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleLaunchProtocol = () => {
-    window.location.href = protocolUrl;
   };
 
   return (
@@ -54,23 +162,32 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({ app, onClose }) 
         className="relative w-full max-w-4xl bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
       >
         {/* Modal Header */}
-        <div className="flex items-start justify-between p-6 border-b border-slate-800 bg-slate-850/60">
+        <div className="flex items-start justify-between p-6 border-b border-slate-800 bg-slate-850">
           <div className="flex items-start gap-4">
-            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-tr ${app.iconBg || 'from-blue-600 to-indigo-600'} flex items-center justify-center text-white shadow-lg flex-shrink-0`}>
-              <AppIcon name={app.iconName} className="w-8 h-8" />
+            <div 
+              className="w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-lg flex-shrink-0"
+              style={{ backgroundColor: `${app.brandColor || '#3B82F6'}20`, border: `1px solid ${app.brandColor || '#3B82F6'}40` }}
+            >
+              <AppIcon slug={app.iconSlug} className="w-8 h-8" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-xl font-bold text-white">{app.name}</h2>
+                <h2 className="text-xl font-bold text-white tracking-tight">{app.name}</h2>
                 {app.publisher.verified && (
                   <span className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                    <CheckCircle2 className="w-3 h-3" />
+                    <CheckCircle2 className="w-3.5 h-3.5" />
                     Verified Publisher
                   </span>
                 )}
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-mono">
                   v{app.version}
                 </span>
+                {isInstalled && (
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                    <Check className="w-3 h-3" />
+                    Installed
+                  </span>
+                )}
               </div>
               <p className="text-sm text-slate-300 mt-1">{app.tagline}</p>
               <div className="flex items-center gap-3 text-xs text-slate-400 mt-2 flex-wrap">
@@ -98,28 +215,31 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({ app, onClose }) 
           </button>
         </div>
 
-        {/* Primary Call-to-Action Bar */}
+        {/* Action Bar */}
         <div className="bg-slate-800/40 p-4 px-6 border-b border-slate-800 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2 flex-wrap">
             <button
-              id="modal-install-protocol-btn"
-              onClick={handleLaunchProtocol}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm shadow-md shadow-blue-600/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              id="detail-modal-install-btn"
+              onClick={() => {
+                onClose();
+                onOpenInstall(app);
+              }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm shadow-md shadow-blue-600/20 transition-all hover:scale-[1.01]"
             >
               <Download className="w-4 h-4" />
-              <span>Install with Niruvi</span>
+              <span>{isInstalled ? 'Manage Installation' : 'Install Application'}</span>
             </button>
 
             <button
-              id="modal-copy-protocol-btn"
+              id="detail-modal-copy-protocol-btn"
               onClick={() => copyToClipboard(protocolUrl, setCopiedProtocol)}
-              className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 text-xs font-medium transition-colors"
+              className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition-colors"
               title="Copy niruvi://install protocol URL"
             >
               {copiedProtocol ? (
                 <>
                   <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-emerald-400">Protocol URL Copied!</span>
+                  <span className="text-emerald-400 font-medium">Protocol Copied!</span>
                 </>
               ) : (
                 <>
@@ -128,17 +248,6 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({ app, onClose }) 
                 </>
               )}
             </button>
-
-            <a
-              id="modal-direct-appimage-download-link"
-              href={app.downloadUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-white border border-slate-700 text-xs font-medium transition-colors"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>Direct .AppImage Download</span>
-            </a>
           </div>
 
           <div className="flex items-center gap-2">
@@ -147,10 +256,10 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({ app, onClose }) 
                 href={app.homepageUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="p-2 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-400 hover:text-white transition-colors"
-                title="Official Website"
+                className="flex items-center gap-1 text-xs text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-2 rounded-lg transition-colors"
               >
-                <Globe className="w-4 h-4" />
+                <Globe className="w-3.5 h-3.5" />
+                <span>Website</span>
               </a>
             )}
             {app.sourceUrl && (
@@ -158,11 +267,21 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({ app, onClose }) 
                 href={app.sourceUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="p-2 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-400 hover:text-white transition-colors"
-                title="Source Repository"
+                className="flex items-center gap-1 text-xs text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-2 rounded-lg transition-colors"
               >
-                <GitBranch className="w-4 h-4" />
+                <GitBranch className="w-3.5 h-3.5" />
+                <span>Source</span>
               </a>
+            )}
+            {onOpenSponsor && (
+              <button
+                onClick={() => onOpenSponsor(app)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-semibold transition-colors"
+                title="Support developer via Ko-fi (@putinservai) or Indian UPI"
+              >
+                <Heart className="w-3.5 h-3.5 fill-rose-400/30 text-rose-400" />
+                <span>Support (Ko-fi)</span>
+              </button>
             )}
           </div>
         </div>
@@ -178,7 +297,7 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({ app, onClose }) 
                 : 'border-transparent hover:text-slate-200'
             }`}
           >
-            Overview & Details
+            Overview & Features
           </button>
           <button
             id="tab-security"
@@ -202,7 +321,19 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({ app, onClose }) 
             }`}
           >
             <Terminal className="w-3.5 h-3.5" />
-            CLI & Terminal
+            Terminal & CLI
+          </button>
+          <button
+            id="tab-reviews"
+            onClick={() => setActiveTab('reviews')}
+            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 ${
+              activeTab === 'reviews'
+                ? 'border-blue-500 text-blue-400 font-semibold'
+                : 'border-transparent hover:text-slate-200'
+            }`}
+          >
+            <Star className="w-3.5 h-3.5 text-amber-400" />
+            Reviews ({reviewsList.length})
           </button>
           {app.changelog && (
             <button
@@ -223,25 +354,6 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({ app, onClose }) 
         <div className="p-6 overflow-y-auto space-y-6 text-slate-300 flex-1">
           {activeTab === 'overview' && (
             <>
-              {/* Screenshots preview */}
-              {app.screenshots && app.screenshots.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Preview</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {app.screenshots.map((shot, idx) => (
-                      <div key={idx} className="rounded-xl overflow-hidden border border-slate-700/80 bg-slate-950 aspect-video">
-                        <img
-                          src={shot}
-                          alt={`${app.name} preview ${idx + 1}`}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                          referrerPolicy="no-referrer"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Description */}
               <div className="space-y-2">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">About {app.name}</h4>
@@ -250,8 +362,23 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({ app, onClose }) 
                 </p>
               </div>
 
-              {/* Metadata Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 p-4 rounded-xl bg-slate-800/40 border border-slate-800 text-xs">
+              {/* Key Features List */}
+              {app.features && app.features.length > 0 && (
+                <div className="space-y-2.5">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Key Features</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {app.features.map((feat, i) => (
+                      <div key={i} className="p-3 rounded-xl bg-slate-800/40 border border-slate-800 text-xs text-slate-200 flex items-start gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                        <span className="leading-relaxed">{feat}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Technical Specifications Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 rounded-xl bg-slate-800/40 border border-slate-800 text-xs">
                 <div>
                   <span className="text-slate-500 block mb-1">Architectures</span>
                   <div className="flex gap-1">
@@ -275,16 +402,16 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({ app, onClose }) 
 
                 <div>
                   <span className="text-slate-500 block mb-1">Package Format</span>
-                  <span className="text-emerald-400 font-medium">Standalone AppImage</span>
+                  <span className="text-emerald-400 font-medium">Standalone Linux AppImage</span>
                 </div>
 
                 <div>
-                  <span className="text-slate-500 block mb-1">Downloads</span>
+                  <span className="text-slate-500 block mb-1">Verified Downloads</span>
                   <span className="text-slate-200 font-medium">{app.downloadsCount.toLocaleString()}</span>
                 </div>
 
                 <div>
-                  <span className="text-slate-500 block mb-1">System Compatibility</span>
+                  <span className="text-slate-500 block mb-1">Host Requirements</span>
                   <span className="text-slate-200">{app.requirements || 'glibc 2.28+, FUSE 2/3'}</span>
                 </div>
               </div>
@@ -341,8 +468,8 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({ app, onClose }) 
                 </pre>
               </div>
 
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300">
-                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-slate-800/60 border border-slate-700/60 text-xs text-slate-300">
+                <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                 <span>
                   AppImages execute with user privileges. Always ensure your host system has <code>fuse</code> or <code>libfuse2/libfuse3</code> installed.
                 </span>
@@ -356,7 +483,6 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({ app, onClose }) 
                 You can install and run this application directly using the Niruvi CLI or standard Linux terminal commands.
               </p>
 
-              {/* Niruvi CLI */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-slate-300">Via Niruvi CLI:</span>
@@ -373,7 +499,6 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({ app, onClose }) 
                 </pre>
               </div>
 
-              {/* Standalone manual command */}
               <div className="space-y-2">
                 <span className="text-xs font-semibold text-slate-300">Standard Linux Standalone Run:</span>
                 <pre className="p-3 bg-slate-950 rounded-lg border border-slate-800 font-mono text-xs text-slate-300 select-all overflow-x-auto">
@@ -387,13 +512,164 @@ chmod +x "${appImageFileName}"
 ./"${appImageFileName}"`}
                 </pre>
               </div>
+            </div>
+          )}
 
-              {/* Desktop Protocol Handler inspection */}
-              <div className="space-y-2">
-                <span className="text-xs font-semibold text-slate-300">Generated Niruvi Protocol Payload:</span>
-                <pre className="p-3 bg-slate-950 rounded-lg border border-slate-800 font-mono text-[11px] text-slate-400 break-all select-all">
-{protocolUrl}
-                </pre>
+          {activeTab === 'reviews' && (
+            <div className="space-y-6">
+              {/* Reviews Summary */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-slate-800/40 border border-slate-800">
+                <div className="flex items-center gap-4">
+                  <div className="text-3xl font-extrabold text-white flex items-center gap-1.5 font-mono">
+                    <Star className="w-7 h-7 text-amber-400 fill-amber-400" />
+                    <span>{app.rating.toFixed(1)}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-white block">Community Review Score</span>
+                    <span className="text-[11px] text-slate-400">
+                      Based on verified Linux community installs and reviews
+                    </span>
+                  </div>
+                </div>
+
+                {!user && (
+                  <button
+                    onClick={openAuthModal}
+                    className="text-xs text-blue-400 hover:text-blue-300 font-semibold px-3 py-1.5 rounded-lg bg-blue-600/10 border border-blue-500/20 transition"
+                  >
+                    Sign in to Write a Review
+                  </button>
+                )}
+              </div>
+
+              {/* Review Submission Form */}
+              {user && (
+                <form onSubmit={handleReviewSubmit} className="p-4 rounded-xl bg-slate-800/60 border border-slate-700/80 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-white flex items-center gap-1.5">
+                      <MessageSquarePlus className="w-4 h-4 text-blue-400" />
+                      Write a Community Review
+                    </span>
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          type="button"
+                          key={star}
+                          onClick={() => setReviewRating(star)}
+                          className="p-1 focus:outline-hidden"
+                        >
+                          <Star
+                            className={`w-4 h-4 ${
+                              star <= reviewRating
+                                ? 'text-amber-400 fill-amber-400'
+                                : 'text-slate-600'
+                            } transition`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {reviewError && (
+                    <p className="text-xs text-red-400">{reviewError}</p>
+                  )}
+                  {reviewSuccess && (
+                    <p className="text-xs text-emerald-400">Review submitted successfully to Cloud SQL!</p>
+                  )}
+
+                  <input
+                    type="text"
+                    required
+                    placeholder="Review headline (e.g., Flawless Wayland integration)"
+                    value={reviewTitle}
+                    onChange={(e) => setReviewTitle(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500"
+                  />
+
+                  <textarea
+                    required
+                    rows={3}
+                    placeholder="Share your experience running this AppImage on your Linux distro..."
+                    value={reviewBody}
+                    onChange={(e) => setReviewBody(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 resize-none"
+                  />
+
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={submittingReview}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition disabled:opacity-50"
+                    >
+                      {submittingReview ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Submit Review'}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Reviews List */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  User Feedback ({reviewsList.length})
+                </h4>
+
+                {loadingReviews ? (
+                  <div className="flex items-center justify-center p-6 text-slate-400 text-xs">
+                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                    Loading community reviews from Cloud SQL...
+                  </div>
+                ) : reviewsList.length === 0 ? (
+                  <div className="p-6 text-center text-xs text-slate-500 border border-dashed border-slate-800 rounded-xl">
+                    No community reviews yet. Be the first to share your thoughts!
+                  </div>
+                ) : (
+                  reviewsList.map((rev) => (
+                    <div
+                      key={rev.id}
+                      className="p-4 rounded-xl bg-slate-800/40 border border-slate-800 space-y-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white">
+                            {(rev.userDisplayName || 'Linux User').slice(0, 2).toUpperCase()}
+                          </div>
+                          <span className="text-xs font-medium text-white">
+                            {rev.userDisplayName || 'Linux User'}
+                          </span>
+                          {rev.isVerifiedPurchase && (
+                            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              Verified Download
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-0.5">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <Star
+                              key={s}
+                              className={`w-3 h-3 ${
+                                s <= rev.rating
+                                  ? 'text-amber-400 fill-amber-400'
+                                  : 'text-slate-700'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <h5 className="text-xs font-semibold text-slate-200">{rev.title}</h5>
+                      <p className="text-xs text-slate-400 leading-relaxed">{rev.body}</p>
+                      <div className="flex items-center justify-between pt-1 text-[11px] text-slate-500">
+                        <span>{new Date(rev.createdAt).toLocaleDateString()}</span>
+                        <button
+                          onClick={() => handleHelpfulVote(rev.id)}
+                          className="flex items-center gap-1 text-slate-400 hover:text-blue-400 transition"
+                        >
+                          <ThumbsUp className="w-3 h-3" />
+                          <span>Helpful ({rev.helpfulCount})</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}
