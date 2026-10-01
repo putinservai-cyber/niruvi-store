@@ -10,7 +10,7 @@
     "validate:rules": "tsx scripts/validate-firestore-rules.ts",
     "generate:catalog": "tsx scripts/generate-catalog.ts",
     "build:catalog": "tsx scripts/validate-catalog.ts && tsx scripts/generate-catalog.ts",
-    "build": "vite build",
+    "build": "tsx scripts/generate-catalog.ts && vite build",
     "build:static": "tsx scripts/generate-catalog.ts && vite build",
     "preview": "vite preview --port 3000 --host 0.0.0.0",
     "lint": "eslint . && tsc --noEmit",
