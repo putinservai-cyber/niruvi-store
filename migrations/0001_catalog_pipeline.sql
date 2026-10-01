@@ -58,6 +58,31 @@ CREATE TABLE IF NOT EXISTS catalog_releases (
 
 CREATE INDEX IF NOT EXISTS idx_catalog_releases_app_id ON catalog_releases(app_id, published_at DESC);
 
+CREATE TABLE IF NOT EXISTS catalog_assets (
+  id TEXT PRIMARY KEY,
+  release_id TEXT NOT NULL,
+  app_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  architecture TEXT NOT NULL,
+  download_url TEXT NOT NULL,
+  size_bytes INTEGER NOT NULL DEFAULT 0,
+  size_formatted TEXT NOT NULL DEFAULT '',
+  sha256 TEXT NOT NULL DEFAULT '',
+  verified INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (release_id) REFERENCES catalog_releases(id) ON DELETE CASCADE,
+  FOREIGN KEY (app_id) REFERENCES catalog_apps(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_catalog_assets_app_id ON catalog_assets(app_id, architecture);
+
+CREATE TABLE IF NOT EXISTS catalog_categories (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  app_count INTEGER NOT NULL DEFAULT 0,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS catalog_sync_logs (
   id TEXT PRIMARY KEY,
   run_id TEXT NOT NULL,

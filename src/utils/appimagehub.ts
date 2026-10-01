@@ -284,11 +284,15 @@ export function normalizeAppImageHubItem(raw: RawAppImageHubItem): NormalizedCat
   }
 
   const repoUrl = githubRepo ? `https://github.com/${githubRepo}` : '';
+  const appImageHubPageUrl = `https://appimage.github.io/${encodeURIComponent(raw.name.trim())}/`;
+
   if (!homepage) {
-    homepage = repoUrl || (downloadUrl.startsWith('https://') ? downloadUrl : '');
+    homepage = repoUrl || (downloadUrl.startsWith('https://') ? downloadUrl : appImageHubPageUrl);
   }
-  if (!downloadUrl && repoUrl) {
-    downloadUrl = `${repoUrl}/releases`;
+  if (!downloadUrl) {
+    downloadUrl = repoUrl ? `${repoUrl}/releases` : appImageHubPageUrl;
+  } else if (!downloadUrl.startsWith('https://')) {
+    downloadUrl = downloadUrl.replace(/^http:\/\//i, 'https://');
   }
 
   const icon =
@@ -317,13 +321,32 @@ export function normalizeAppImageHubItem(raw: RawAppImageHubItem): NormalizedCat
     category: simplifiedCategory,
     icon,
     screenshots,
-    license: raw.license && typeof raw.license === 'string' ? raw.license.trim() : 'Open Source',
+    license:
+      raw.license && typeof raw.license === 'string' && raw.license.trim()
+        ? raw.license.trim()
+        : 'Not specified',
     homepage,
     github_repo: githubRepo,
     download_url: downloadUrl,
     author_name: authorName,
     author_url: authorUrl,
   };
+}
+
+/**
+ * Parses the GitHub API `Link` response header (`<https://api.github.com/...>; rel="next"`)
+ * and returns the next page URL if present.
+ */
+export function parseGitHubNextPageUrl(linkHeader?: string | null): string | null {
+  if (!linkHeader || typeof linkHeader !== 'string') return null;
+  const parts = linkHeader.split(',');
+  for (const part of parts) {
+    const match = part.match(/<([^>]+)>\s*;\s*rel="next"/i);
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+  }
+  return null;
 }
 
 /**
@@ -599,8 +622,8 @@ export function buildAppMetadataFromNormalized(
     category: normalized.category as unknown as Exclude<Category, 'All'>,
     simplifiedCategory: normalized.category,
     version: releaseInfo?.latestVersion || 'latest',
-    releaseDate: releaseInfo?.latestReleaseDate || '2025-01-01',
-    size: releaseInfo?.latestSize || 'Portable AppImage',
+    releaseDate: releaseInfo?.latestReleaseDate || '',
+    size: releaseInfo?.latestSize || '',
     architectures:
       releaseInfo && releaseInfo.architectures.length > 0
         ? releaseInfo.architectures

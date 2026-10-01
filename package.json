@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "description": "Verified Linux AppImage software marketplace with SHA-256 checksum verification and one-click niruvi:// desktop installation.",
   "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "validate:catalog": "tsx scripts/validate-catalog.ts && tsx scripts/validate-firestore-rules.ts",
@@ -15,8 +18,8 @@
     "preview": "vite preview --port 3000 --host 0.0.0.0",
     "lint": "eslint . && tsc --noEmit",
     "lint:fix": "eslint . --fix && prettier --write \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\" \"tests/**/*.ts\"",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "NODE_OPTIONS=\"--import ./scripts/vitest-node-shim.mjs\" vitest run",
+    "test:watch": "NODE_OPTIONS=\"--import ./scripts/vitest-node-shim.mjs\" vitest"
   },
   "dependencies": {
     "clsx": "^2.1.1",
