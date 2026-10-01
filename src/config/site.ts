@@ -15,13 +15,28 @@ const metaEnv =
     ? (import.meta as unknown as { env?: Record<string, string | undefined> }).env
     : undefined;
 
-const rawBaseInput = (
-  (metaEnv && (metaEnv.VITE_BASE || metaEnv.VITE_BASE_PATH || metaEnv.BASE_URL)) ||
-  (typeof process !== 'undefined' &&
-    process.env &&
-    (process.env.VITE_BASE || process.env.VITE_BASE_PATH)) ||
-  '/niruvi-store/'
+const rawSiteOriginInput = (
+  (metaEnv && metaEnv.VITE_SITE_URL) ||
+  (typeof process !== 'undefined' && process.env && process.env.VITE_SITE_URL) ||
+  'https://niruvi-store.runs-on.dev'
 ).trim();
+
+const httpsSiteOrigin = rawSiteOriginInput
+  .replace(/^http:\/\//i, 'https://')
+  .replace(/^(?!https:\/\/)/i, 'https://')
+  .replace(/\/+$/, '');
+
+const isCustomDomain = !httpsSiteOrigin.includes('github.io');
+
+const rawBaseInput = isCustomDomain
+  ? '/'
+  : (
+      (metaEnv && (metaEnv.VITE_BASE || metaEnv.VITE_BASE_PATH || metaEnv.BASE_URL)) ||
+      (typeof process !== 'undefined' &&
+        process.env &&
+        (process.env.VITE_BASE || process.env.VITE_BASE_PATH)) ||
+      '/niruvi-store/'
+    ).trim();
 
 const normalizedBaseLeading = rawBaseInput.startsWith('/') ? rawBaseInput : `/${rawBaseInput}`;
 export const BASE_URL = normalizedBaseLeading.endsWith('/')
@@ -30,27 +45,10 @@ export const BASE_URL = normalizedBaseLeading.endsWith('/')
 
 const baseNoTrailing = BASE_URL.replace(/\/+$/, '');
 
-const rawSiteOriginInput = (
-  (metaEnv && metaEnv.VITE_SITE_URL) ||
-  (typeof process !== 'undefined' && process.env && process.env.VITE_SITE_URL) ||
-  'https://putinservai-cyber.github.io'
-).trim();
-
-const httpsSiteOrigin = rawSiteOriginInput
-  .replace(/^http:\/\//i, 'https://')
-  .replace(/^(?!https:\/\/)/i, 'https://')
-  .replace(/\/+$/, '');
-
-const strippedSiteOrigin =
+export const SITE_ORIGIN =
   baseNoTrailing && httpsSiteOrigin.endsWith(baseNoTrailing)
     ? httpsSiteOrigin.slice(0, -baseNoTrailing.length)
     : httpsSiteOrigin;
-
-// Prevent combining a custom domain (e.g. runs-on.dev) with the '/niruvi-store/' subpath
-export const SITE_ORIGIN =
-  BASE_URL !== '/' && !strippedSiteOrigin.includes('github.io')
-    ? 'https://putinservai-cyber.github.io'
-    : strippedSiteOrigin;
 
 /**
  * Full public root URL combining VITE_SITE_URL + VITE_BASE (without trailing slash),

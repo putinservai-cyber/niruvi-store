@@ -9,32 +9,32 @@ import {
 } from '../src/utils/appimagehub';
 import { isGenuineSha256 } from '../src/utils/catalogSchema';
 
-const rawBase = (
-  process.env.VITE_BASE ||
-  process.env.VITE_BASE_PATH ||
-  '/niruvi-store/'
+const rawEnvSiteUrl = (
+  process.env.VITE_SITE_URL || 'https://niruvi-store.runs-on.dev'
 ).trim();
+const httpsSiteOrigin = rawEnvSiteUrl
+  .replace(/^http:\/\//i, 'https://')
+  .replace(/^(?!https:\/\/)/i, 'https://')
+  .replace(/\/+$/, '');
+const isCustomDomain = !httpsSiteOrigin.includes('github.io');
+
+const rawBase = isCustomDomain
+  ? '/'
+  : (
+      process.env.VITE_BASE ||
+      process.env.VITE_BASE_PATH ||
+      '/niruvi-store/'
+    ).trim();
 const normalizedBaseLeading = rawBase.startsWith('/') ? rawBase : `/${rawBase}`;
 const BASE_PATH = normalizedBaseLeading.endsWith('/')
   ? normalizedBaseLeading
   : `${normalizedBaseLeading}/`;
 const baseNoTrailing = BASE_PATH.replace(/\/+$/, '');
 
-const rawEnvSiteUrl = (
-  process.env.VITE_SITE_URL || 'https://putinservai-cyber.github.io'
-).trim();
-const httpsSiteOrigin = rawEnvSiteUrl
-  .replace(/^http:\/\//i, 'https://')
-  .replace(/^(?!https:\/\/)/i, 'https://')
-  .replace(/\/+$/, '');
-const strippedSiteOrigin =
+const SITE_ORIGIN =
   baseNoTrailing && httpsSiteOrigin.endsWith(baseNoTrailing)
     ? httpsSiteOrigin.slice(0, -baseNoTrailing.length)
     : httpsSiteOrigin;
-const SITE_ORIGIN =
-  BASE_PATH !== '/' && !strippedSiteOrigin.includes('github.io')
-    ? 'https://putinservai-cyber.github.io'
-    : strippedSiteOrigin;
 const SITE_URL = `${SITE_ORIGIN}${baseNoTrailing}`;
 
 interface RawAppEntry {

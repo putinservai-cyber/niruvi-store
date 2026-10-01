@@ -1,32 +1,32 @@
 import fs from 'fs';
 import path from 'path';
 
-const rawBase = (
-  process.env.VITE_BASE ||
-  process.env.VITE_BASE_PATH ||
-  '/niruvi-store/'
+const rawEnvSiteUrl = (
+  process.env.VITE_SITE_URL || 'https://niruvi-store.runs-on.dev'
 ).trim();
+const httpsSiteOrigin = rawEnvSiteUrl
+  .replace(/^http:\/\//i, 'https://')
+  .replace(/^(?!https:\/\/)/i, 'https://')
+  .replace(/\/+$/, '');
+const isCustomDomain = !httpsSiteOrigin.includes('github.io');
+
+const rawBase = isCustomDomain
+  ? '/'
+  : (
+      process.env.VITE_BASE ||
+      process.env.VITE_BASE_PATH ||
+      '/niruvi-store/'
+    ).trim();
 const normalizedBaseLeading = rawBase.startsWith('/') ? rawBase : `/${rawBase}`;
 const BASE_PATH = normalizedBaseLeading.endsWith('/')
   ? normalizedBaseLeading
   : `${normalizedBaseLeading}/`;
 const baseNoTrailing = BASE_PATH.replace(/\/+$/, '');
 
-const rawEnvSiteUrl = (
-  process.env.VITE_SITE_URL || 'https://putinservai-cyber.github.io'
-).trim();
-const httpsSiteOrigin = rawEnvSiteUrl
-  .replace(/^http:\/\//i, 'https://')
-  .replace(/^(?!https:\/\/)/i, 'https://')
-  .replace(/\/+$/, '');
-const strippedSiteOrigin =
+const SITE_ORIGIN =
   baseNoTrailing && httpsSiteOrigin.endsWith(baseNoTrailing)
     ? httpsSiteOrigin.slice(0, -baseNoTrailing.length)
     : httpsSiteOrigin;
-const SITE_ORIGIN =
-  BASE_PATH !== '/' && !strippedSiteOrigin.includes('github.io')
-    ? 'https://putinservai-cyber.github.io'
-    : strippedSiteOrigin;
 
 /**
  * Full public root URL combining VITE_SITE_URL + VITE_BASE (without trailing slash),
@@ -59,6 +59,7 @@ function replaceHeadMetadata(
     description: string;
     canonicalPath: string;
     jsonLd?: Record<string, unknown>;
+    inlineCss?: string;
   }
 ): string {
   const canonicalUrl = buildCanonicalUrl(meta.canonicalPath);
@@ -67,6 +68,7 @@ function replaceHeadMetadata(
   const safeDesc = escapeHtml(meta.description);
 
   let updated = html
+    .replace(/<link\s+rel="stylesheet"\s+crossorigin\s+/gi, '<link rel="stylesheet" ')
     .replace(/href="\.\/favicon\.ico"/g, `href="${BASE_PATH}favicon.ico"`)
     .replace(/href="\.\/favicon\.png"/g, `href="${BASE_PATH}favicon.png"`)
     .replace(/href="\.\/apple-touch-icon\.png"/g, `href="${BASE_PATH}apple-touch-icon.png"`)
@@ -140,7 +142,20 @@ function runPrerender() {
     process.exit(1);
   }
 
-  const baseTemplate = fs.readFileSync(indexHtmlPath, 'utf-8');
+  let baseTemplate = fs.readFileSync(indexHtmlPath, 'utf-8');
+  const assetsDir = path.join(distDir, 'assets');
+  if (fs.existsSync(assetsDir)) {
+    const cssFile = fs.readdirSync(assetsDir).find((f) => f.endsWith('.css'));
+    if (cssFile) {
+      const compiledCss = fs.readFileSync(path.join(assetsDir, cssFile), 'utf-8');
+      if (compiledCss && !baseTemplate.includes('id="tailwind-compiled-css"')) {
+        baseTemplate = baseTemplate.replace(
+          '</head>',
+          `    <style id="tailwind-compiled-css">${compiledCss}</style>\n  </head>`
+        );
+      }
+    }
+  }
   const apps: any[] = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'));
 
   // Update dist/404.html canonical URL if present
@@ -395,6 +410,31 @@ chmod +x ./${escapeHtml(fileName)}
       inner
     );
     fs.writeFileSync(path.join(routeDir, 'index.html'), pageHtml, 'utf-8');
+  }
+
+  // Mirror `dist/assets` and root static files into `dist/niruvi-store/` so that
+  // requests to `/niruvi-store/assets/index-*.css` or `/niruvi-store/assets/index-*.js`
+  // on root-hosted deployments (`/` on runs-on.dev or AI Studio Shared App) always serve
+  // the real compiled Tailwind CSS and JS bundles instead of an empty SPA fallback.
+  const subpathDir = path.join(distDir, 'niruvi-store');
+  const distAssetsDir = path.join(distDir, 'assets');
+  if (fs.existsSync(distAssetsDir)) {
+    fs.cpSync(distAssetsDir, path.join(subpathDir, 'assets'), { recursive: true });
+    for (const staticFile of [
+      'index.html',
+      'favicon.ico',
+      'favicon.png',
+      'apple-touch-icon.png',
+      'og-image.png',
+      'manifest.json',
+      'catalog.min.json',
+      'catalog.json',
+    ]) {
+      const srcFile = path.join(distDir, staticFile);
+      if (fs.existsSync(srcFile)) {
+        fs.copyFileSync(srcFile, path.join(subpathDir, staticFile));
+      }
+    }
   }
 
   console.log(

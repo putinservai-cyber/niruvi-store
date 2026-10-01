@@ -7,15 +7,10 @@ import tailwindcss from '@tailwindcss/vite';
 function resolveBase(command: 'build' | 'serve'): string {
   const isPreview = process.argv.includes('preview');
 
-  // In interactive dev server (`vite` on port 3000), serve at `/` so the AI Studio
-  // preview root URL returns 200 OK instead of a 302 redirect to `/niruvi-store/`.
   if (command === 'serve' && !isPreview) {
     return '/';
   }
 
-  // In `vite preview`, prefer the base path baked into `dist/index.html` so both
-  // `VITE_BASE=/ npm run build && npm run preview` and `VITE_BASE=/niruvi-store/` work
-  // even when the container environment has a default VITE_BASE set.
   if (isPreview) {
     try {
       const distIndex = fs.readFileSync(path.resolve(process.cwd(), 'dist/index.html'), 'utf-8');
@@ -24,12 +19,20 @@ function resolveBase(command: 'build' | 'serve'): string {
         return match[1];
       }
     } catch {
-      // Fall back to envBase below if dist/index.html is missing
+      // Fall back below if dist/index.html is missing
     }
   }
 
-  const envBase = process.env.VITE_BASE || process.env.VITE_BASE_PATH || '/niruvi-store/';
-  const withLeading = envBase.startsWith('/') ? envBase : `/${envBase}`;
+  const rawSiteUrl = (process.env.VITE_SITE_URL || 'https://niruvi-store.runs-on.dev').trim();
+  const rawBase = (process.env.VITE_BASE || process.env.VITE_BASE_PATH || '/').trim();
+
+  // On custom domains (e.g. niruvi-store.runs-on.dev), the site always lives at `/`.
+  if (!rawSiteUrl.includes('github.io')) {
+    return '/';
+  }
+
+  const effectiveBase = rawBase || '/niruvi-store/';
+  const withLeading = effectiveBase.startsWith('/') ? effectiveBase : `/${effectiveBase}`;
   return withLeading.endsWith('/') ? withLeading : `${withLeading}/`;
 }
 
