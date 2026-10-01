@@ -110,35 +110,42 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setTimeout(() => setActionMessage(null), 3500);
   };
 
+  const getAuthHeaders = (includeJson = false): Record<string, string> => {
+    const h: Record<string, string> = {};
+    if (includeJson) h['Content-Type'] = 'application/json';
+    if (token) h.Authorization = `Bearer ${token}`;
+    return h;
+  };
+
   const fetchAdminData = async () => {
-    if (!token) return;
+    if (!user && !token) return;
     setIsRefreshing(true);
     try {
-      const headers = { Authorization: `Bearer ${token}` };
+      const headers = getAuthHeaders();
 
       // 1. Fetch overview telemetry
-      const overviewRes = await fetch('/api/admin/overview', { headers });
+      const overviewRes = await fetch('/api/admin/overview', { credentials: 'include', headers });
       if (overviewRes.ok) {
         const data = await overviewRes.json();
         setOverview(data);
       }
 
       // 2. Fetch all apps
-      const appsRes = await fetch('/api/admin/apps', { headers });
+      const appsRes = await fetch('/api/admin/apps', { credentials: 'include', headers });
       if (appsRes.ok) {
         const appsData = await appsRes.json();
         setAllApps(appsData);
       }
 
       // 3. Fetch audit logs
-      const auditRes = await fetch('/api/admin/audit-logs', { headers });
+      const auditRes = await fetch('/api/admin/audit-logs', { credentials: 'include', headers });
       if (auditRes.ok) {
         const auditData = await auditRes.json();
         setAuditLogs(auditData);
       }
 
       // 4. Fetch reviews
-      const revRes = await fetch('/api/admin/reviews', { headers });
+      const revRes = await fetch('/api/admin/reviews', { credentials: 'include', headers });
       if (revRes.ok) {
         const revData = await revRes.json();
         setReviewsList(revData);
@@ -153,15 +160,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   useEffect(() => {
     fetchAdminData();
-  }, [token]);
+  }, [user, token]);
 
   // Toggle Featured App
   const handleToggleFeature = async (appId: string) => {
-    if (!token) return;
+    if (!user && !token) return;
     try {
       const res = await fetch(`/api/admin/apps/${appId}/toggle-feature`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: getAuthHeaders(),
       });
       const data = await res.json();
       if (res.ok) {
@@ -178,11 +186,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Toggle Published Status
   const handleTogglePublish = async (appId: string) => {
-    if (!token) return;
+    if (!user && !token) return;
     try {
       const res = await fetch(`/api/admin/apps/${appId}/toggle-publish`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: getAuthHeaders(),
       });
       const data = await res.json();
       if (res.ok) {
@@ -199,14 +208,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Moderate App (Approve / Reject)
   const handleModerateApp = async (appId: string, status: 'APPROVED' | 'REJECTED') => {
-    if (!token) return;
+    if (!user && !token) return;
     try {
       const res = await fetch(`/api/admin/apps/${appId}/moderate`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
+        headers: getAuthHeaders(true),
         body: JSON.stringify({ status }),
       });
       const data = await res.json();
@@ -224,14 +231,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Delete App
   const handleDeleteApp = async (appId: string, name: string) => {
-    if (!token) return;
+    if (!user && !token) return;
     if (!window.confirm(`Are you sure you want to permanently delete '${name}' from the store catalog?`)) {
       return;
     }
     try {
       const res = await fetch(`/api/admin/apps/${appId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: getAuthHeaders(),
       });
       const data = await res.json();
       if (res.ok) {
@@ -248,12 +256,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Delete Review
   const handleDeleteReview = async (reviewId: string) => {
-    if (!token) return;
+    if (!user && !token) return;
     if (!window.confirm('Delete this user review?')) return;
     try {
       const res = await fetch(`/api/admin/reviews/${reviewId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: getAuthHeaders(),
       });
       const data = await res.json();
       if (res.ok) {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { AppMetadata } from '../types';
 import { AppIcon } from './AppIcon';
+import { sanitizeText } from '../utils/sanitize';
 import { 
   CheckCircle2, 
   Download, 
@@ -81,7 +82,7 @@ export const AppCard: React.FC<AppCardProps> = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               <h3 className="font-bold text-base text-white tracking-tight truncate group-hover:text-neutral-200 transition-colors">
-                {app.name}
+                {sanitizeText(app.name, 100)}
               </h3>
               {app.publisher.verified && (
                 <span title="Verified Publisher" className="text-neutral-300">
@@ -90,7 +91,7 @@ export const AppCard: React.FC<AppCardProps> = ({
               )}
             </div>
             <p className="text-xs text-neutral-400 truncate mt-0.5">
-              {app.publisher.name}
+              {sanitizeText(app.publisher.name, 80)}
             </p>
           </div>
         </div>
@@ -115,7 +116,7 @@ export const AppCard: React.FC<AppCardProps> = ({
 
       {/* Tagline */}
       <p className="text-xs text-neutral-300 line-clamp-2 mb-4 leading-relaxed flex-1">
-        {app.tagline}
+        {sanitizeText(app.tagline, 300)}
       </p>
 
       {/* Meta tags & Architecture */}

@@ -149,7 +149,30 @@ export function generateNiruviProtocolUrl(app: AppMetadata, selectedArch?: strin
 `;
 
   fs.writeFileSync(path.join(outDir, 'apps.ts'), tsContent, 'utf-8');
-  console.log(`✅ Generated catalog with ${apps.length} applications and ${categories.length} categories!`);
+
+  // 3. Generate feed.json (gitignored artifact built during CI / catalog generation)
+  const feedPayload = {
+    version: 1,
+    home_page_url: 'https://putinservai-cyber.github.io/niruvi-store/',
+    feed_url: 'https://putinservai-cyber.github.io/niruvi-store/feed.json',
+    description: 'AppImage applications for Linux without installation',
+    expired: false,
+    items: apps.map((app) => ({
+      name: app.name,
+      description: app.description,
+      categories: [app.category],
+      authors: [{ name: app.publisher.name, url: app.publisher.website }],
+      license: app.license,
+      links: [
+        ...(app.repositoryUrl ? [{ type: 'GitHub', url: app.repositoryUrl }] : []),
+        { type: 'Download', url: app.downloadUrl },
+      ],
+      icons: app.icon ? [app.icon] : [],
+    })),
+  };
+  fs.writeFileSync(path.join(process.cwd(), 'feed.json'), JSON.stringify(feedPayload, null, 2), 'utf-8');
+
+  console.log(`✅ Generated catalog with ${apps.length} applications, ${categories.length} categories, and feed.json!`);
 }
 
 generateCatalog();

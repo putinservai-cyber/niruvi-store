@@ -1,0 +1,13 @@
+title = "Niruvi Store Gitleaks Configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allowlist for public catalog SHA-256 hashes and test fixtures"
+paths = [
+  '''catalog/apps/.*\.json$''',
+  '''src/data/generated-catalog\.json$''',
+  '''package-lock\.json$''',
+  '''bun\.lock$'''
+]

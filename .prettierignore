@@ -1,0 +1,8 @@
+dist/
+dist-ssr/
+node_modules/
+experimental/
+src/data/generated-catalog.json
+feed.json
+bun.lock
+package-lock.json

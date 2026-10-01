@@ -1,5 +1,6 @@
-import { db } from './src/db/index';
-import { users } from './src/db/schema';
+// EXPERIMENTAL — Not part of the production static build.
+import { db } from '../src/db/index';
+import { users } from '../src/db/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 

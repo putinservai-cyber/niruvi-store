@@ -35,17 +35,21 @@ Traditional Linux package managers require root privileges, complex PPA reposito
 
 ## 🏗️ Architecture
 
-Niruvi Store operates on a transparent, 100% GitHub-native static architecture requiring **$0 operational budget**:
+**The production Niruvi Store site is the static GitHub Pages build only (`npm run build:static`).** The static catalog (`catalog/apps/*.json`) compiled into the Vite bundle is the single source of truth requiring **$0 operational budget**:
 
 ```text
 GitHub Repository (putinservai-cyber/niruvi-store)
- ├── React 18 + TypeScript + Tailwind CSS (Vite SPA)
- ├── JSON Application Catalog (catalog/apps/*.json)
- ├── Automated Catalog Validator (scripts/validate-catalog.ts)
- ├── GitHub Actions CI (Validates JSON, Lint, Types, Static Build)
- ├── GitHub Pages (Continuous Deployment to Live Web Store)
- └── Upstream GitHub Releases (Direct HTTPS binary downloads)
+ ├── React 18 + TypeScript + Tailwind CSS (Static Vite SPA)
+ ├── JSON Application Catalog (catalog/apps/*.json — Single Source of Truth)
+ ├── Automated Catalog Validator & Feed Generator (scripts/*)
+ ├── Vitest Schema & Security Rules Test Suite (tests/*)
+ ├── GitHub Actions CI (Gitleaks, Rules Check, Lint, Vitest, Static Build)
+ ├── GitHub Pages (Continuous Deployment of dist/ to Live Web Store)
+ ├── Upstream GitHub Releases (Direct HTTPS binary downloads)
+ └── experimental/ (Optional Express/Cloudflare Worker prototypes — NOT part of the production build)
 ```
+
+> **Note on `experimental/`**: Files inside `experimental/` (`server.ts`, `worker.ts`, `wrangler.json`, `supabase/`, and DB helper scripts) are experimental prototypes and are **not part of the production build**. If experimenting with Cloudflare Workers & D1 (`experimental/wrangler.json`), provision secrets via `wrangler secret put JWT_SECRET` and create the D1 database via `wrangler d1 create niruvi_store_d1`, replacing the `00000000-0000-0000-0000-000000000000` placeholder in `experimental/wrangler.json`.
 
 ---
 
@@ -66,10 +70,13 @@ cd niruvi-store
 npm install
 
 # 3. Validate and build the static application catalog
-npm run validate:catalog
-npm run generate:catalog
+npm run build:catalog
 
-# 4. Start local development server
+# 4. Run tests and linter
+npm test
+npm run lint
+
+# 5. Start local development server
 npm run dev
 ```
 
@@ -83,11 +90,13 @@ Visit `http://localhost:3000` in your browser.
 | :--- | :--- |
 | `npm run dev` | Starts the local development server on port 3000 |
 | `npm run validate:catalog` | Validates all `catalog/apps/*.json` schemas, URLs, checksums, and architectures |
-| `npm run generate:catalog` | Compiles JSON catalog entries into static TypeScript data bundles |
+| `npm run validate:rules` | Validates `firestore.rules` syntax and service declaration |
+| `npm run generate:catalog` | Compiles JSON catalog entries into static TypeScript data bundles and `feed.json` |
 | `npm run build:catalog` | Runs both catalog validation and generation |
-| `npm run build:static` | Produces production-ready static assets for GitHub Pages in `dist/` |
-| `npm run build` | Builds both the Vite client bundle and the server runtime bundle |
-| `npm run lint` | Runs TypeScript type checking (`tsc --noEmit`) |
+| `npm run build:static` | Produces the production-ready static GitHub Pages site in `dist/` |
+| `npm run lint` | Runs ESLint and TypeScript type checking (`tsc --noEmit`) |
+| `npm run lint:fix` | Runs ESLint `--fix` and Prettier formatting across the repository |
+| `npm test` | Runs the Vitest test suite (including schema validation for every `catalog/apps/*.json` file) |
 
 ---
 
@@ -118,7 +127,7 @@ Contributing an application is automated and does not require modifying frontend
      "keywords": ["developer", "utility", "tools"]
    }
    ```
-3. Run `npm run validate:catalog` to ensure all fields pass validation.
+3. Run `npm run validate:catalog` and `npm test` to ensure all fields pass validation.
 4. Open a Pull Request. Once merged, GitHub Actions automatically deploys the updated catalog to the live store.
 
 For complete guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).

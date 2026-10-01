@@ -13,10 +13,6 @@ This document explains the payment gateways, desktop protocol bridge, and databa
   - `POST /api/razorpay/verify-payment` - Cryptographically validates payment signature (HMAC-SHA256) & issues lifetime license keys, immediately upgrading the user account to Pro Developer.
   - `POST /api/license/activate` - Validates and binds a license key to the authenticated account.
   - `POST /api/razorpay/webhook` - Handles server-to-server asynchronous capture events with signature verification.
-- **Environment Variables (Optional):**
-  - `RAZORPAY_KEY_ID`
-  - `RAZORPAY_KEY_SECRET`
-  *(If keys are omitted, the app operates in safe demonstration mode with instant fallback).*
 
 ### B. UPI Instant (0% Fees)
 - Direct VPA: `putinservai@oksbi`

@@ -18,6 +18,7 @@ node_modules/
 dist/
 dist-ssr/
 *.local
+feed.json
 
 # Logs & Diagnostics
 *.log

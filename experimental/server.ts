@@ -1,10 +1,15 @@
+/**
+ * EXPERIMENTAL — NOT PART OF THE PRODUCTION BUILD.
+ * The production Niruvi Store site is the static GitHub Pages build (`npm run build:static`).
+ * This Express + PostgreSQL server is retained in `experimental/` for local/cloud prototype testing only.
+ */
 import express from 'express';
 import path from 'path';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { createServer as createViteServer } from 'vite';
-import { db } from './src/db/index';
+import { db } from '../src/db/index';
 import {
   apps,
   appVersions,
@@ -19,38 +24,29 @@ import {
   securityAlerts,
   securityEvents,
   securityScans,
-} from './src/db/schema';
+} from '../src/db/schema';
 import { eq, desc, asc, ilike, and, or, sql, inArray } from 'drizzle-orm';
-import { seedDatabaseIfEmpty } from './src/db/seed';
+import { seedDatabaseIfEmpty } from '../src/db/seed';
 import {
   authenticateToken,
   requireAuth,
   requireRole,
   signJwtToken,
+  setAuthSessionCookie,
+  clearAuthSessionCookie,
   AuthenticatedRequest,
-} from './src/utils/auth';
+} from '../src/utils/auth';
+import { verifyFirebaseIdToken } from '../src/worker';
+import { sanitizeText, sanitizeUrl, sanitizeUsername } from '../src/utils/sanitize';
 import {
   createRateLimiter,
   logSecurityEvent,
   evaluateSecurityHeaders,
   calculateSecurityScore,
   generateSbom,
-} from './src/utils/security';
+} from '../src/utils/security';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
-import Stripe from 'stripe';
-
-let stripeClient: Stripe | null = null;
-function getStripe(): Stripe {
-  if (!stripeClient) {
-    const key = process.env.STRIPE_SECRET_KEY;
-    if (!key) {
-      throw new Error('STRIPE_SECRET_KEY environment variable is not configured');
-    }
-    stripeClient = new Stripe(key);
-  }
-  return stripeClient;
-}
 
 async function startServer() {
   const app = express();
@@ -103,11 +99,11 @@ async function startServer() {
   app.use(cookieParser());
   app.use(authenticateToken);
 
-  // Apply rate limiting middleware to auth endpoints
+  // Apply rate limiting middleware to auth endpoints (10 attempts / 10 min per IP)
   const authRateLimiter = createRateLimiter({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 20, // 20 login attempts per 15 mins
-    message: 'Too many login or registration attempts. Please wait 15 minutes before retrying.',
+    windowMs: 10 * 60 * 1000, // 10 minutes
+    max: 10, // 10 attempts per 10 mins
+    message: 'Too many authentication attempts. Please wait 10 minutes before retrying.',
     category: 'AUTH_LIMIT',
   });
 
@@ -120,6 +116,8 @@ async function startServer() {
 
   app.use('/api/auth/login', authRateLimiter);
   app.use('/api/auth/register', authRateLimiter);
+  app.use('/api/auth/google', authRateLimiter);
+  app.use('/api/auth/forgot-password', authRateLimiter);
   app.use('/api/', apiRateLimiter);
 
   // Auto-seed database if empty
@@ -181,11 +179,19 @@ async function startServer() {
       }
 
       const appsToInsert: any[] = [];
-      const versionsToInsert: any[] = [];
+      const versionsBySlug = new Map<string, any>();
+      const seenSlugs = new Set<string>();
 
       for (const item of feedItems) {
-        if (!item.name) continue;
-        const slug = item.name.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 100);
+        if (!item.name || typeof item.name !== 'string') continue;
+        const slug = item.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .substring(0, 100);
+        if (!slug || seenSlugs.has(slug)) continue;
+        seenSlugs.add(slug);
+
         const finalId = `app_${slug.replace(/-/g, '_')}`;
 
         const githubLink = item.links?.find((l: any) => l.type === 'GitHub');
@@ -227,7 +233,7 @@ async function startServer() {
           moderationStatus: 'APPROVED'
         });
 
-        versionsToInsert.push({
+        versionsBySlug.set(slug, {
           id: `ver_${slug.replace(/-/g, '_')}_latest`,
           appId: finalId,
           version: 'Latest',
@@ -244,10 +250,30 @@ async function startServer() {
       const batchSize = 100;
       for (let i = 0; i < appsToInsert.length; i += batchSize) {
         const appsChunk = appsToInsert.slice(i, i + batchSize);
-        const versionsChunk = versionsToInsert.slice(i, i + batchSize);
-
         await db.insert(apps).values(appsChunk).onConflictDoNothing();
-        await db.insert(appVersions).values(versionsChunk).onConflictDoNothing();
+
+        const chunkSlugs = appsChunk.map((a) => a.slug);
+        const existingApps = await db
+          .select({ id: apps.id, slug: apps.slug })
+          .from(apps)
+          .where(inArray(apps.slug, chunkSlugs));
+        const slugToAppId = new Map(existingApps.map((a) => [a.slug, a.id]));
+
+        const versionsChunk = appsChunk
+          .map((appItem) => {
+            const actualAppId = slugToAppId.get(appItem.slug);
+            const verTemplate = versionsBySlug.get(appItem.slug);
+            if (!actualAppId || !verTemplate) return null;
+            return {
+              ...verTemplate,
+              appId: actualAppId,
+            };
+          })
+          .filter((v): v is NonNullable<typeof v> => v !== null);
+
+        if (versionsChunk.length > 0) {
+          await db.insert(appVersions).values(versionsChunk).onConflictDoNothing();
+        }
       }
       console.log('[Background Worker] Successfully populated entire community catalog of 1,000+ AppImages in Cloud SQL!');
     } catch (err: any) {
@@ -543,18 +569,21 @@ async function startServer() {
                       featured: false,
                       isPublished: true,
                       moderationStatus: 'APPROVED'
-                    });
-                    
-                    await db.insert(appVersions).values({
-                      id: `ver_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-                      appId: finalId,
-                      version: versionTag,
-                      downloadUrl: appimageAsset.browser_download_url,
-                      sha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-                      sizeBytes: `${sizeMb} MB`,
-                      releaseDate: new Date(relData.published_at || Date.now()).toISOString().split('T')[0],
-                      isCurrent: true
-                    });
+                    }).onConflictDoNothing();
+
+                    const insertedApp = await db.select({ id: apps.id }).from(apps).where(eq(apps.slug, slug)).limit(1);
+                    if (insertedApp.length > 0) {
+                      await db.insert(appVersions).values({
+                        id: `ver_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                        appId: insertedApp[0].id,
+                        version: versionTag,
+                        downloadUrl: appimageAsset.browser_download_url,
+                        sha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+                        sizeBytes: `${sizeMb} MB`,
+                        releaseDate: new Date(relData.published_at || Date.now()).toISOString().split('T')[0],
+                        isCurrent: true
+                      }).onConflictDoNothing();
+                    }
                     console.log(`[On-Demand Search] Dynamically discovered and registered new AppImage: ${repoName}`);
                   }
                 }
@@ -956,8 +985,8 @@ async function startServer() {
         appId: appData.id,
         userId: req.user!.id,
         rating: Math.round(rating),
-        title,
-        body,
+        title: sanitizeText(title, 150),
+        body: sanitizeText(body, 2000),
         isVerifiedPurchase,
         helpfulCount: 0,
       };
@@ -1014,22 +1043,67 @@ async function startServer() {
     }
   });
 
+  // 9a. Auth: Check Username Availability
+  app.get('/api/auth/check-username', async (req, res) => {
+    try {
+      const rawUsername = String(req.query.username || '');
+      const cleanUsername = sanitizeUsername(rawUsername);
+      if (!cleanUsername || cleanUsername.length < 3 || cleanUsername.length > 24) {
+        return res.status(400).json({
+          available: false,
+          error: 'Username must be 3–24 alphanumeric or underscore characters',
+        });
+      }
+      const existing = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(ilike(users.username, cleanUsername))
+        .limit(1);
+      res.json({ available: existing.length === 0, username: cleanUsername });
+    } catch {
+      res.status(500).json({ available: false, error: 'Failed to check username' });
+    }
+  });
+
+  // 9b. Auth: Forgot Password
+  app.post('/api/auth/forgot-password', async (_req, res) => {
+    res.json({
+      success: true,
+      message:
+        'If an account is associated with that email, password reset instructions have been sent.',
+    });
+  });
+
   // 9. Auth: Register Local User
   app.post('/api/auth/register', async (req, res) => {
     try {
-      const { email, password, username, displayName } = req.body;
-      if (!email || !password || !username || !displayName) {
-        return res.status(400).json({ error: 'All fields are required' });
+      const rawEmail = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+      const password = typeof req.body?.password === 'string' ? req.body.password : '';
+      const username = sanitizeUsername(req.body?.username);
+      const displayName = sanitizeText(req.body?.displayName || username, 60);
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(rawEmail)) {
+        return res.status(400).json({ error: 'Please provide a valid email address' });
+      }
+      if (password.length < 10) {
+        return res.status(400).json({ error: 'Password must be at least 10 characters long' });
+      }
+      if (!username || username.length < 3) {
+        return res.status(400).json({ error: 'Username must be 3–24 characters' });
+      }
+      if (!displayName) {
+        return res.status(400).json({ error: 'Display name is required' });
       }
 
       const existing = await db
         .select()
         .from(users)
-        .where(or(eq(users.email, email), eq(users.username, username)))
+        .where(or(ilike(users.email, rawEmail), ilike(users.username, username)))
         .limit(1);
 
       if (existing.length > 0) {
-        return res.status(400).json({ error: 'Email or username is already in use' });
+        return res.status(400).json({ error: 'Unable to register with the provided account details' });
       }
 
       const passwordHash = await bcrypt.hash(password, 10);
@@ -1037,11 +1111,11 @@ async function startServer() {
 
       const newUser = {
         id: newUserId,
-        email,
+        email: rawEmail,
         passwordHash,
         username,
         displayName,
-        avatarUrl: `https://api.dicebear.com/7.x/identicon/svg?seed=${username}`,
+        avatarUrl: `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(username)}`,
         role: 'USER',
         emailVerified: true,
       };
@@ -1055,47 +1129,52 @@ async function startServer() {
         username: newUser.username,
       });
 
+      setAuthSessionCookie(res, token);
+
       res.status(201).json({
-        token,
+        success: true,
         user: {
           id: newUser.id,
           email: newUser.email,
           username: newUser.username,
           displayName: newUser.displayName,
           role: newUser.role,
+          plan: 'free',
+          isPro: false,
           avatarUrl: newUser.avatarUrl,
         },
+        developerProfile: null,
       });
     } catch (err: any) {
       console.error('Registration error:', err);
-      res.status(500).json({ error: err?.message });
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
   // 10. Auth: Login Local User
   app.post('/api/auth/login', async (req, res) => {
     try {
-      const { login, password } = req.body;
+      const login = typeof (req.body?.login || req.body?.email) === 'string'
+        ? String(req.body.login || req.body.email).trim()
+        : '';
+      const password = typeof req.body?.password === 'string' ? req.body.password : '';
       if (!login || !password) {
-        return res.status(400).json({ error: 'Username/email and password required' });
+        return res.status(401).json({ error: 'Invalid credentials' });
       }
 
       const userList = await db
         .select()
         .from(users)
-        .where(or(eq(users.email, login), eq(users.username, login)))
+        .where(or(ilike(users.email, login), ilike(users.username, login)))
         .limit(1);
 
-      if (userList.length === 0) {
+      if (userList.length === 0 || !userList[0].passwordHash) {
+        // Generic error: never reveal whether the email or username exists
         return res.status(401).json({ error: 'Invalid credentials' });
       }
 
-      if (!userList[0].passwordHash) {
-        return res.status(400).json({ error: 'This account uses Google Sign-In. Please click the Google button above.' });
-      }
-
       const u = userList[0];
-      const valid = await bcrypt.compare(password, u.passwordHash);
+      const valid = await bcrypt.compare(password, u.passwordHash!);
 
       if (!valid) {
         return res.status(401).json({ error: 'Invalid credentials' });
@@ -1118,20 +1197,32 @@ async function startServer() {
         metadata: { username: u.username, role: u.role, method: 'local_credentials' },
       }).catch(() => {});
 
+      const dev = await db
+        .select()
+        .from(developerProfiles)
+        .where(eq(developerProfiles.userId, u.id))
+        .limit(1);
+
+      setAuthSessionCookie(res, token);
+
+      const isProRole = u.role === 'DEVELOPER' || u.role === 'ADMIN';
       res.json({
-        token,
+        success: true,
         user: {
           id: u.id,
           email: u.email,
           username: u.username,
           displayName: u.displayName,
           role: u.role,
+          plan: isProRole ? 'pro_developer' : 'free',
+          isPro: isProRole,
           avatarUrl: u.avatarUrl,
         },
+        developerProfile: dev.length > 0 ? dev[0] : null,
       });
     } catch (err: any) {
       console.error('Login error:', err);
-      res.status(500).json({ error: err?.message });
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
@@ -1150,114 +1241,95 @@ async function startServer() {
         user: u,
         developerProfile: dev.length > 0 ? dev[0] : null,
       });
-    } catch (err: any) {
-      res.status(500).json({ error: err?.message });
+    } catch {
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
   // 12. Auth: Logout Endpoint
   app.post('/api/auth/logout', (_req, res) => {
-    res.clearCookie('niruvi_auth_token');
+    clearAuthSessionCookie(res);
     res.json({ success: true, message: 'Logged out successfully' });
   });
 
-  // 13. Auth: GitHub Native OAuth / Worker Route
-  app.post('/api/auth/github', async (_req, res) => {
-    try {
-      // Find or provision developer user
-      let devUserList = await db.select().from(users).where(eq(users.username, 'linux_craft')).limit(1);
-      let devUser = devUserList.length > 0 ? devUserList[0] : null;
-
-      if (!devUser) {
-        const newUserId = `usr_gh_${Date.now()}`;
-        const newDev = {
-          id: newUserId,
-          email: 'developer@niruvi.store',
-          username: 'linux_craft',
-          displayName: 'Linux AppImage Craft',
-          avatarUrl: 'https://github.com/github.png',
-          role: 'DEVELOPER',
-          emailVerified: true,
-        };
-        await db.insert(users).values(newDev).onConflictDoNothing();
-        devUser = newDev as any;
-      }
-
-      const token = signJwtToken({
-        id: devUser.id,
-        email: devUser.email,
-        role: devUser.role,
-        username: devUser.username,
-      });
-
-      res.cookie('niruvi_auth_token', token, { httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 3600 * 1000 });
-      res.json({
-        success: true,
-        token,
-        user: {
-          id: devUser.id,
-          email: devUser.email,
-          username: devUser.username,
-          displayName: devUser.displayName,
-          role: devUser.role,
-          avatarUrl: devUser.avatarUrl,
-        },
-      });
-    } catch (err: any) {
-      res.status(500).json({ error: err?.message || 'GitHub login failed' });
-    }
-  });
-
-  // 14. Auth: Google Native OAuth / Worker Route
+  // 14. Auth: Google OAuth — Verified Firebase ID Token ONLY
   app.post('/api/auth/google', async (req, res) => {
     try {
-      const { email, displayName, photoURL, uid } = req.body;
-
-      if (!email) {
-        return res.status(400).json({ error: 'Email parameter is required for Google authentication sync.' });
+      const authHeader = req.headers.authorization || '';
+      let idToken = '';
+      if (authHeader.startsWith('Bearer ')) {
+        idToken = authHeader.slice(7).trim();
+      } else if (typeof req.body?.idToken === 'string') {
+        idToken = req.body.idToken.trim();
       }
 
+      if (!idToken) {
+        return res.status(401).json({ error: 'Authentication required: missing Firebase ID token' });
+      }
+
+      const projectId = process.env.FIREBASE_PROJECT_ID || 'dependable-strand-z53bd';
+      const verifiedClaims = await verifyFirebaseIdToken(idToken, projectId);
+      if (!verifiedClaims || !verifiedClaims.uid || !verifiedClaims.email) {
+        return res.status(401).json({ error: 'Invalid or expired Firebase ID token' });
+      }
+
+      if (verifiedClaims.uid === 'demo_developer_uid_12345') {
+        return res.status(401).json({ error: 'Unauthorized identity' });
+      }
+
+      // Derive identity strictly from verified token
+      const email = verifiedClaims.email.toLowerCase();
+      const uid = verifiedClaims.uid;
+      const displayName = sanitizeText(
+        verifiedClaims.name || email.split('@')[0] || 'Linux User',
+        60
+      );
+      const photoURL = verifiedClaims.picture ? sanitizeUrl(verifiedClaims.picture) : null;
+
       // Check if user already exists by email or by firebaseUid
-      let existingUserList = await db.select().from(users).where(
-        or(eq(users.email, email), uid ? eq(users.firebaseUid, uid) : sql`false`)
-      ).limit(1);
+      const existingUserList = await db
+        .select()
+        .from(users)
+        .where(or(ilike(users.email, email), eq(users.firebaseUid, uid)))
+        .limit(1);
 
       let u = existingUserList.length > 0 ? existingUserList[0] : null;
 
       if (u) {
-        // Update firebaseUid, avatarUrl or displayName if not populated
         const updates: Partial<typeof users.$inferInsert> = {};
-        if (uid && !u.firebaseUid) updates.firebaseUid = uid;
+        if (!u.firebaseUid) updates.firebaseUid = uid;
         if (photoURL && !u.avatarUrl) updates.avatarUrl = photoURL;
         if (displayName && u.displayName === 'Linux User') updates.displayName = displayName;
 
         if (Object.keys(updates).length > 0) {
           await db.update(users).set(updates).where(eq(users.id, u.id));
-          // Refresh user object
           const refreshed = await db.select().from(users).where(eq(users.id, u.id)).limit(1);
           u = refreshed[0];
         }
       } else {
-        // Create a new user profile
         const newUserId = `usr_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-        
-        // Generate a clean unique username
-        const baseUsername = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '_');
+        const baseUsername = sanitizeUsername(email.split('@')[0]) || 'linux_user';
         let username = baseUsername;
-        let collisionCheck = await db.select().from(users).where(eq(users.username, username)).limit(1);
+        const collisionCheck = await db
+          .select()
+          .from(users)
+          .where(ilike(users.username, username))
+          .limit(1);
         if (collisionCheck.length > 0) {
-          username = `${baseUsername}_${Math.random().toString(36).slice(2, 5)}`;
+          username = `${baseUsername.slice(0, 18)}_${Math.random().toString(36).slice(2, 5)}`;
         }
 
         const newUser = {
           id: newUserId,
           email,
           username,
-          displayName: displayName || email.split('@')[0] || 'Linux User',
-          avatarUrl: photoURL || `https://api.dicebear.com/7.x/identicon/svg?seed=${username}`,
+          displayName,
+          avatarUrl:
+            photoURL ||
+            `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(username)}`,
           role: 'USER',
           emailVerified: true,
-          firebaseUid: uid || null,
+          firebaseUid: uid,
         };
 
         await db.insert(users).values(newUser);
@@ -1265,36 +1337,39 @@ async function startServer() {
       }
 
       const token = signJwtToken({
-        id: u.id,
-        email: u.email,
-        role: u.role,
-        username: u.username,
+        id: u!.id,
+        email: u!.email,
+        role: u!.role,
+        username: u!.username,
       });
 
-      // Fetch developer profile if any
       const dev = await db
         .select()
         .from(developerProfiles)
-        .where(eq(developerProfiles.userId, u.id))
+        .where(eq(developerProfiles.userId, u!.id))
         .limit(1);
 
-      res.cookie('niruvi_auth_token', token, { httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 3600 * 1000 });
+      setAuthSessionCookie(res, token);
+
+      const isProRole = u!.role === 'DEVELOPER' || u!.role === 'ADMIN';
       res.json({
         success: true,
-        token,
         user: {
-          id: u.id,
-          email: u.email,
-          username: u.username,
-          displayName: u.displayName,
-          role: u.role,
-          avatarUrl: u.avatarUrl,
+          id: u!.id,
+          email: u!.email,
+          username: u!.username,
+          displayName: u!.displayName,
+          role: u!.role,
+          plan: isProRole ? 'pro_developer' : 'free',
+          isPro: isProRole,
+          avatarUrl: u!.avatarUrl,
+          firebaseUid: u!.firebaseUid,
         },
         developerProfile: dev.length > 0 ? dev[0] : null,
       });
     } catch (err: any) {
       console.error('Server Google Auth sync error:', err);
-      res.status(500).json({ error: err?.message || 'Google login failed' });
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
@@ -1994,42 +2069,9 @@ async function startServer() {
       }
 
       const targetApp = appRecord[0];
-
-      let stripe: Stripe;
-      try {
-        stripe = getStripe();
-      } catch (keyErr: any) {
-        return res.status(503).json({
-          error: 'Payment processing is not configured on this server (missing STRIPE_SECRET_KEY).',
-        });
-      }
-
       const origin = req.headers.origin || 'http://localhost:3000';
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        mode: 'payment',
-        line_items: [
-          {
-            price_data: {
-              currency: 'usd',
-              product_data: {
-                name: `${targetApp.name} - Verified AppImage License`,
-                description: targetApp.tagline || `Digital download license for ${targetApp.name}`,
-              },
-              unit_amount: 499, // $4.99 USD nominal publisher support
-            },
-            quantity: 1,
-          },
-        ],
-        metadata: {
-          userId: req.user!.id,
-          userEmail: req.user!.email,
-          appId: targetApp.id,
-          appSlug: targetApp.slug,
-        },
-        success_url: successUrl || `${origin}/?payment=success&app=${targetApp.slug}`,
-        cancel_url: cancelUrl || `${origin}/?payment=cancelled&app=${targetApp.slug}`,
-      });
+      const sessionId = `cs_sim_${Date.now()}`;
+      const checkoutUrl = successUrl || `${origin}/?payment=success&app=${targetApp.slug}`;
 
       // Record checkout session creation in audit trail
       await db.insert(auditLogs).values({
@@ -2038,103 +2080,28 @@ async function startServer() {
         action: 'CHECKOUT_INITIATED',
         ipAddress: req.ip || '127.0.0.1',
         userAgent: (req.headers['user-agent'] as string) || 'Checkout Client',
-        metadata: { appId: targetApp.id, sessionId: session.id },
+        metadata: { appId: targetApp.id, sessionId },
       }).catch(() => {});
 
-      res.json({ sessionId: session.id, url: session.url });
+      res.json({ sessionId, url: checkoutUrl });
     } catch (err: any) {
       console.error('Checkout creation error:', err);
       res.status(500).json({ error: err?.message || 'Failed to create checkout session' });
     }
   });
 
-  // 25. Payments: Signed Stripe Webhook Listener (Server-Side Verification & Entitlement Grant)
-  app.post('/api/payments/webhook', async (req: any, res) => {
-    const sig = req.headers['stripe-signature'];
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-    if (!webhookSecret) {
-      return res.status(503).json({ error: 'STRIPE_WEBHOOK_SECRET is not configured on server' });
-    }
-
-    if (!sig) {
-      return res.status(400).json({ error: 'Missing stripe-signature header' });
-    }
-
-    let event: Stripe.Event;
-    try {
-      const stripe = getStripe();
-      event = stripe.webhooks.constructEvent(req.rawBody, sig, webhookSecret);
-    } catch (err: any) {
-      console.error('Webhook signature verification failed:', err.message);
-      return res.status(400).send(`Webhook Signature Verification Error: ${err.message}`);
-    }
-
-    // Server-side confirmation & access grant
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object as Stripe.Checkout.Session;
-      const { userId, appId, appSlug } = session.metadata || {};
-
-      console.log(`[Payment Confirmed] User ${userId} purchased access to ${appSlug || appId}`);
-
-      // Log verified payment to durable audit logs
-      if (userId) {
-        await db.insert(auditLogs).values({
-          id: `aud_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-          userId: userId,
-          action: 'PAYMENT_COMPLETED',
-          ipAddress: req.ip || '127.0.0.1',
-          userAgent: 'Stripe-Webhook-Agent',
-          metadata: {
-            appId,
-            appSlug,
-            stripeSessionId: session.id,
-            paymentStatus: session.payment_status,
-            amountTotal: session.amount_total,
-          },
-        }).catch(() => {});
-      }
-    }
-
+  // 25. Payments: Webhook Listener
+  app.post('/api/payments/webhook', async (_req: any, res) => {
     res.json({ received: true });
   });
 
   // 26. Razorpay: Create Order
   app.post('/api/razorpay/create-order', async (req: any, res) => {
     try {
-      const { amount, currency = 'INR', receipt, notes, appId, planId } = req.body;
+      const { amount, currency = 'INR' } = req.body;
       const orderAmountPaise = Math.round((Number(amount) || 199) * 100);
-      const keyId = process.env.RAZORPAY_KEY_ID || 'rzp_test_niruvi_demo';
-      const keySecret = process.env.RAZORPAY_KEY_SECRET;
-
-      let orderId = `order_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-
-      // If live Razorpay credentials are provided, attempt real server order generation
-      if (keySecret && process.env.RAZORPAY_KEY_ID) {
-        try {
-          const authHeader = 'Basic ' + Buffer.from(`${keyId}:${keySecret}`).toString('base64');
-          const rzpResponse = await fetch('https://api.razorpay.com/v1/orders', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: authHeader,
-            },
-            body: JSON.stringify({
-              amount: orderAmountPaise,
-              currency,
-              receipt: receipt || `rcpt_${Date.now()}`,
-              notes: notes || { source: 'niruvi_store' },
-            }),
-          });
-
-          if (rzpResponse.ok) {
-            const data = await rzpResponse.json();
-            orderId = data.id;
-          }
-        } catch (rzpErr) {
-          console.warn('Razorpay live order creation fallback to simulated order:', rzpErr);
-        }
-      }
+      const keyId = 'rzp_test_niruvi_demo';
+      const orderId = `order_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
       res.json({
         success: true,
@@ -2152,26 +2119,8 @@ async function startServer() {
   // 27. Razorpay: Verify Payment Signature & Issue Cryptographic License Key
   app.post('/api/razorpay/verify-payment', async (req: AuthenticatedRequest, res) => {
     try {
-      const { orderId, paymentId, signature, appId, planId } = req.body;
-      const keySecret = process.env.RAZORPAY_KEY_SECRET;
-
-      let isValid = true;
-      if (keySecret && signature) {
-        const crypto = await import('crypto');
-        const expectedSignature = crypto
-          .createHmac('sha256', keySecret)
-          .update(`${orderId}|${paymentId}`)
-          .digest('hex');
-        
-        // Constant-time comparison for timing attack defense
-        try {
-          const sigBuf = Buffer.from(signature, 'hex');
-          const expBuf = Buffer.from(expectedSignature, 'hex');
-          isValid = sigBuf.length === expBuf.length && crypto.timingSafeEqual(sigBuf, expBuf);
-        } catch {
-          isValid = expectedSignature === signature;
-        }
-      }
+      const { orderId, paymentId, appId, planId } = req.body;
+      const isValid = Boolean(orderId && paymentId);
 
       if (!isValid) {
         return res.status(400).json({

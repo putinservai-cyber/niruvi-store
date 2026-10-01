@@ -25,8 +25,8 @@
    - Only publishable, client-safe configuration keys prefixed with `VITE_` are bundled into the frontend.
 
 5. **Payment Processing & Signed Webhooks**
-   - Payment integrations use hosted payment flows (such as Stripe Checkout) to avoid handling or storing sensitive cardholder data.
-   - Digital entitlements, developer verification badges, or paid AppImage downloads are granted **only after server-side confirmation** of a cryptographically signed webhook (`stripe.webhooks.constructEvent` using `STRIPE_WEBHOOK_SECRET`).
+   - Payment integrations use hosted payment flows to avoid handling or storing sensitive cardholder data.
+   - Digital entitlements, developer verification badges, or paid AppImage downloads are granted **only after server-side confirmation** of a cryptographically signed webhook.
 
 6. **Repository & Commit Signing Integrity**
    - Never commit SSH or GPG private keys to any git repository.

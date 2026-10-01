@@ -51,7 +51,7 @@
       "agents"
     ],
     "featured": true,
-    "downloadsCount": 42154,
+    "downloadsCount": 23082,
     "rating": 4.8,
     "changelog": [
       "Version 1.16.1 AppImage release build"
@@ -108,7 +108,7 @@
       "notes"
     ],
     "featured": true,
-    "downloadsCount": 29952,
+    "downloadsCount": 39263,
     "rating": 4.8,
     "changelog": [
       "Version 0.56.9 AppImage release build"
@@ -165,7 +165,7 @@
       "local-first"
     ],
     "featured": true,
-    "downloadsCount": 15293,
+    "downloadsCount": 40271,
     "rating": 4.8,
     "changelog": [
       "Version 0.14.1 AppImage release build"
@@ -222,7 +222,7 @@
       "utilities"
     ],
     "featured": true,
-    "downloadsCount": 22294,
+    "downloadsCount": 53341,
     "rating": 4.8,
     "changelog": [
       "Version 3.0.0 AppImage release build"
@@ -280,7 +280,7 @@
       "sculpting"
     ],
     "featured": true,
-    "downloadsCount": 50190,
+    "downloadsCount": 42077,
     "rating": 4.8,
     "changelog": [
       "Version 4.3.2 AppImage release build"
@@ -338,7 +338,7 @@
       "cycles"
     ],
     "featured": true,
-    "downloadsCount": 10426,
+    "downloadsCount": 50075,
     "rating": 4.8,
     "changelog": [
       "Version 4.2.23 LTS AppImage release build"
@@ -395,7 +395,7 @@
       "cemu"
     ],
     "featured": true,
-    "downloadsCount": 36062,
+    "downloadsCount": 41578,
     "rating": 4.8,
     "changelog": [
       "Version 2.6 AppImage release build"
@@ -454,7 +454,7 @@
       "llm-client"
     ],
     "featured": true,
-    "downloadsCount": 25511,
+    "downloadsCount": 51103,
     "rating": 4.8,
     "changelog": [
       "Version 2.0.12 AppImage release build"
@@ -512,7 +512,7 @@
       "images"
     ],
     "featured": true,
-    "downloadsCount": 19418,
+    "downloadsCount": 38161,
     "rating": 4.8,
     "changelog": [
       "Version 8.4.0 AppImage release build"
@@ -569,7 +569,7 @@
       "dolphin"
     ],
     "featured": true,
-    "downloadsCount": 32060,
+    "downloadsCount": 23251,
     "rating": 4.8,
     "changelog": [
       "Version 2412 AppImage release build"
@@ -628,7 +628,7 @@
       "retro"
     ],
     "featured": true,
-    "downloadsCount": 48389,
+    "downloadsCount": 31826,
     "rating": 4.8,
     "changelog": [
       "Version 0.1-9240 AppImage release build"
@@ -686,7 +686,7 @@
       "art"
     ],
     "featured": true,
-    "downloadsCount": 13669,
+    "downloadsCount": 53641,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0-nightly AppImage release build"
@@ -744,7 +744,7 @@
       "csharp"
     ],
     "featured": true,
-    "downloadsCount": 58806,
+    "downloadsCount": 49523,
     "rating": 4.8,
     "changelog": [
       "Version 4.3.0 AppImage release build"
@@ -801,7 +801,7 @@
       "offline-first"
     ],
     "featured": true,
-    "downloadsCount": 48876,
+    "downloadsCount": 22579,
     "rating": 4.8,
     "changelog": [
       "Version 0.8.4 AppImage release build"
@@ -859,7 +859,7 @@
       "argon2"
     ],
     "featured": true,
-    "downloadsCount": 27880,
+    "downloadsCount": 12608,
     "rating": 4.8,
     "changelog": [
       "Version 2.7.9 AppImage release build"
@@ -917,7 +917,7 @@
       "engineering"
     ],
     "featured": true,
-    "downloadsCount": 25881,
+    "downloadsCount": 22286,
     "rating": 4.8,
     "changelog": [
       "Version 8.0.8 AppImage release build"
@@ -975,7 +975,7 @@
       "sketch"
     ],
     "featured": true,
-    "downloadsCount": 51667,
+    "downloadsCount": 44733,
     "rating": 4.8,
     "changelog": [
       "Version 5.2.6 AppImage release build"
@@ -1033,7 +1033,7 @@
       "writer"
     ],
     "featured": true,
-    "downloadsCount": 19143,
+    "downloadsCount": 23904,
     "rating": 4.8,
     "changelog": [
       "Version 24.8.5 AppImage release build"
@@ -1091,7 +1091,7 @@
       "utilities"
     ],
     "featured": true,
-    "downloadsCount": 33776,
+    "downloadsCount": 10539,
     "rating": 4.8,
     "changelog": [
       "Version 10.5 AppImage release build"
@@ -1148,7 +1148,7 @@
       "privacy"
     ],
     "featured": true,
-    "downloadsCount": 45034,
+    "downloadsCount": 13056,
     "rating": 4.8,
     "changelog": [
       "Version 1.18.2 AppImage release build"
@@ -1207,7 +1207,7 @@
       "notes"
     ],
     "featured": true,
-    "downloadsCount": 32886,
+    "downloadsCount": 47200,
     "rating": 4.8,
     "changelog": [
       "Version 2.0.1 AppImage release build"
@@ -1266,7 +1266,7 @@
       "midi"
     ],
     "featured": true,
-    "downloadsCount": 56486,
+    "downloadsCount": 18578,
     "rating": 4.8,
     "changelog": [
       "Version 4.7.4 AppImage release build"
@@ -1324,7 +1324,7 @@
       "youtube"
     ],
     "featured": true,
-    "downloadsCount": 37046,
+    "downloadsCount": 37276,
     "rating": 4.8,
     "changelog": [
       "Version 31.0.1 AppImage release build"
@@ -1380,7 +1380,7 @@
       "second-brain"
     ],
     "featured": true,
-    "downloadsCount": 14170,
+    "downloadsCount": 22062,
     "rating": 4.8,
     "changelog": [
       "Version 1.8.2 AppImage release build"
@@ -1437,7 +1437,7 @@
       "classics"
     ],
     "featured": true,
-    "downloadsCount": 27451,
+    "downloadsCount": 31270,
     "rating": 4.8,
     "changelog": [
       "Version 2.8.2 AppImage release build"
@@ -1494,7 +1494,7 @@
       "updater"
     ],
     "featured": true,
-    "downloadsCount": 29453,
+    "downloadsCount": 32910,
     "rating": 4.8,
     "changelog": [
       "Version 0.1.12 AppImage release build"
@@ -1552,7 +1552,7 @@
       "netplay"
     ],
     "featured": true,
-    "downloadsCount": 50738,
+    "downloadsCount": 22929,
     "rating": 4.8,
     "changelog": [
       "Version 1.19.1 AppImage release build"
@@ -1609,7 +1609,7 @@
       "vulkan"
     ],
     "featured": true,
-    "downloadsCount": 58153,
+    "downloadsCount": 12594,
     "rating": 4.8,
     "changelog": [
       "Version 0.0.42 AppImage release build"
@@ -1668,7 +1668,7 @@
       "games"
     ],
     "featured": true,
-    "downloadsCount": 47296,
+    "downloadsCount": 46500,
     "rating": 4.8,
     "changelog": [
       "Version 0.1.25 AppImage release build"
@@ -1725,7 +1725,7 @@
       "color-grading"
     ],
     "featured": true,
-    "downloadsCount": 59670,
+    "downloadsCount": 12118,
     "rating": 4.8,
     "changelog": [
       "Version 26.8.1 AppImage release build"
@@ -1782,7 +1782,7 @@
       "messaging"
     ],
     "featured": true,
-    "downloadsCount": 53879,
+    "downloadsCount": 54553,
     "rating": 4.8,
     "changelog": [
       "Version 7.39.0 AppImage release build"
@@ -1839,7 +1839,7 @@
       "media"
     ],
     "featured": true,
-    "downloadsCount": 43475,
+    "downloadsCount": 59826,
     "rating": 4.8,
     "changelog": [
       "Version 1.2.95.453 AppImage release build"
@@ -1896,7 +1896,7 @@
       "cloud"
     ],
     "featured": true,
-    "downloadsCount": 11002,
+    "downloadsCount": 23353,
     "rating": 4.8,
     "changelog": [
       "Version 5.8.3 AppImage release build"
@@ -1953,7 +1953,7 @@
       "super-resolution"
     ],
     "featured": true,
-    "downloadsCount": 29805,
+    "downloadsCount": 23266,
     "rating": 4.8,
     "changelog": [
       "Version 2.15.0 AppImage release build"
@@ -2010,7 +2010,7 @@
       "subtitles"
     ],
     "featured": true,
-    "downloadsCount": 17521,
+    "downloadsCount": 12830,
     "rating": 4.8,
     "changelog": [
       "Version 3.0.21 AppImage release build"
@@ -2071,7 +2071,7 @@
       "golang"
     ],
     "featured": true,
-    "downloadsCount": 26255,
+    "downloadsCount": 20585,
     "rating": 4.8,
     "changelog": [
       "Version 1.96.2 AppImage release build"
@@ -2119,7 +2119,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 15572,
+    "downloadsCount": 57050,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -2167,7 +2167,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 29458,
+    "downloadsCount": 25828,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -2225,7 +2225,7 @@
       "dev"
     ],
     "featured": false,
-    "downloadsCount": 52139,
+    "downloadsCount": 11733,
     "rating": 4.8,
     "changelog": [
       "Version 2.0.0 AppImage release build"
@@ -2282,7 +2282,7 @@
       "binary"
     ],
     "featured": false,
-    "downloadsCount": 14398,
+    "downloadsCount": 58016,
     "rating": 4.8,
     "changelog": [
       "Version 2.0.0 AppImage release build"
@@ -2340,7 +2340,7 @@
       "cli"
     ],
     "featured": false,
-    "downloadsCount": 31934,
+    "downloadsCount": 20117,
     "rating": 4.8,
     "changelog": [
       "Version 1.7.0 AppImage release build"
@@ -2398,7 +2398,7 @@
       "midi"
     ],
     "featured": false,
-    "downloadsCount": 53494,
+    "downloadsCount": 52588,
     "rating": 4.8,
     "changelog": [
       "Version 8.6.0 AppImage release build"
@@ -2456,7 +2456,7 @@
       "effects"
     ],
     "featured": false,
-    "downloadsCount": 30259,
+    "downloadsCount": 54236,
     "rating": 4.8,
     "changelog": [
       "Version 3.7.1 AppImage release build"
@@ -2515,7 +2515,7 @@
       "lighting"
     ],
     "featured": false,
-    "downloadsCount": 26314,
+    "downloadsCount": 47245,
     "rating": 4.8,
     "changelog": [
       "Version 1.4.0 AppImage release build"
@@ -2573,7 +2573,7 @@
       "utility"
     ],
     "featured": false,
-    "downloadsCount": 10635,
+    "downloadsCount": 54891,
     "rating": 4.8,
     "changelog": [
       "Version 1.19.21 AppImage release build"
@@ -2621,7 +2621,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 28846,
+    "downloadsCount": 14498,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -2678,7 +2678,7 @@
       "cache"
     ],
     "featured": false,
-    "downloadsCount": 16069,
+    "downloadsCount": 22865,
     "rating": 4.8,
     "changelog": [
       "Version 6.0.3 AppImage release build"
@@ -2726,7 +2726,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 13402,
+    "downloadsCount": 18047,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -2782,7 +2782,7 @@
       "messaging"
     ],
     "featured": false,
-    "downloadsCount": 40659,
+    "downloadsCount": 26753,
     "rating": 4.8,
     "changelog": [
       "Version 2.61.0 AppImage release build"
@@ -2837,7 +2837,7 @@
       "assistant"
     ],
     "featured": false,
-    "downloadsCount": 52189,
+    "downloadsCount": 16785,
     "rating": 4.8,
     "changelog": [
       "Version 2.4.1 AppImage release build"
@@ -2892,7 +2892,7 @@
       "desktop-client"
     ],
     "featured": false,
-    "downloadsCount": 32120,
+    "downloadsCount": 10476,
     "rating": 4.8,
     "changelog": [
       "Version 1.2.0 AppImage release build"
@@ -2950,7 +2950,7 @@
       "color-grading"
     ],
     "featured": false,
-    "downloadsCount": 34184,
+    "downloadsCount": 30987,
     "rating": 4.8,
     "changelog": [
       "Version 5.6.1 AppImage release build"
@@ -3009,7 +3009,7 @@
       "audio"
     ],
     "featured": false,
-    "downloadsCount": 29371,
+    "downloadsCount": 42310,
     "rating": 4.8,
     "changelog": [
       "Version 7.1.320 AppImage release build"
@@ -3057,7 +3057,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 26402,
+    "downloadsCount": 59352,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -3105,7 +3105,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 47531,
+    "downloadsCount": 27802,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -3162,7 +3162,7 @@
       "collaboration"
     ],
     "featured": false,
-    "downloadsCount": 47162,
+    "downloadsCount": 28152,
     "rating": 4.8,
     "changelog": [
       "Version 1.11.89 AppImage release build"
@@ -3210,7 +3210,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 39525,
+    "downloadsCount": 29226,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -3258,7 +3258,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 55874,
+    "downloadsCount": 51898,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -3306,7 +3306,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 48845,
+    "downloadsCount": 33403,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -3364,7 +3364,7 @@
       "mechanical"
     ],
     "featured": false,
-    "downloadsCount": 33550,
+    "downloadsCount": 37011,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -3421,7 +3421,7 @@
       "media"
     ],
     "featured": false,
-    "downloadsCount": 57752,
+    "downloadsCount": 59029,
     "rating": 4.8,
     "changelog": [
       "Version 0.25.3 AppImage release build"
@@ -3469,7 +3469,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 31951,
+    "downloadsCount": 47465,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -3526,7 +3526,7 @@
       "photoshop-alternative"
     ],
     "featured": false,
-    "downloadsCount": 12192,
+    "downloadsCount": 49252,
     "rating": 4.8,
     "changelog": [
       "Version 2.10.38 AppImage release build"
@@ -3574,7 +3574,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 46537,
+    "downloadsCount": 42664,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -3622,7 +3622,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 49016,
+    "downloadsCount": 38995,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -3679,7 +3679,7 @@
       "gui"
     ],
     "featured": false,
-    "downloadsCount": 24499,
+    "downloadsCount": 15346,
     "rating": 4.8,
     "changelog": [
       "Version 2.0.0 AppImage release build"
@@ -3727,7 +3727,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 17128,
+    "downloadsCount": 12781,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -3775,7 +3775,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 18637,
+    "downloadsCount": 51969,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -3823,7 +3823,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 28501,
+    "downloadsCount": 43061,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -3881,7 +3881,7 @@
       "exif"
     ],
     "featured": false,
-    "downloadsCount": 17893,
+    "downloadsCount": 16198,
     "rating": 4.8,
     "changelog": [
       "Version 24.12.3 AppImage release build"
@@ -3939,7 +3939,7 @@
       "encoder"
     ],
     "featured": false,
-    "downloadsCount": 18981,
+    "downloadsCount": 51629,
     "rating": 4.8,
     "changelog": [
       "Version 1.9.0 AppImage release build"
@@ -3996,7 +3996,7 @@
       "terminal"
     ],
     "featured": false,
-    "downloadsCount": 55178,
+    "downloadsCount": 40217,
     "rating": 4.8,
     "changelog": [
       "Version 25.07.1 AppImage release build"
@@ -4044,7 +4044,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 31597,
+    "downloadsCount": 50365,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -4102,7 +4102,7 @@
       "typography"
     ],
     "featured": false,
-    "downloadsCount": 22324,
+    "downloadsCount": 41888,
     "rating": 4.8,
     "changelog": [
       "Version 1.4.0 AppImage release build"
@@ -4150,7 +4150,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 28176,
+    "downloadsCount": 20559,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -4198,7 +4198,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 37980,
+    "downloadsCount": 32610,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -4256,7 +4256,7 @@
       "organization"
     ],
     "featured": false,
-    "downloadsCount": 13614,
+    "downloadsCount": 59907,
     "rating": 4.8,
     "changelog": [
       "Version 3.2.11 AppImage release build"
@@ -4314,7 +4314,7 @@
       "git"
     ],
     "featured": false,
-    "downloadsCount": 32987,
+    "downloadsCount": 13134,
     "rating": 4.8,
     "changelog": [
       "Version 24.12.3 AppImage release build"
@@ -4372,7 +4372,7 @@
       "multitrack"
     ],
     "featured": false,
-    "downloadsCount": 47040,
+    "downloadsCount": 43506,
     "rating": 4.8,
     "changelog": [
       "Version 24.12.1 AppImage release build"
@@ -4430,7 +4430,7 @@
       "kde"
     ],
     "featured": false,
-    "downloadsCount": 50050,
+    "downloadsCount": 35611,
     "rating": 4.8,
     "changelog": [
       "Version 24.12.3 AppImage release build"
@@ -4478,7 +4478,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 36615,
+    "downloadsCount": 28184,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -4536,7 +4536,7 @@
       "kde"
     ],
     "featured": false,
-    "downloadsCount": 50168,
+    "downloadsCount": 26161,
     "rating": 4.8,
     "changelog": [
       "Version 24.12.3 AppImage release build"
@@ -4594,7 +4594,7 @@
       "streams"
     ],
     "featured": false,
-    "downloadsCount": 14882,
+    "downloadsCount": 57842,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -4642,7 +4642,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 22433,
+    "downloadsCount": 25310,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -4690,7 +4690,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 10407,
+    "downloadsCount": 10467,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -4748,7 +4748,7 @@
       "audio"
     ],
     "featured": false,
-    "downloadsCount": 32629,
+    "downloadsCount": 40009,
     "rating": 4.8,
     "changelog": [
       "Version 1.2.2 AppImage release build"
@@ -4805,7 +4805,7 @@
       "preview"
     ],
     "featured": false,
-    "downloadsCount": 34093,
+    "downloadsCount": 51763,
     "rating": 4.8,
     "changelog": [
       "Version 0.19.1 AppImage release build"
@@ -4853,7 +4853,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 58956,
+    "downloadsCount": 54750,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -4901,7 +4901,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 25594,
+    "downloadsCount": 15357,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -4949,7 +4949,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 36819,
+    "downloadsCount": 40430,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -4997,7 +4997,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 43833,
+    "downloadsCount": 14389,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -5055,7 +5055,7 @@
       "kde"
     ],
     "featured": false,
-    "downloadsCount": 54500,
+    "downloadsCount": 15493,
     "rating": 4.8,
     "changelog": [
       "Version 24.12.3 AppImage release build"
@@ -5103,7 +5103,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 54102,
+    "downloadsCount": 52580,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -5160,7 +5160,7 @@
       "titles"
     ],
     "featured": false,
-    "downloadsCount": 39246,
+    "downloadsCount": 15054,
     "rating": 4.8,
     "changelog": [
       "Version 4.0.0 AppImage release build"
@@ -5208,7 +5208,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 36175,
+    "downloadsCount": 47154,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -5266,7 +5266,7 @@
       "file-manager"
     ],
     "featured": false,
-    "downloadsCount": 51391,
+    "downloadsCount": 31771,
     "rating": 4.8,
     "changelog": [
       "Version 10.1.0 AppImage release build"
@@ -5324,7 +5324,7 @@
       "3d"
     ],
     "featured": false,
-    "downloadsCount": 49089,
+    "downloadsCount": 31465,
     "rating": 4.8,
     "changelog": [
       "Version 7.2.4 AppImage release build"
@@ -5381,7 +5381,7 @@
       "ppsspp"
     ],
     "featured": false,
-    "downloadsCount": 12062,
+    "downloadsCount": 34374,
     "rating": 4.8,
     "changelog": [
       "Version 1.18.1 AppImage release build"
@@ -5438,7 +5438,7 @@
       "filesharing"
     ],
     "featured": false,
-    "downloadsCount": 36511,
+    "downloadsCount": 42165,
     "rating": 4.8,
     "changelog": [
       "Version 5.2.3 AppImage release build"
@@ -5496,7 +5496,7 @@
       "data"
     ],
     "featured": false,
-    "downloadsCount": 22550,
+    "downloadsCount": 37422,
     "rating": 4.8,
     "changelog": [
       "Version 3.38.3 AppImage release build"
@@ -5544,7 +5544,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 31318,
+    "downloadsCount": 36521,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -5592,7 +5592,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 42022,
+    "downloadsCount": 21143,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -5650,7 +5650,7 @@
       "fun"
     ],
     "featured": false,
-    "downloadsCount": 50928,
+    "downloadsCount": 43704,
     "rating": 4.8,
     "changelog": [
       "Version 1.4.0 AppImage release build"
@@ -5698,7 +5698,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 14255,
+    "downloadsCount": 39177,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -5746,7 +5746,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 26590,
+    "downloadsCount": 43829,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -5802,7 +5802,7 @@
       "download"
     ],
     "featured": false,
-    "downloadsCount": 56808,
+    "downloadsCount": 56271,
     "rating": 4.8,
     "changelog": [
       "Version 4.0.6 AppImage release build"
@@ -5850,7 +5850,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 12120,
+    "downloadsCount": 21152,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -5898,7 +5898,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 54572,
+    "downloadsCount": 58865,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -5946,7 +5946,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 56069,
+    "downloadsCount": 40570,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -5994,7 +5994,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 11795,
+    "downloadsCount": 34297,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -6042,7 +6042,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 53717,
+    "downloadsCount": 13446,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -6090,7 +6090,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 45433,
+    "downloadsCount": 36506,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"
@@ -6147,7 +6147,7 @@
       "audio"
     ],
     "featured": false,
-    "downloadsCount": 32453,
+    "downloadsCount": 20592,
     "rating": 4.8,
     "changelog": [
       "Version 0.1.19 AppImage release build"
@@ -6195,7 +6195,7 @@
       "appimage"
     ],
     "featured": false,
-    "downloadsCount": 11668,
+    "downloadsCount": 33104,
     "rating": 4.8,
     "changelog": [
       "Version 1.0.0 AppImage release build"

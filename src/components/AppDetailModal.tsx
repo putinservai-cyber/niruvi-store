@@ -4,6 +4,7 @@ import { AppMetadata } from '../types';
 import { AppIcon } from './AppIcon';
 import { generateNiruviProtocolUrl } from '../data/apps';
 import { useAuth } from '../context/AuthContext';
+import { sanitizeText, sanitizeUrl } from '../utils/sanitize';
 import {
   X,
   CheckCircle2,
@@ -105,6 +106,19 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [reviewSuccess, setReviewSuccess] = useState(false);
 
+  usePreventBodyScroll(!!app);
+
+  useEffect(() => {
+    if (!app) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [app, onClose]);
+
   useEffect(() => {
     if (!app) {
       setReviewsList([]);
@@ -135,23 +149,34 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!app) return;
-    if (!token) {
+    if (!user) {
       openAuthModal();
       return;
     }
+    const cleanTitle = sanitizeText(reviewTitle, 120);
+    const cleanBody = sanitizeText(reviewBody, 2000);
+    if (!cleanTitle || !cleanBody) {
+      setReviewError('Please enter both a review headline and body.');
+      return;
+    }
+
     setSubmittingReview(true);
     setReviewError(null);
     try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
       const res = await fetch(`/api/apps/${app.id}/reviews`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
+        headers,
         body: JSON.stringify({
           rating: reviewRating,
-          title: reviewTitle,
-          body: reviewBody,
+          title: cleanTitle,
+          body: cleanBody,
         }),
       });
       const data = await res.json();
@@ -171,17 +196,21 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
   };
 
   const handleHelpfulVote = async (reviewId: string) => {
-    if (!token) {
+    if (!user) {
       openAuthModal();
       return;
     }
     try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
       await fetch(`/api/reviews/${reviewId}/vote`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
+        headers,
         body: JSON.stringify({ isHelpful: true }),
       });
       setReviewsList((prev) =>
@@ -210,10 +239,13 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="app-detail-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div 
         id="app-detail-modal-container"
-        className="relative w-full max-w-4xl bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="relative w-full max-w-4xl bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto"
       >
         {/* Modal Header */}
         <div className="flex items-start justify-between p-6 border-b border-neutral-800 bg-neutral-900/50">
@@ -272,9 +304,9 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
                   </span>
                 )}
               </div>
-              <p className="text-sm text-neutral-300 mt-1">{app.tagline}</p>
+              <p className="text-sm text-neutral-300 mt-1">{sanitizeText(app.tagline, 300)}</p>
               <div className="flex items-center gap-3 text-xs text-neutral-400 mt-2 flex-wrap">
-                <span>By <strong className="text-neutral-200">{app.publisher.name}</strong></span>
+                <span>By <strong className="text-neutral-200">{sanitizeText(app.publisher.name, 100)}</strong></span>
                 <span>•</span>
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5" />
@@ -352,9 +384,9 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            {app.homepageUrl && (
+            {sanitizeUrl(app.homepageUrl) && (
               <a
-                href={app.homepageUrl}
+                href={sanitizeUrl(app.homepageUrl)}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-1 text-xs text-neutral-300 hover:text-white bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 px-3 py-2 rounded-lg transition-colors"
@@ -363,9 +395,9 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
                 <span>Website</span>
               </a>
             )}
-            {app.sourceUrl && (
+            {sanitizeUrl(app.sourceUrl) && (
               <a
-                href={app.sourceUrl}
+                href={sanitizeUrl(app.sourceUrl)}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-1 text-xs text-neutral-300 hover:text-white bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 px-3 py-2 rounded-lg transition-colors"
@@ -375,9 +407,9 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
                 <span>Repository</span>
               </a>
             )}
-            {app.releasesUrl && (
+            {sanitizeUrl(app.releasesUrl) && (
               <a
-                href={app.releasesUrl}
+                href={sanitizeUrl(app.releasesUrl)}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-1 text-xs text-neutral-300 hover:text-white bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 px-3 py-2 rounded-lg transition-colors"
@@ -387,9 +419,9 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
                 <span>Releases</span>
               </a>
             )}
-            {getOfficialSponsorUrl(app) && (
+            {sanitizeUrl(getOfficialSponsorUrl(app)) && (
               <a
-                href={getOfficialSponsorUrl(app)!}
+                href={sanitizeUrl(getOfficialSponsorUrl(app))}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-semibold transition-colors"
@@ -472,9 +504,9 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
             <>
               {/* Description */}
               <div className="space-y-2">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">About {app.name}</h4>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">About {sanitizeText(app.name, 100)}</h4>
                 <p className="text-sm leading-relaxed text-neutral-200">
-                  {app.description}
+                  {sanitizeText(app.description, 4000)}
                 </p>
               </div>
 
@@ -774,10 +806,10 @@ chmod +x "${appImageFileName}"
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-full bg-neutral-800 flex items-center justify-center text-[10px] font-bold text-white">
-                            {(rev.userDisplayName || 'Linux User').slice(0, 2).toUpperCase()}
+                            {sanitizeText(rev.userDisplayName || 'Linux User', 60).slice(0, 2).toUpperCase()}
                           </div>
                           <span className="text-xs font-medium text-white">
-                            {rev.userDisplayName || 'Linux User'}
+                            {sanitizeText(rev.userDisplayName || 'Linux User', 60)}
                           </span>
                           {rev.isVerifiedPurchase && (
                             <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
@@ -798,8 +830,8 @@ chmod +x "${appImageFileName}"
                           ))}
                         </div>
                       </div>
-                      <h5 className="text-xs font-semibold text-neutral-200">{rev.title}</h5>
-                      <p className="text-xs text-neutral-400 leading-relaxed">{rev.body}</p>
+                      <h5 className="text-xs font-semibold text-neutral-200">{sanitizeText(rev.title, 120)}</h5>
+                      <p className="text-xs text-neutral-400 leading-relaxed">{sanitizeText(rev.body, 2000)}</p>
                       <div className="flex items-center justify-between pt-1 text-[11px] text-neutral-500">
                         <span>{new Date(rev.createdAt).toLocaleDateString()}</span>
                         <button

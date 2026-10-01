@@ -3,6 +3,7 @@ import { AppMetadata, Category, Architecture } from '../types';
 import { generateNiruviProtocolUrl } from '../data/apps';
 import { saveCustomApp } from '../utils/storage';
 import { useAuth } from '../context/AuthContext';
+import { sanitizeText, sanitizeUrl } from '../utils/sanitize';
 import { 
   PlusCircle, 
   Check, 
@@ -24,7 +25,7 @@ export const SubmitAppView: React.FC<SubmitAppViewProps> = ({
   onAppAdded,
   onNavigateToStore,
 }) => {
-  const { token } = useAuth();
+  const { user, token } = useAuth();
   const [name, setName] = useState('');
   const [downloadUrl, setDownloadUrl] = useState('');
   const [version, setVersion] = useState('');
@@ -253,10 +254,14 @@ export const SubmitAppView: React.FC<SubmitAppViewProps> = ({
         const sizeMb = (appimageAsset.size / (1024 * 1024)).toFixed(1);
         setSize(`${sizeMb} MB`);
         
-        setTagline(data.name || `Latest release of ${repo}`);
-        setDescription(data.body ? data.body.slice(0, 500) + (data.body.length > 500 ? '...' : '') : `Latest stable release of ${repo} collected from GitHub.`);
-        setPublisherName(owner);
-        setHomepageUrl(`https://github.com/${owner}/${repo}`);
+        setTagline(sanitizeText(data.name || `Latest release of ${repo}`, 200));
+        setDescription(
+          data.body
+            ? sanitizeText(data.body, 500) + (data.body.length > 500 ? '...' : '')
+            : `Latest stable release of ${repo} collected from GitHub.`
+        );
+        setPublisherName(sanitizeText(owner, 80));
+        setHomepageUrl(sanitizeUrl(`https://github.com/${owner}/${repo}`));
         
         if (appimageAsset.name.toLowerCase().includes('aarch64') || appimageAsset.name.toLowerCase().includes('arm64')) {
           setArchitectures(['aarch64']);
@@ -298,10 +303,14 @@ export const SubmitAppView: React.FC<SubmitAppViewProps> = ({
         setName(repoName.charAt(0).toUpperCase() + repoName.slice(1));
         setDownloadUrl(directUrl);
         setVersion(latestRelease.tag_name.replace(/^v/i, ''));
-        setTagline(latestRelease.name || `Latest release of ${repoName}`);
-        setDescription(latestRelease.description ? latestRelease.description.slice(0, 500) : `Latest stable release of ${repoName} collected from GitLab.`);
-        setPublisherName(repo.split('/')[0] || 'GitLab Contributor');
-        setHomepageUrl(`https://gitlab.com/${repo}`);
+        setTagline(sanitizeText(latestRelease.name || `Latest release of ${repoName}`, 200));
+        setDescription(
+          latestRelease.description
+            ? sanitizeText(latestRelease.description, 500)
+            : `Latest stable release of ${repoName} collected from GitLab.`
+        );
+        setPublisherName(sanitizeText(repo.split('/')[0] || 'GitLab Contributor', 80));
+        setHomepageUrl(sanitizeUrl(`https://gitlab.com/${repo}`));
         setArchitectures(['x86_64']);
         
         setRepoFetchSuccess(`Successfully imported metadata for "${repoName}" from GitLab! Latest version is ${latestRelease.tag_name}.`);
@@ -327,27 +336,35 @@ export const SubmitAppView: React.FC<SubmitAppViewProps> = ({
   };
 
   // Generate preview metadata
+  const sanitizedDownloadUrl = sanitizeUrl(downloadUrl.trim()) || 'https://example.com/app.AppImage';
+  const sanitizedHomepageUrl = sanitizeUrl(homepageUrl.trim());
   const previewApp: AppMetadata = {
-    id: name.toLowerCase().replace(/[^a-z0-9]/g, '-') || 'custom-app',
-    name: name || 'My Linux Application',
-    tagline: tagline || 'High-performance Linux desktop application distributed via AppImage',
-    description: description || 'No detailed description provided.',
+    id: sanitizeText(name, 80).toLowerCase().replace(/[^a-z0-9]/g, '-') || 'custom-app',
+    name: sanitizeText(name, 80) || 'My Linux Application',
+    tagline: sanitizeText(tagline, 200) || 'High-performance Linux desktop application distributed via AppImage',
+    description: sanitizeText(description, 2000) || 'No detailed description provided.',
     category,
-    version: version || '1.0.0',
+    version: sanitizeText(version, 40) || '1.0.0',
     releaseDate: new Date().toISOString().split('T')[0],
-    size: size || '50 MB',
+    size: sanitizeText(size, 30) || '50 MB',
     architectures,
-    license: license || 'GPL-3.0',
+    license: sanitizeText(license, 40) || 'GPL-3.0',
     licenseCategory: license.includes('MIT') || license.includes('Apache') || license.includes('BSD') ? 'Permissive' : 'Open Source',
     publisher: {
-      name: publisherName || 'Community Contributor',
-      website: homepageUrl || undefined,
+      name: sanitizeText(publisherName, 80) || 'Community Contributor',
+      website: sanitizedHomepageUrl || undefined,
       verified: false,
     },
     sha256: sha256.trim() || 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-    downloadUrl: downloadUrl.trim() || 'https://example.com/app.AppImage',
+    downloadUrl: sanitizedDownloadUrl,
+    homepageUrl: sanitizedHomepageUrl || undefined,
     iconSlug: 'default',
-    tags: tagsInput ? tagsInput.split(',').map((t) => t.trim().toLowerCase()) : ['appimage', 'linux'],
+    tags: tagsInput
+      ? tagsInput
+          .split(',')
+          .map((t) => sanitizeText(t, 30).toLowerCase())
+          .filter(Boolean)
+      : ['appimage', 'linux'],
     downloadsCount: 1,
     rating: 5.0,
     isUserAdded: true,
@@ -395,8 +412,8 @@ export const SubmitAppView: React.FC<SubmitAppViewProps> = ({
     saveCustomApp(submissionApp);
     onAppAdded(submissionApp);
 
-    // Also persist to backend Cloud SQL if user is authenticated
-    if (token) {
+    // Also persist to backend if user is authenticated
+    if (user || token) {
       try {
         const payload = {
           name: submissionApp.name,
@@ -409,19 +426,24 @@ export const SubmitAppView: React.FC<SubmitAppViewProps> = ({
           licenseCategory: submissionApp.licenseCategory === 'Permissive' ? 'PERMISSIVE' : 'OPEN_SOURCE',
           sha256: finalSha256,
           downloadUrl: submissionApp.downloadUrl,
-          homepageUrl: submissionApp.homepageUrl || '',
-          sourceUrl: submissionApp.sourceUrl || '',
+          homepageUrl: sanitizeUrl(submissionApp.homepageUrl || ''),
+          sourceUrl: sanitizeUrl(submissionApp.sourceUrl || ''),
           sizeBytes: submissionApp.size,
           tags: submissionApp.tags,
         };
 
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+        }
+
         const res = await fetch('/api/apps', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(payload)
+          credentials: 'include',
+          headers,
+          body: JSON.stringify(payload),
         });
 
         if (!res.ok) {

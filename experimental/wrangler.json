@@ -1,0 +1,36 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "$comment": "EXPERIMENTAL — Not part of the production static build. Secrets must NOT be committed in vars. Run `wrangler secret put JWT_SECRET` to provision the JWT signing secret in Cloudflare Secret Manager (bound at runtime as env.JWT_SECRET). To provision the D1 database, run `wrangler d1 create niruvi_store_d1` and replace d1_databases[0].database_id below with the generated UUID.",
+  "name": "niruvi-store-worker",
+  "main": "worker.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": "../dist"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "NIRUVI_AUTH_KV",
+      "id": "00000000000000000000000000000000"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "niruvi_store_d1",
+      "database_id": "00000000-0000-0000-0000-000000000000"
+    }
+  ],
+  "secrets_store_secrets": [
+    {
+      "binding": "JWT_SECRET",
+      "store_id": "00000000000000000000000000000000",
+      "secret_name": "JWT_SECRET"
+    }
+  ],
+  "vars": {
+    "ENVIRONMENT": "production"
+  }
+}

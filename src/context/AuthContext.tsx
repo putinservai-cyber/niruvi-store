@@ -1,7 +1,14 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { hasProLicense, saveStoredPurchase, saveLicense } from '../lib/purchaseStore';
 import { auth, googleAuthProvider } from '../lib/firebase';
-import { signInWithPopup, onAuthStateChanged, signOut as firebaseSignOut, User as FirebaseUser } from 'firebase/auth';
+import {
+  signInWithPopup,
+  onAuthStateChanged,
+  signOut as firebaseSignOut,
+  sendPasswordResetEmail,
+  User as FirebaseUser,
+} from 'firebase/auth';
+import { sanitizeText, sanitizeUrl, sanitizeUsername } from '../utils/sanitize';
 
 export interface UserProfile {
   id: string;
@@ -32,12 +39,25 @@ interface AuthContextType {
   loading: boolean;
   isPro: boolean;
   signInWithGoogle: () => Promise<void>;
-  sandboxLogin: () => Promise<void>;
   loginWithCredentials: (login: string, password?: string) => Promise<void>;
-  registerWithCredentials: (email: string, password: string, username: string, displayName: string) => Promise<void>;
-  becomeDeveloper: (data: { orgName: string; orgWebsite?: string; orgDescription?: string; payoutEmail: string }) => Promise<void>;
+  registerWithCredentials: (
+    email: string,
+    password: string,
+    username: string,
+    displayName: string
+  ) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  checkUsernameAvailability: (username: string) => Promise<{ available: boolean; error?: string }>;
+  becomeDeveloper: (data: {
+    orgName: string;
+    orgWebsite?: string;
+    orgDescription?: string;
+    payoutEmail: string;
+  }) => Promise<void>;
   upgradePlan: (planId: string, licenseKey?: string, paymentId?: string) => Promise<void>;
-  activateLicense: (key: string) => Promise<{ success: boolean; plan?: string; message?: string }>;
+  activateLicense: (
+    key: string
+  ) => Promise<{ success: boolean; plan?: string; message?: string }>;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
   isAuthModalOpen: boolean;
@@ -50,18 +70,38 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function normalizeUserProfile(rawUser: any): UserProfile {
+  const role = (rawUser?.role || 'USER') as UserProfile['role'];
+  const isServerPro =
+    role === 'DEVELOPER' ||
+    role === 'ADMIN' ||
+    rawUser?.plan === 'pro_developer' ||
+    rawUser?.plan === 'team' ||
+    Boolean(rawUser?.isPro);
+
+  return {
+    id: String(rawUser?.id || ''),
+    email: String(rawUser?.email || ''),
+    username: sanitizeUsername(rawUser?.username) || 'linux_user',
+    displayName: sanitizeText(rawUser?.displayName || rawUser?.username || 'Linux User', 60),
+    role,
+    avatarUrl: rawUser?.avatarUrl ? sanitizeUrl(rawUser.avatarUrl) : null,
+    firebaseUid: rawUser?.firebaseUid || null,
+    plan: rawUser?.plan || (isServerPro ? 'pro_developer' : 'free'),
+    isPro: isServerPro,
+  };
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [developerProfile, setDeveloperProfile] = useState<DeveloperProfile | null>(null);
-  const [token, setToken] = useState<string | null>(() => {
-    return sessionStorage.getItem('niruvi_auth_token') || localStorage.getItem('niruvi_auth_token');
-  });
   const [loading, setLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  // Cosmetic client-side indicator only; server endpoints always re-verify role/plan from DB
   const [localPro, setLocalPro] = useState(() => hasProLicense());
+  const syncingUidRef = useRef<string | null>(null);
 
-  // Listen to local purchase changes
   useEffect(() => {
     const handleUpdate = () => {
       setLocalPro(hasProLicense());
@@ -76,294 +116,269 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const isPro = Boolean(
     localPro ||
-    user?.role === 'DEVELOPER' ||
-    user?.role === 'ADMIN' ||
-    user?.isPro
+      user?.role === 'DEVELOPER' ||
+      user?.role === 'ADMIN' ||
+      user?.plan === 'pro_developer' ||
+      user?.plan === 'team' ||
+      user?.isPro
   );
 
-  // Synchronize auth state with native Cloudflare Worker / API endpoint (/api/auth/me)
-  const fetchProfile = async (authToken: string) => {
+  // Fetch session state from backend via httpOnly cookie (credentials: 'include')
+  const fetchProfile = useCallback(async () => {
     try {
       const res = await fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${authToken}` },
+        method: 'GET',
+        credentials: 'include',
       });
       if (res.ok) {
         const data = await res.json();
-        setUser({
-          ...data.user,
-          plan: data.user.role === 'DEVELOPER' ? 'pro_developer' : 'free',
-          isPro: data.user.role === 'DEVELOPER' || data.user.role === 'ADMIN',
-        });
-        setDeveloperProfile(data.developerProfile);
-      } else {
-        // Token expired or invalid
-        setToken(null);
-        setUser(null);
-        sessionStorage.removeItem('niruvi_auth_token');
-        localStorage.removeItem('niruvi_auth_token');
+        if (data?.user) {
+          setUser(normalizeUserProfile(data.user));
+          setDeveloperProfile(data.developerProfile || null);
+          return;
+        }
       }
-    } catch (err) {
-      console.error('Error fetching user profile from /api/auth/me:', err);
+      setUser(null);
+      setDeveloperProfile(null);
+    } catch {
+      setUser(null);
+      setDeveloperProfile(null);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const refreshProfile = async () => {
-    if (token) {
-      await fetchProfile(token);
+  const refreshProfile = useCallback(async () => {
+    await fetchProfile();
+  }, [fetchProfile]);
+
+  /**
+   * Single unified function to sync a verified Firebase user with the backend (/api/auth/google).
+   * Used by both onAuthStateChanged and signInWithGoogle.
+   */
+  const syncFirebaseUserWithBackend = useCallback(async (fbUser: FirebaseUser): Promise<void> => {
+    if (syncingUidRef.current === fbUser.uid) return;
+    syncingUidRef.current = fbUser.uid;
+    try {
+      const idToken = await fbUser.getIdToken();
+      const res = await fetch('/api/auth/google', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ idToken }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to verify Google session with server');
+      }
+
+      const data = await res.json();
+      if (data?.user) {
+        setUser(normalizeUserProfile(data.user));
+        setDeveloperProfile(data.developerProfile || null);
+      } else {
+        throw new Error('Invalid user profile returned from server');
+      }
+    } finally {
+      syncingUidRef.current = null;
     }
-  };
+  }, []);
 
-  // Real-time Firebase Auth state observer to handle session persistence
+  // Observe Firebase Auth state and check httpOnly cookie session via /api/auth/me
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser: FirebaseUser | null) => {
       if (fbUser) {
         setLoading(true);
         try {
-          const idToken = await fbUser.getIdToken();
-          
-          // Sync with dynamic backend Google Auth endpoint
-          const res = await fetch('/api/auth/google', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${idToken}`
-            },
-            body: JSON.stringify({
-              email: fbUser.email,
-              displayName: fbUser.displayName || fbUser.email?.split('@')[0] || 'Linux User',
-              photoURL: fbUser.photoURL,
-              uid: fbUser.uid
-            })
-          });
-
-          if (res.ok) {
-            const data = await res.json();
-            if (data.token) {
-              setToken(data.token);
-              sessionStorage.setItem('niruvi_auth_token', data.token);
-              localStorage.setItem('niruvi_auth_token', data.token);
-              
-              setUser({
-                ...data.user,
-                plan: data.user.role === 'DEVELOPER' ? 'pro_developer' : 'free',
-                isPro: data.user.role === 'DEVELOPER' || data.user.role === 'ADMIN',
-              });
-              setDeveloperProfile(data.developerProfile);
-            }
-          } else {
-            console.error('Failed to sync auth state with backend server');
-            setToken(null);
-            setUser(null);
-            setDeveloperProfile(null);
-            sessionStorage.removeItem('niruvi_auth_token');
-            localStorage.removeItem('niruvi_auth_token');
-          }
-        } catch (error) {
-          console.error('Error syncing with backend server on auth state change:', error);
+          await syncFirebaseUserWithBackend(fbUser);
+        } catch (err) {
+          console.error('Error syncing Firebase user with backend:', err);
+          await fetchProfile();
         } finally {
           setLoading(false);
         }
       } else {
-        // No Firebase user signed in - check if there is a local legacy token (e.g., local admin login)
-        const localToken = sessionStorage.getItem('niruvi_auth_token') || localStorage.getItem('niruvi_auth_token');
-        if (localToken) {
-          setToken(localToken);
-          await fetchProfile(localToken);
-        } else {
-          setToken(null);
-          setUser(null);
-          setDeveloperProfile(null);
-          setLoading(false);
-        }
+        await fetchProfile();
       }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [fetchProfile, syncFirebaseUserWithBackend]);
 
-  // Google Authentication via Firebase Google Account Login
+  // Google Sign-In using the shared syncFirebaseUserWithBackend helper
   const signInWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, googleAuthProvider);
-      const fbUser = result.user;
-      const idToken = await fbUser.getIdToken();
-
-      // Sync with backend Google endpoint
-      const res = await fetch('/api/auth/google', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`
-        },
-        body: JSON.stringify({
-          email: fbUser.email,
-          displayName: fbUser.displayName,
-          photoURL: fbUser.photoURL,
-          uid: fbUser.uid
-        })
-      });
-      const data = await res.json();
-      if (res.ok && data.token) {
-        setToken(data.token);
-        sessionStorage.setItem('niruvi_auth_token', data.token);
-        localStorage.setItem('niruvi_auth_token', data.token);
-        setUser({
-          ...data.user,
-          plan: data.user.role === 'DEVELOPER' ? 'pro_developer' : 'free',
-          isPro: data.user.role === 'DEVELOPER' || data.user.role === 'ADMIN',
-        });
-        setDeveloperProfile(data.developerProfile);
-        setIsAuthModalOpen(false);
-      } else {
-        throw new Error(data.error || 'Google authentication sync failed on backend');
-      }
+      await syncFirebaseUserWithBackend(result.user);
+      setIsAuthModalOpen(false);
     } catch (err: any) {
-      if (err.code === 'auth/popup-closed-by-user') {
+      if (err?.code === 'auth/popup-closed-by-user') {
         if (window.self !== window.top) {
-          throw new Error('Google Sign-In is blocked inside the preview iframe. Please open the app in a new tab (arrow icon top right) to log in.');
+          throw new Error(
+            'Google Sign-In popup was blocked inside the preview iframe. Please open the app in a new tab or sign in with email and password.'
+          );
         }
         throw new Error('Sign-in popup was closed before completing. Please try again.');
       }
-      
       if (window.self !== window.top) {
-        throw new Error('Google Sign-In may be blocked inside the preview iframe. Please open the app in a new tab using the arrow icon at the top right.');
+        throw new Error(
+          'Google Sign-In popup may be blocked inside the preview iframe. Please open the app in a new tab or use email and password below.'
+        );
       }
-
-      console.error('Google Auth Error:', err);
-      throw new Error(err.message || 'Google authentication failed.');
+      throw new Error(err?.message || 'Google authentication failed.');
     }
   };
 
-  // Sandbox Login for Iframe Preview
-  const sandboxLogin = async () => {
-    try {
-      const res = await fetch('/api/auth/google', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: 'developer@niruvi.store',
-          displayName: 'Linux AppImage Craft',
-          photoURL: 'https://api.dicebear.com/7.x/identicon/svg?seed=google_developer',
-          uid: 'demo_developer_uid_12345'
-        })
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        if (data.token) {
-          setToken(data.token);
-          sessionStorage.setItem('niruvi_auth_token', data.token);
-          localStorage.setItem('niruvi_auth_token', data.token);
-          setUser({
-            ...data.user,
-            plan: data.user.role === 'DEVELOPER' ? 'pro_developer' : 'free',
-            isPro: data.user.role === 'DEVELOPER' || data.user.role === 'ADMIN',
-          });
-          setDeveloperProfile(data.developerProfile);
-          setIsAuthModalOpen(false);
-          return;
-        }
-      }
-      throw new Error('Sandbox login failed.');
-    } catch (err: any) {
-      console.error('Sandbox login error:', err);
-      throw err;
-    }
-  };
-
-  // Login via credentials (/api/auth/login)
+  // Login via credentials (/api/auth/login sets HttpOnly, Secure, SameSite=Strict cookie)
   const loginWithCredentials = async (login: string, password?: string) => {
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ login, password }),
-      });
-      const data = await res.json();
-      if (res.ok && data.token) {
-        setToken(data.token);
-        sessionStorage.setItem('niruvi_auth_token', data.token);
-        localStorage.setItem('niruvi_auth_token', data.token);
-        setUser({
-          ...data.user,
-          plan: data.user.role === 'DEVELOPER' ? 'pro_developer' : 'free',
-          isPro: data.user.role === 'DEVELOPER' || data.user.role === 'ADMIN',
-        });
-        setDeveloperProfile(data.developerProfile);
-        setIsAuthModalOpen(false);
-      } else {
-        throw new Error(data.error || 'Login failed');
-      }
-    } catch (err: any) {
-      console.error('Login error:', err);
-      throw err;
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ login: login.trim(), password }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data?.user) {
+      setUser(normalizeUserProfile(data.user));
+      setDeveloperProfile(data.developerProfile || null);
+      setIsAuthModalOpen(false);
+    } else {
+      throw new Error(data?.error || 'Invalid credentials');
     }
   };
 
-  const registerWithCredentials = async (email: string, password: string, username: string, displayName: string) => {
-    try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, username, displayName }),
-      });
-      const data = await res.json();
-      if (res.ok && data.token) {
-        setToken(data.token);
-        sessionStorage.setItem('niruvi_auth_token', data.token);
-        setUser(data.user);
-        setIsPro(data.user?.role === 'ADMIN' || data.user?.role === 'DEVELOPER');
-        setDeveloperProfile(data.developerProfile);
-        setIsAuthModalOpen(false);
-      } else {
-        throw new Error(data.error || 'Registration failed');
-      }
-    } catch (err: any) {
-      console.error('Registration error:', err);
-      throw err;
+  // Register via credentials (/api/auth/register sets HttpOnly, Secure, SameSite=Strict cookie)
+  const registerWithCredentials = async (
+    email: string,
+    password: string,
+    username: string,
+    displayName: string
+  ) => {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email.trim().toLowerCase(),
+        password,
+        username: sanitizeUsername(username),
+        displayName: sanitizeText(displayName, 60),
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data?.user) {
+      // Note: isPro is a computed value from user.role / user.plan / localPro
+      setUser(normalizeUserProfile(data.user));
+      setDeveloperProfile(data.developerProfile || null);
+      setIsAuthModalOpen(false);
+    } else {
+      throw new Error(data?.error || 'Registration failed');
     }
   };
 
-  const becomeDeveloper = async (data: { orgName: string; orgWebsite?: string; orgDescription?: string; payoutEmail: string }) => {
-    if (!token) throw new Error('Must be logged in to register developer account');
+  // Password reset via Firebase Auth + backend endpoint
+  const resetPassword = async (email: string) => {
+    const cleanEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      throw new Error('Please enter a valid email address');
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, cleanEmail);
+    } catch {
+      // Do not reveal whether the email exists in Firebase Auth
+    }
+
+    const res = await fetch('/api/auth/forgot-password', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: cleanEmail }),
+    }).catch(() => null);
+
+    if (res && res.status === 429) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'Too many password reset requests. Please try again later.');
+    }
+  };
+
+  // Username availability check
+  const checkUsernameAvailability = useCallback(
+    async (username: string): Promise<{ available: boolean; error?: string }> => {
+      const clean = sanitizeUsername(username);
+      if (!clean || clean.length < 3 || clean.length > 24) {
+        return {
+          available: false,
+          error: 'Username must be 3–24 characters (letters, numbers, underscores)',
+        };
+      }
+      try {
+        const res = await fetch(
+          `/api/auth/check-username?username=${encodeURIComponent(clean)}`,
+          {
+            method: 'GET',
+            credentials: 'include',
+          }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          return { available: Boolean(data.available), error: data.error };
+        }
+        return { available: true };
+      } catch {
+        return { available: true };
+      }
+    },
+    []
+  );
+
+  const becomeDeveloper = async (data: {
+    orgName: string;
+    orgWebsite?: string;
+    orgDescription?: string;
+    payoutEmail: string;
+  }) => {
+    if (!user) throw new Error('Must be logged in to register developer account');
     const res = await fetch('/api/developer/register', {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        orgName: sanitizeText(data.orgName, 100),
+        orgWebsite: data.orgWebsite ? sanitizeUrl(data.orgWebsite) : undefined,
+        orgDescription: data.orgDescription ? sanitizeText(data.orgDescription, 500) : undefined,
+        payoutEmail: data.payoutEmail.trim(),
+      }),
     });
-    const result = await res.json();
+    const result = await res.json().catch(() => ({}));
     if (!res.ok) {
       throw new Error(result.error || 'Failed to register as developer');
     }
-    await fetchProfile(token);
+    await fetchProfile();
   };
 
   const upgradePlan = async (planId: string, licenseKey?: string, paymentId?: string) => {
-    if (token) {
+    if (user) {
       try {
         const res = await fetch('/api/user/upgrade-plan', {
           method: 'POST',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ planId, licenseKey, paymentId }),
         });
         if (res.ok) {
           const data = await res.json();
           if (data.user) {
-            setUser({
-              ...data.user,
-              plan: planId as any,
-              isPro: true,
-            });
+            setUser(normalizeUserProfile(data.user));
           }
           if (data.developerProfile) {
             setDeveloperProfile(data.developerProfile);
@@ -376,16 +391,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLocalPro(true);
   };
 
-  const activateLicense = async (key: string): Promise<{ success: boolean; plan?: string; message?: string }> => {
+  const activateLicense = async (
+    key: string
+  ): Promise<{ success: boolean; plan?: string; message?: string }> => {
     const trimmed = key.trim().toUpperCase();
     try {
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
       const res = await fetch('/api/license/activate', {
         method: 'POST',
-        headers,
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ licenseKey: trimmed }),
       });
       const data = await res.json();
@@ -409,38 +423,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           customerEmail: user?.email || 'developer@niruvi.store',
         });
         setLocalPro(true);
-        if (token) {
-          await fetchProfile(token);
+        if (user) {
+          await fetchProfile();
         }
         return { success: true, plan: data.plan, message: data.message };
       } else {
         return { success: false, message: data.error || 'Failed to activate license key' };
       }
     } catch (err: any) {
-      return { success: false, message: err?.message || 'Network error during license activation' };
+      return {
+        success: false,
+        message: err?.message || 'Network error during license activation',
+      };
     }
   };
 
-  // Sign out via native fetch (/api/auth/logout)
+  // Sign out via /api/auth/logout (clears HttpOnly cookie) and Firebase signOut
   const signOut = async () => {
     try {
       await firebaseSignOut(auth);
-    } catch (e) {
-      console.warn('Firebase logout notice:', e);
+    } catch {
+      // ignore if not signed in via Firebase
     }
     try {
       await fetch('/api/auth/logout', {
         method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: 'include',
       });
     } catch {
-      // ignore
+      // ignore network error
     }
-    setToken(null);
     setUser(null);
     setDeveloperProfile(null);
-    sessionStorage.removeItem('niruvi_auth_token');
-    localStorage.removeItem('niruvi_auth_token');
   };
 
   return (
@@ -448,13 +462,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         developerProfile,
-        token,
+        token: user ? 'cookie-session' : null,
         loading,
         isPro,
         signInWithGoogle,
-        sandboxLogin,
         loginWithCredentials,
         registerWithCredentials,
+        resetPassword,
+        checkUsernameAvailability,
         becomeDeveloper,
         upgradePlan,
         activateLicense,

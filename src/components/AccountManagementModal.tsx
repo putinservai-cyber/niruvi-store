@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePreventBodyScroll } from '../hooks/usePreventBodyScroll';
 import { useAuth } from '../context/AuthContext';
+import { sanitizeText, sanitizeUrl, sanitizeUsername } from '../utils/sanitize';
 import {
   X,
   User,
@@ -57,6 +58,34 @@ export const AccountManagementModal: React.FC = () => {
   // Copy state
   const [copiedUid, setCopiedUid] = useState(false);
 
+  usePreventBodyScroll(isAccountModalOpen && !!user);
+
+  useEffect(() => {
+    if (user) {
+      setDisplayName(user.displayName || '');
+      setUsername(user.username || '');
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (developerProfile) {
+      setOrgName(developerProfile.orgName || '');
+      setOrgWebsite(developerProfile.orgWebsite || '');
+      setPayoutEmail(developerProfile.payoutEmail || user?.email || '');
+    }
+  }, [developerProfile, user?.email]);
+
+  useEffect(() => {
+    if (!isAccountModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeAccountModal();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAccountModalOpen, closeAccountModal]);
+
   if (!isAccountModalOpen || !user) return null;
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
@@ -64,14 +93,21 @@ export const AccountManagementModal: React.FC = () => {
     setProfileMessage(null);
     setIsUpdatingProfile(true);
 
+    const cleanDisplayName = sanitizeText(displayName, 80);
+    const cleanUsername = sanitizeUsername(username, 32);
+
     try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
       const res = await fetch('/api/user/profile', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ displayName, username }),
+        credentials: 'include',
+        headers,
+        body: JSON.stringify({ displayName: cleanDisplayName, username: cleanUsername }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -117,9 +153,9 @@ export const AccountManagementModal: React.FC = () => {
 
     try {
       await becomeDeveloper({
-        orgName,
-        orgWebsite,
-        payoutEmail,
+        orgName: sanitizeText(orgName, 100),
+        orgWebsite: sanitizeUrl(orgWebsite),
+        payoutEmail: sanitizeText(payoutEmail, 120),
       });
       setDevMessage({ type: 'success', text: 'Developer organization updated successfully!' });
       await refreshProfile();
@@ -139,25 +175,30 @@ export const AccountManagementModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-      <div className="relative w-full max-w-2xl bg-neutral-950 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto bg-black/85 backdrop-blur-md"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) closeAccountModal();
+      }}
+    >
+      <div className="relative w-full max-w-2xl bg-neutral-950 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto">
         {/* Header */}
         <div className="p-6 border-b border-neutral-800 bg-neutral-900/40 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            {user.avatarUrl ? (
+            {sanitizeUrl(user.avatarUrl) ? (
               <img
-                src={user.avatarUrl}
-                alt={user.displayName}
+                src={sanitizeUrl(user.avatarUrl)}
+                alt={sanitizeText(user.displayName, 80)}
                 className="w-12 h-12 rounded-full object-cover border-2 border-neutral-700"
               />
             ) : (
               <div className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center text-lg font-bold">
-                {user.displayName.slice(0, 2).toUpperCase()}
+                {sanitizeText(user.displayName, 80).slice(0, 2).toUpperCase()}
               </div>
             )}
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-white tracking-tight">{user.displayName}</h2>
+                <h2 className="text-lg font-bold text-white tracking-tight">{sanitizeText(user.displayName, 80)}</h2>
                 <span className="px-2 py-0.5 text-[10px] uppercase font-bold font-mono tracking-wider rounded-md bg-neutral-800 text-neutral-300 border border-neutral-700">
                   {user.role}
                 </span>
