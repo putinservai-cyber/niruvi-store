@@ -7,11 +7,11 @@
 **The Decentralized, Free, Open-Source Linux Application Marketplace for AppImages**
 
 [![Validate Catalog](https://github.com/putinservai-cyber/niruvi-store/actions/workflows/validate.yml/badge.svg)](https://github.com/putinservai-cyber/niruvi-store/actions/workflows/validate.yml)
-[![GitHub Pages](https://github.com/putinservai-cyber/niruvi-store/actions/workflows/deploy.yml/badge.svg)](https://putinservai-cyber.github.io/niruvi-store/)
+[![GitHub Pages](https://github.com/putinservai-cyber/niruvi-store/actions/workflows/deploy.yml/badge.svg)](https://niruvi-store.runs-on.dev)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![AppImage Support](https://img.shields.io/badge/AppImage-Ready-5851DB.svg)](https://appimage.org/)
 
-[**Live Web Store**](https://putinservai-cyber.github.io/niruvi-store/) • [**Niruvi Desktop Manager**](https://github.com/putinservai-cyber/niruvi) • [**Submit Application**](CONTRIBUTING.md) • [**Support on Ko-fi**](https://ko-fi.com/putinservai)
+[**Live Web Store (`niruvi-store.runs-on.dev`)**](https://niruvi-store.runs-on.dev) • [**Niruvi Desktop Manager**](https://github.com/putinservai-cyber/niruvi) • [**Submit Application**](CONTRIBUTING.md) • [**Support on Ko-fi**](https://ko-fi.com/putinservai)
 
 </div>
 
@@ -134,12 +134,14 @@ For complete guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
-## 🔒 Security & Integrity Verification
+## 🔒 Security, Accessibility & Privacy Architecture
 
 Every downloadable AppImage on Niruvi Store includes:
-- Publisher verification status and official source links.
-- Official SHA-256 checksums displayed and verifiable in the built-in **SHA-256 Integrity Verifier** tool.
-- Zero tracking or proprietary cookies.
+- **Strict Protocol & URL Validation**: Only `https://` download URLs and validated `niruvi://install` links are rendered (`src/utils/catalogSchema.ts`). All catalog text is sanitized and never injected as raw HTML.
+- **Content-Security-Policy (CSP)**: Enforced via `<meta http-equiv="Content-Security-Policy">` in `index.html`, with `rel="noopener noreferrer"` on all external links and click-to-load consent placeholders (`src/components/ThirdPartyEmbed.tsx`) for third-party embeds.
+- **WCAG 2.2 AA Accessibility**: Built with semantic landmarks (`header`, `nav`, `main`, `footer`), a "Skip to main content" link, `44×44px` minimum touch targets, `prefers-reduced-motion` support, high-contrast tokens (`tailwind.config.js`), and automated `eslint-plugin-jsx-a11y` + `axe-core` tests.
+- **Privacy & Legal Transparency**: Includes plain-English routes for **Privacy Policy** (`#/privacy`), **Terms & Conditions** (`#/terms`), **Cookie Policy** (`#/cookies`), and **Refund Policy** (`#/refunds`), plus an accessible, equal-weight Cookie & Browser Storage Consent banner (`src/components/CookieConsent.tsx`).
+- **GitHub Pages + `runs-on.dev` Custom Domain**: Configured with `base: '/'` in `vite.config.ts`, `public/CNAME` (`niruvi-store.runs-on.dev`), `public/robots.txt`, `public/sitemap.xml`, hash-based deep linking (`#/app/<id>`), shareable URL query filters (`?q=...&category=...`), and `public/404.html` redirect support so deep links never 404 on refresh.
 
 To report security vulnerabilities, see [SECURITY.md](SECURITY.md).
 

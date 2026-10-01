@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirecting — Niruvi Store</title>
+    <script>
+      // GitHub Pages SPA fallback redirect: converts deep paths (e.g. /niruvi-store/app/blender)
+      // into hash routes (/#/app/blender) so refreshing deep links never 404s on GitHub Pages.
+      (function () {
+        var l = window.location;
+        var base = l.pathname.indexOf('/niruvi-store') === 0 ? '/niruvi-store/' : '/';
+        var subPath = l.pathname.slice(base.length).replace(/^\/+/, '');
+        var target = l.protocol + '//' + l.host + base + '#/' + subPath + (l.search || '');
+        l.replace(target);
+      })();
+    </script>
+  </head>
+  <body style="background:#0a0a0c;color:#f5f5f5;font-family:system-ui,sans-serif;padding:2rem;text-align:center;">
+    <p>Redirecting to Niruvi Store…</p>
+  </body>
+</html>

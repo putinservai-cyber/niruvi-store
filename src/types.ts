@@ -59,6 +59,11 @@ export interface AppMetadata {
   changelog?: string[];
   requirements?: string;
   isUserAdded?: boolean;
+  screenshots?: Array<{
+    url: string;
+    alt: string;
+    caption?: string;
+  }>;
 }
 
 export interface InstalledAppRecord {

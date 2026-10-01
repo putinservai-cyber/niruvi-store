@@ -1,6 +1,6 @@
 {
   "name": "Niruvi Store",
-  "description": "Linux application marketplace for AppImage discovery, verified metadata, and seamless one-click installation with Niruvi.",
+  "description": "Linux application marketplace at https://niruvi-store.runs-on.dev for AppImage discovery, verified SHA-256 metadata, and one-click installation with Niruvi.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppMetadata, InstalledAppRecord } from '../types';
 import { AppIcon } from './AppIcon';
 import { generateNiruviProtocolUrl } from '../data/apps';
 import { saveInstalledApp } from '../utils/storage';
+import { usePreventBodyScroll } from '../hooks/usePreventBodyScroll';
+import { isValidHttpsDownloadUrl, isValidNiruviProtocolUrl } from '../utils/catalogSchema';
+import { sanitizeUrl } from '../utils/sanitize';
 import { 
   X, 
   Download, 
@@ -37,13 +40,28 @@ export const InstallModal: React.FC<InstallModalProps> = ({
   const [cliTool, setCliTool] = useState<'curl' | 'wget'>('curl');
   const [copiedCli, setCopiedCli] = useState(false);
   const [copiedProtocol, setCopiedProtocol] = useState(false);
+  const [copiedSha, setCopiedSha] = useState(false);
   const [protocolTriggered, setProtocolTriggered] = useState(false);
   const [installedStatus, setInstalledStatus] = useState(isInstalled);
+
+  usePreventBodyScroll(isOpen && !!app);
+
+  useEffect(() => {
+    if (!isOpen || !app) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, app, onClose]);
 
   if (!isOpen || !app) return null;
 
   const protocolUrl = generateNiruviProtocolUrl(app);
-  const cleanFileName = `${app.id}-${app.version}-x86_64.AppImage`;
+  const safeDownloadUrl = isValidHttpsDownloadUrl(app.downloadUrl) ? sanitizeUrl(app.downloadUrl) : '';
+  const isProtocolValid = isValidNiruviProtocolUrl(protocolUrl);
+  const primaryArch = app.architectures[0] || 'x86_64';
+  const cleanFileName = `${app.id}-${app.version}-${primaryArch}.AppImage`;
 
   // CLI command generator based on user directory and tool preference
   const generateCliScript = () => {
@@ -52,13 +70,13 @@ export const InstallModal: React.FC<InstallModalProps> = ({
 
     if (cliTool === 'curl') {
       return `mkdir -p ${dir} && \\
-curl -L -f --progress-bar "${app.downloadUrl}" -o ${targetFile} && \\
+curl -L -f --progress-bar "${safeDownloadUrl}" -o ${targetFile} && \\
 chmod +x ${targetFile} && \\
 echo "${app.sha256}  ${targetFile}" | sha256sum --check && \\
 echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
     } else {
       return `mkdir -p ${dir} && \\
-wget --show-progress -qO ${targetFile} "${app.downloadUrl}" && \\
+wget --show-progress -qO ${targetFile} "${safeDownloadUrl}" && \\
 chmod +x ${targetFile} && \\
 echo "${app.sha256}  ${targetFile}" | sha256sum --check && \\
 echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
@@ -77,18 +95,8 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
     setTimeout(() => setCopiedProtocol(false), 2000);
   };
 
-  const trackDownloadInDb = () => {
-    try {
-      const token = localStorage.getItem('niruvi_auth_token');
-      fetch(`/api/apps/${app.id}/download`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      }).catch((e) => console.debug('Telemetry ping:', e));
-    } catch (_) {}
-  };
-
   const handleLaunchProtocol = () => {
-    trackDownloadInDb();
+    if (!isProtocolValid) return;
     // Record installation in local library
     const record: InstalledAppRecord = {
       appId: app.id,
@@ -107,7 +115,7 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
   };
 
   const handleDirectDownload = () => {
-    trackDownloadInDb();
+    if (!safeDownloadUrl) return;
     const record: InstalledAppRecord = {
       appId: app.id,
       installedVersion: app.version,
@@ -119,14 +127,13 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
     setInstalledStatus(true);
     onInstalledChange?.();
 
-    // Trigger direct download without opening a blank tab or navigating away
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = app.downloadUrl;
-    document.body.appendChild(iframe);
-    setTimeout(() => {
-      document.body.removeChild(iframe);
-    }, 6000);
+    const anchor = document.createElement('a');
+    anchor.href = safeDownloadUrl;
+    anchor.target = '_blank';
+    anchor.rel = 'noopener noreferrer';
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
   };
 
   const handleMarkAsInstalled = () => {
@@ -255,46 +262,107 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
               <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
                 <button
                   id="trigger-protocol-install-btn"
+                  type="button"
+                  disabled={!isProtocolValid}
                   onClick={handleLaunchProtocol}
-                  className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-sm shadow-md transition-all hover:scale-[1.01] active:scale-[0.99]"
+                  className="min-h-[44px] w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-sm shadow-md transition-all disabled:opacity-50 cursor-pointer"
                 >
-                  <Download className="w-4 h-4" />
-                  <span>Launch Niruvi Installer</span>
+                  <Download className="w-4 h-4" aria-hidden="true" />
+                  <span>Install {app.name} with Niruvi</span>
                 </button>
 
                 <button
                   id="copy-protocol-btn"
+                  type="button"
                   onClick={copyProtocol}
-                  className="w-full sm:w-auto px-4 py-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 flex items-center justify-center gap-2 transition-colors"
+                  className="min-h-[44px] w-full sm:w-auto px-4 py-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 flex items-center justify-center gap-2 transition-colors cursor-pointer"
                   title="Copy full niruvi://install URL"
                 >
                   {copiedProtocol ? (
                     <>
-                      <Check className="w-4 h-4 text-emerald-400" />
-                      <span className="text-emerald-400 font-medium">Copied Link</span>
+                      <Check className="w-4 h-4 text-emerald-400" aria-hidden="true" />
+                      <span className="text-emerald-400 font-medium">Copied niruvi:// Link</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-4 h-4 text-neutral-400" />
-                      <span>Copy Link</span>
+                      <Copy className="w-4 h-4 text-neutral-300" aria-hidden="true" />
+                      <span>Copy niruvi:// Link</span>
                     </>
                   )}
                 </button>
               </div>
 
-              {protocolTriggered && (
-                <div className="p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 space-y-1">
-                  <div className="flex items-center gap-1.5 font-semibold">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                    <span>Protocol Handshake Dispatched</span>
+              {/* Fallback message + manual HTTPS download link + SHA-256 checksum if Niruvi desktop app isn't installed */}
+              <div
+                role="region"
+                aria-label="Fallback manual download and SHA-256 verification"
+                className={`p-4 rounded-xl border space-y-3 ${
+                  protocolTriggered
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-neutral-100'
+                    : 'bg-neutral-950 border-neutral-800 text-neutral-200'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h5 className="text-xs font-bold text-white flex items-center gap-1.5">
+                      {protocolTriggered && <Check className="w-4 h-4 text-emerald-400" aria-hidden="true" />}
+                      <span>
+                        {protocolTriggered
+                          ? `Launched niruvi:// for ${app.name} — Don't have the Niruvi desktop app installed?`
+                          : `Fallback: Don't have the Niruvi desktop app installed yet?`}
+                      </span>
+                    </h5>
+                    <p className="text-xs text-neutral-300 mt-1 leading-relaxed">
+                      If the <code className="font-mono">niruvi://</code> desktop bridge is not installed on your Linux system, download the standalone AppImage directly via HTTPS and verify its SHA-256 checksum:
+                    </p>
                   </div>
-                  <p className="text-neutral-300 text-[11px]">
-                    If your browser prompted to open Niruvi, click Allow. We have also registered <strong>{app.name}</strong> in your local store library!
-                  </p>
                 </div>
-              )}
 
-              <div className="p-3 bg-neutral-950 rounded-lg border border-neutral-800 font-mono text-[11px] text-neutral-400 break-all select-all">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  {safeDownloadUrl ? (
+                    <a
+                      href={safeDownloadUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="min-h-[44px] px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-600 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
+                      <span>Download AppImage ({primaryArch})</span>
+                      <ExternalLink className="w-3 h-3 text-neutral-300" aria-hidden="true" />
+                    </a>
+                  ) : (
+                    <span className="text-xs text-rose-400">Invalid HTTPS download URL</span>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(app.sha256);
+                      setCopiedSha(true);
+                      setTimeout(() => setCopiedSha(false), 2000);
+                    }}
+                    className="min-h-[44px] px-3.5 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-700 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    {copiedSha ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
+                        <span className="text-emerald-400">SHA-256 Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-neutral-300" aria-hidden="true" />
+                        <span>Copy SHA-256</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="p-2.5 rounded-lg bg-black/70 border border-neutral-800 font-mono text-[11px] text-emerald-400 break-all select-all">
+                  SHA-256: {app.sha256}
+                </div>
+              </div>
+
+              <div className="p-3 bg-neutral-950 rounded-lg border border-neutral-800 font-mono text-[11px] text-neutral-300 break-all select-all">
                 {protocolUrl}
               </div>
             </div>
@@ -305,7 +373,7 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
             <div className="space-y-4">
               <div className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-2">
                 <h4 className="text-white font-semibold text-sm flex items-center gap-2">
-                  <HardDrive className="w-4 h-4 text-emerald-400" />
+                  <HardDrive className="w-4 h-4 text-emerald-400" aria-hidden="true" />
                   <span>Direct Binary Download</span>
                 </h4>
                 <p className="text-neutral-300 leading-relaxed">
@@ -320,26 +388,30 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
               <div className="flex flex-col sm:flex-row items-center gap-3">
                 <button
                   id="trigger-direct-download-btn"
+                  type="button"
+                  disabled={!safeDownloadUrl}
                   onClick={handleDirectDownload}
-                  className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-sm shadow-md transition-all hover:scale-[1.01]"
+                  className="min-h-[44px] w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-sm shadow-md transition-all disabled:opacity-50 cursor-pointer"
                 >
-                  <Download className="w-4 h-4" />
-                  <span>Download .AppImage ({app.size})</span>
+                  <Download className="w-4 h-4" aria-hidden="true" />
+                  <span>Download AppImage ({primaryArch}) — {app.size}</span>
                 </button>
 
-                <a
-                  href={app.downloadUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-full sm:w-auto px-4 py-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  <span>Direct URL</span>
-                </a>
+                {safeDownloadUrl && (
+                  <a
+                    href={safeDownloadUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="min-h-[44px] w-full sm:w-auto px-4 py-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" aria-hidden="true" />
+                    <span>Direct HTTPS Mirror</span>
+                  </a>
+                )}
               </div>
 
               <div className="p-3 rounded-lg bg-neutral-950 border border-neutral-800 space-y-1">
-                <span className="text-neutral-400 font-medium">Verified Publisher Checksum (SHA-256):</span>
+                <span className="text-neutral-300 font-medium">Verified Publisher Checksum (SHA-256):</span>
                 <div className="font-mono text-emerald-400 text-[11px] break-all select-all">
                   {app.sha256}
                 </div>

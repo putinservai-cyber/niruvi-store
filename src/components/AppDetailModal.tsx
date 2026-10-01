@@ -5,6 +5,8 @@ import { AppIcon } from './AppIcon';
 import { generateNiruviProtocolUrl } from '../data/apps';
 import { useAuth } from '../context/AuthContext';
 import { sanitizeText, sanitizeUrl } from '../utils/sanitize';
+import { isValidHttpsDownloadUrl } from '../utils/catalogSchema';
+import { ThirdPartyEmbed } from './ThirdPartyEmbed';
 import {
   X,
   CheckCircle2,
@@ -102,6 +104,7 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewTitle, setReviewTitle] = useState('');
   const [reviewBody, setReviewBody] = useState('');
+  const [reviewConsent, setReviewConsent] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [reviewSuccess, setReviewSuccess] = useState(false);
@@ -139,8 +142,7 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
           setReviewsList([]);
         }
       })
-      .catch((err) => {
-        console.warn('Fallback fetching app reviews locally:', err);
+      .catch(() => {
         setReviewsList([]);
       })
       .finally(() => setLoadingReviews(false));
@@ -157,6 +159,10 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
     const cleanBody = sanitizeText(reviewBody, 2000);
     if (!cleanTitle || !cleanBody) {
       setReviewError('Please enter both a review headline and body.');
+      return;
+    }
+    if (!reviewConsent) {
+      setReviewError('Please confirm your consent to the Privacy Policy before submitting a review.');
       return;
     }
 
@@ -335,14 +341,15 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
           <div className="flex items-center gap-2 flex-wrap">
             <button
               id="detail-modal-install-btn"
+              type="button"
               onClick={() => {
                 onClose();
                 onOpenInstall(app);
               }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-sm shadow-md transition-all hover:scale-[1.01]"
+              className="min-h-[44px] flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-sm shadow-md transition-all cursor-pointer"
             >
-              <Download className="w-4 h-4" />
-              <span>{isInstalled ? 'Manage Installation' : 'Install Application'}</span>
+              <Download className="w-4 h-4" aria-hidden="true" />
+              <span>{isInstalled ? `Manage ${app.name} Installation` : `Install ${app.name} with Niruvi`}</span>
             </button>
 
             {app.license && (
@@ -354,29 +361,30 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
                     : `https://spdx.org/licenses/${app.license.replace('-only', '').replace('-or-later', '')}.html`
                 }
                 target={app.licenseCategory === 'Proprietary' ? undefined : '_blank'}
-                rel="noreferrer"
-                className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 text-xs font-semibold transition-colors"
+                rel="noopener noreferrer"
+                className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 text-xs font-semibold transition-colors"
                 title={`View ${app.license} open source license details`}
               >
-                <ShieldCheck className="w-3.5 h-3.5 text-neutral-400" />
+                <ShieldCheck className="w-3.5 h-3.5 text-neutral-300" aria-hidden="true" />
                 <span>License: {app.license}</span>
               </a>
             )}
 
             <button
               id="detail-modal-copy-protocol-btn"
+              type="button"
               onClick={() => copyToClipboard(protocolUrl, setCopiedProtocol)}
-              className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 text-xs font-medium transition-colors"
+              className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 text-xs font-medium transition-colors cursor-pointer"
               title="Copy niruvi://install protocol URL"
             >
               {copiedProtocol ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <Check className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
                   <span className="text-emerald-400 font-medium">Protocol Copied!</span>
                 </>
               ) : (
                 <>
-                  <Copy className="w-3.5 h-3.5 text-neutral-400" />
+                  <Copy className="w-3.5 h-3.5 text-neutral-300" aria-hidden="true" />
                   <span>Copy Niruvi Link</span>
                 </>
               )}
@@ -388,10 +396,10 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
               <a
                 href={sanitizeUrl(app.homepageUrl)}
                 target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1 text-xs text-neutral-300 hover:text-white bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 px-3 py-2 rounded-lg transition-colors"
+                rel="noopener noreferrer"
+                className="min-h-[44px] flex items-center gap-1 text-xs text-neutral-200 hover:text-white bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 px-3 py-2 rounded-lg transition-colors"
               >
-                <Globe className="w-3.5 h-3.5" />
+                <Globe className="w-3.5 h-3.5" aria-hidden="true" />
                 <span>Website</span>
               </a>
             )}
@@ -399,11 +407,11 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
               <a
                 href={sanitizeUrl(app.sourceUrl)}
                 target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1 text-xs text-neutral-300 hover:text-white bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 px-3 py-2 rounded-lg transition-colors"
+                rel="noopener noreferrer"
+                className="min-h-[44px] flex items-center gap-1 text-xs text-neutral-200 hover:text-white bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 px-3 py-2 rounded-lg transition-colors"
                 title="View GitHub Repository"
               >
-                <GitBranch className="w-3.5 h-3.5" />
+                <GitBranch className="w-3.5 h-3.5" aria-hidden="true" />
                 <span>Repository</span>
               </a>
             )}
@@ -411,11 +419,11 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
               <a
                 href={sanitizeUrl(app.releasesUrl)}
                 target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1 text-xs text-neutral-300 hover:text-white bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 px-3 py-2 rounded-lg transition-colors"
+                rel="noopener noreferrer"
+                className="min-h-[44px] flex items-center gap-1 text-xs text-neutral-200 hover:text-white bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 px-3 py-2 rounded-lg transition-colors"
                 title="View GitHub Releases"
               >
-                <ExternalLink className="w-3.5 h-3.5" />
+                <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
                 <span>Releases</span>
               </a>
             )}
@@ -423,11 +431,11 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
               <a
                 href={sanitizeUrl(getOfficialSponsorUrl(app))}
                 target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-semibold transition-colors"
+                rel="noopener noreferrer"
+                className="min-h-[44px] flex items-center gap-1.5 px-3 py-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-semibold transition-colors"
                 title={`Support the official development of ${app.name}`}
               >
-                <Heart className="w-3.5 h-3.5 fill-rose-400/30 text-rose-400" />
+                <Heart className="w-3.5 h-3.5 fill-rose-400/30 text-rose-400" aria-hidden="true" />
                 <span>Support Developer</span>
               </a>
             )}
@@ -504,10 +512,59 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
             <>
               {/* Description */}
               <div className="space-y-2">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">About {sanitizeText(app.name, 100)}</h4>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-300">
+                  About {sanitizeText(app.name, 100)}
+                </h4>
                 <p className="text-sm leading-relaxed text-neutral-200">
                   {sanitizeText(app.description, 4000)}
                 </p>
+              </div>
+
+              {/* STEP 1: Niruvi Protocol Fallback + Manual HTTPS Download + SHA-256 Checksum */}
+              <div className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-3 text-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h4 className="font-bold text-white text-xs">
+                      Don’t have the Niruvi desktop app installed?
+                    </h4>
+                    <p className="text-neutral-300 mt-0.5">
+                      Download the standalone AppImage binary directly over HTTPS and verify its
+                      SHA-256 checksum before making it executable (<code className="font-mono">chmod +x</code>).
+                    </p>
+                  </div>
+                  {isValidHttpsDownloadUrl(app.downloadUrl) && (
+                    <a
+                      href={sanitizeUrl(app.downloadUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="min-h-[44px] px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-600 font-semibold inline-flex items-center gap-2 whitespace-nowrap transition-colors"
+                    >
+                      <Download className="w-4 h-4 text-sky-400" aria-hidden="true" />
+                      <span>
+                        Download {sanitizeText(app.name, 60)} AppImage ({app.architectures[0] || 'x86_64'})
+                      </span>
+                    </a>
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="font-mono text-[11px] text-emerald-400 break-all">
+                    <span className="text-neutral-300 font-sans font-semibold mr-2">SHA-256:</span>
+                    {app.sha256}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(app.sha256, setCopiedSha)}
+                    className="min-h-[44px] px-3.5 py-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 inline-flex items-center gap-1.5 text-xs text-neutral-200 hover:text-white font-semibold whitespace-nowrap cursor-pointer"
+                  >
+                    {copiedSha ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+                    )}
+                    <span>{copiedSha ? 'SHA-256 Copied' : 'Copy SHA-256'}</span>
+                  </button>
+                </div>
               </div>
 
               {/* Key Features List */}
@@ -565,18 +622,18 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
                 </div>
 
                 <div>
-                  <span className="text-neutral-500 block mb-1">Release Repository</span>
-                  {app.repositoryUrl ? (
+                  <span className="text-neutral-400 block mb-1">Release Repository</span>
+                  {sanitizeUrl(app.repositoryUrl) ? (
                     <a
-                      href={app.repositoryUrl}
+                      href={sanitizeUrl(app.repositoryUrl)}
                       target="_blank"
-                      rel="noreferrer"
-                      className="text-cyan-400 hover:underline truncate block max-w-full"
+                      rel="noopener noreferrer"
+                      className="text-sky-400 hover:underline truncate block max-w-full"
                     >
-                      {app.repositoryUrl.replace('https://github.com/', '')}
+                      {app.repositoryUrl!.replace('https://github.com/', '')}
                     </a>
                   ) : (
-                    <span className="text-neutral-400">Upstream Mirror</span>
+                    <span className="text-neutral-300">Upstream Mirror</span>
                   )}
                 </div>
 
@@ -590,6 +647,26 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
                   <span className="text-neutral-200">{app.requirements || 'glibc 2.28+, FUSE 2/3'}</span>
                 </div>
               </div>
+
+              {/* Optional Screenshots via Click-to-Load ThirdPartyEmbed */}
+              {app.screenshots && app.screenshots.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-300">
+                    Screenshots
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {app.screenshots.map((shot, idx) => (
+                      <ThirdPartyEmbed
+                        key={idx}
+                        type="image"
+                        src={shot.url}
+                        altOrTitle={shot.alt || `${app.name} screenshot ${idx + 1}`}
+                        caption={shot.caption}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Tags */}
               <div>
@@ -619,16 +696,17 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-neutral-300">
                     Cryptographic SHA-256 Checksum
                   </label>
                   <button
                     id="copy-sha-btn"
+                    type="button"
                     onClick={() => copyToClipboard(app.sha256, setCopiedSha)}
-                    className="flex items-center gap-1 text-xs text-neutral-300 hover:text-white"
+                    className="min-h-[44px] px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 flex items-center gap-1.5 text-xs text-neutral-200 hover:text-white cursor-pointer"
                   >
-                    {copiedSha ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedSha ? 'Copied' : 'Copy Hash'}</span>
+                    {copiedSha ? <Check className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" /> : <Copy className="w-3.5 h-3.5" aria-hidden="true" />}
+                    <span>{copiedSha ? 'SHA-256 Copied' : 'Copy SHA-256'}</span>
                   </button>
                 </div>
                 <div className="p-3 bg-neutral-950 rounded-lg border border-neutral-800 font-mono text-xs text-emerald-400 break-all select-all">
@@ -746,35 +824,68 @@ chmod +x "${appImageFileName}"
                   </div>
 
                   {reviewError && (
-                    <p className="text-xs text-red-400">{reviewError}</p>
+                    <p role="alert" aria-live="assertive" className="text-xs text-red-400">
+                      {reviewError}
+                    </p>
                   )}
                   {reviewSuccess && (
-                    <p className="text-xs text-emerald-400">Review submitted successfully to Cloud SQL!</p>
+                    <p role="status" aria-live="polite" className="text-xs text-emerald-400">
+                      Review submitted successfully!
+                    </p>
                   )}
 
-                  <input
-                    type="text"
-                    required
-                    placeholder="Review headline (e.g., Flawless Wayland integration)"
-                    value={reviewTitle}
-                    onChange={(e) => setReviewTitle(e.target.value)}
-                    className="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-white placeholder-neutral-500 focus:outline-hidden focus:border-white transition-colors"
-                  />
+                  <div className="space-y-1">
+                    <label htmlFor="review-headline-input" className="text-xs font-semibold text-neutral-200 block">
+                      Review Headline <span className="text-neutral-400">(required)</span>
+                    </label>
+                    <input
+                      id="review-headline-input"
+                      type="text"
+                      required
+                      placeholder="Review headline (e.g., Flawless Wayland integration)"
+                      value={reviewTitle}
+                      onChange={(e) => setReviewTitle(e.target.value)}
+                      className="w-full min-h-[44px] px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-xs text-white placeholder-neutral-400 focus:outline-hidden focus:border-white transition-colors"
+                    />
+                  </div>
 
-                  <textarea
-                    required
-                    rows={3}
-                    placeholder="Share your experience running this AppImage on your Linux distro..."
-                    value={reviewBody}
-                    onChange={(e) => setReviewBody(e.target.value)}
-                    className="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-white placeholder-neutral-500 focus:outline-hidden focus:border-white resize-none transition-colors"
-                  />
+                  <div className="space-y-1">
+                    <label htmlFor="review-body-input" className="text-xs font-semibold text-neutral-200 block">
+                      Review Details <span className="text-neutral-400">(required)</span>
+                    </label>
+                    <textarea
+                      id="review-body-input"
+                      required
+                      rows={3}
+                      placeholder="Share your experience running this AppImage on your Linux distro..."
+                      value={reviewBody}
+                      onChange={(e) => setReviewBody(e.target.value)}
+                      className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-xs text-white placeholder-neutral-400 focus:outline-hidden focus:border-white resize-none transition-colors"
+                    />
+                  </div>
+
+                  <div className="flex items-start gap-2.5 p-3 rounded-lg bg-neutral-900 border border-neutral-800">
+                    <input
+                      id="review-privacy-consent"
+                      type="checkbox"
+                      checked={reviewConsent}
+                      onChange={(e) => setReviewConsent(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded accent-sky-400 cursor-pointer"
+                    />
+                    <label htmlFor="review-privacy-consent" className="text-xs text-neutral-300 leading-relaxed cursor-pointer">
+                      I agree to the{' '}
+                      <a href="#/privacy" className="underline text-sky-400 hover:text-sky-300">
+                        Privacy Policy
+                      </a>
+                      . My review text and display name will be shown publicly on this application page. (required)
+                    </label>
+                  </div>
 
                   <div className="flex justify-end">
                     <button
                       type="submit"
-                      disabled={submittingReview}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white hover:bg-neutral-200 text-black font-semibold text-xs transition disabled:opacity-50"
+                      disabled={submittingReview || !reviewConsent}
+                      className="min-h-[44px] flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white hover:bg-neutral-200 text-black font-semibold text-xs transition disabled:opacity-50 cursor-pointer"
                     >
                       {submittingReview ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Submit Review'}
                     </button>

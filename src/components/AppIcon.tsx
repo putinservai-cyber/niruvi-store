@@ -17,11 +17,13 @@ export const AppIcon: React.FC<AppIconProps> = ({
 }) => {
   const [imgError, setImgError] = useState(false);
 
+  const iconAltText = `${name || slug} icon`;
+
   if (!imgError && iconUrl) {
     return (
       <img
         src={iconUrl}
-        alt={name || slug}
+        alt={iconAltText}
         className={`${className} object-contain drop-shadow-sm`}
         loading="lazy"
         referrerPolicy="no-referrer"
@@ -185,15 +187,16 @@ function renderFallbackSvg(slug: string, className: string, brandColor?: string,
     case 'zen':
     case 'zen-browser':
       return (
-        <svg viewBox="0 0 24 24" className={className} fill="none">
+        <svg viewBox="0 0 24 24" className={className} fill="none" role="img" aria-label={`${name || slug} icon`}>
           <circle cx="12" cy="12" r="9.5" fill="#EA580C" fillOpacity="0.18" stroke="#F97316" strokeWidth="1.75" />
           <path d="M12 5.5C8.41 5.5 5.5 8.41 5.5 12C5.5 14.1 6.5 15.96 8.05 17.15C9.15 15.65 10.95 14.7 13 14.7C15.9 14.7 18.25 17.05 18.25 19.95C18.42 19.4 18.5 18.75 18.5 18C18.5 14.41 15.59 11.5 12 11.5C9.95 11.5 8.18 12.45 7.05 13.92C7.02 13.3 7 12.66 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12" stroke="#FB923C" strokeWidth="1.6" strokeLinecap="round" />
           <circle cx="12" cy="12" r="2.2" fill="#F97316" />
         </svg>
       );
 
+    case 'libreoffice':
       return (
-        <svg viewBox="0 0 24 24" className={className} fill="none">
+        <svg viewBox="0 0 24 24" className={className} fill="none" role="img" aria-label={`${name || slug} icon`}>
           <rect x="4" y="3" width="16" height="18" rx="2" fill="#16A34A" fillOpacity="0.15" stroke="#16A34A" strokeWidth="1.75" />
           <path d="M8 8h8M8 12h8M8 16h5" stroke="#16A34A" strokeWidth="1.75" strokeLinecap="round" />
         </svg>
@@ -529,6 +532,8 @@ function renderFallbackSvg(slug: string, className: string, brandColor?: string,
       if (name) {
         return (
           <div
+            role="img"
+            aria-label={`${name} icon`}
             className={`${className} rounded-xl flex items-center justify-center font-bold text-white shadow-inner select-none text-base`}
             style={{ backgroundColor: brandColor || '#3B82F6' }}
           >
@@ -537,7 +542,17 @@ function renderFallbackSvg(slug: string, className: string, brandColor?: string,
         );
       }
       return (
-        <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          viewBox="0 0 24 24"
+          className={className}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          role="img"
+          aria-label={`${slug} icon`}
+        >
           <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
           <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
           <line x1="12" y1="22.08" x2="12" y2="12" />
