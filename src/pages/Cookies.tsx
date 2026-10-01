@@ -1,6 +1,7 @@
 import React from 'react';
 import { Cookie, ArrowLeft, Settings } from 'lucide-react';
 import { CONSENT_STORAGE_KEY } from '../components/CookieConsent';
+import { DEVELOPER_NAME, CONTACT_EMAIL, SUPPORT_EMAIL } from '../config/site';
 
 interface CookiesPageProps {
   onBackToStore: () => void;
@@ -24,21 +25,8 @@ export const Cookies: React.FC<CookiesPageProps> = ({
         </button>
 
         <span className="text-xs font-mono text-neutral-400">
-          Last Updated: [LAST UPDATED DATE]
+          Last Updated: October 1, 2026
         </span>
-      </div>
-
-      <div
-        role="note"
-        aria-label="Legal template notice"
-        className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs leading-relaxed"
-      >
-        <strong>Legal Template Notice:</strong> This Cookie &amp; Storage Policy is a template
-        tailored to Niruvi Store&apos;s actual browser storage usage. Replace{' '}
-        <code className="font-mono">[OWNER NAME]</code>,{' '}
-        <code className="font-mono">[CONTACT EMAIL]</code>,{' '}
-        <code className="font-mono">[COUNTRY/JURISDICTION]</code>, and{' '}
-        <code className="font-mono">[LAST UPDATED DATE]</code> and consult a qualified lawyer.
       </div>
 
       <header className="space-y-3 border-b border-neutral-800 pb-6">
@@ -48,7 +36,7 @@ export const Cookies: React.FC<CookiesPageProps> = ({
         </div>
         <h1 className="text-3xl font-extrabold text-white tracking-tight">Cookie Policy</h1>
         <p className="text-sm text-neutral-300 leading-relaxed">
-          Niruvi Store (<code className="font-mono text-sky-400">https://niruvi-store.putinservai.workers.dev</code>), operated by <strong>[OWNER NAME]</strong>, is a static web application
+          Niruvi Store (<code className="font-mono text-sky-400">https://niruvi-store.putinservai.workers.dev</code>), developed and operated by <strong>{DEVELOPER_NAME}</strong>, is a web application
           hosted on Cloudflare Workers.{' '}
           <strong>
             We do not set any advertising, cross-site tracking, or third-party analytics HTTP
@@ -87,24 +75,22 @@ export const Cookies: React.FC<CookiesPageProps> = ({
                 <td className="p-3.5">Until cleared or updated</td>
               </tr>
               <tr>
-                <td className="p-3.5 font-mono text-white">niruvi_bookmarked_apps</td>
+                <td className="p-3.5 font-mono text-white">niruvi_starred_apps</td>
                 <td className="p-3.5">localStorage</td>
                 <td className="p-3.5 text-sky-400 font-semibold">Functional / Preferences</td>
                 <td className="p-3.5">
-                  Stores the list of AppImage IDs you star/bookmark for quick access in &ldquo;My
-                  Library&rdquo;.
+                  Stores the list of AppImage IDs you bookmark for quick access in &ldquo;Saved&rdquo;.
                 </td>
                 <td className="p-3.5">Until you unbookmark or clear storage</td>
               </tr>
               <tr>
-                <td className="p-3.5 font-mono text-white">niruvi_installed_apps</td>
+                <td className="p-3.5 font-mono text-white">niruvi_download_history</td>
                 <td className="p-3.5">localStorage</td>
                 <td className="p-3.5 text-sky-400 font-semibold">Functional / Preferences</td>
                 <td className="p-3.5">
-                  Tracks which AppImages you marked as installed locally so the UI can show
-                  version/install badges.
+                  Tracks which AppImages you downloaded locally for quick reference in your library.
                 </td>
-                <td className="p-3.5">Until removed in My Library or cleared</td>
+                <td className="p-3.5">Until cleared in Saved Library</td>
               </tr>
               <tr>
                 <td className="p-3.5 font-mono text-white">niruvi_custom_apps</td>
@@ -126,8 +112,8 @@ export const Cookies: React.FC<CookiesPageProps> = ({
           2. Third-Party Cookies &amp; External Resources
         </h2>
         <p className="text-sm text-neutral-300 leading-relaxed">
-          We self-host our UI typography and catalog icons so no third-party font CDNs (such as
-          Google Fonts) are contacted when you load Niruvi Store. External connections to{' '}
+          We self-host our UI typography and catalog icons so no third-party font CDNs are
+          contacted when you load Niruvi Store. External connections to{' '}
           <code className="font-mono">github.com</code> or{' '}
           <code className="font-mono">gitlab.com</code> occur only when you explicitly download a
           release binary or opt in to load external media.
@@ -141,7 +127,21 @@ export const Cookies: React.FC<CookiesPageProps> = ({
         <p className="text-sm text-neutral-300 leading-relaxed">
           You can review, change, or withdraw your storage and external-media consent at any time
           using the button below or the &ldquo;Cookie Settings&rdquo; link in the footer of every
-          page.
+          page. For questions, contact <strong>{DEVELOPER_NAME}</strong> at{' '}
+          <a
+            href={`mailto:${CONTACT_EMAIL}`}
+            className="underline text-sky-400 hover:text-sky-300 font-mono"
+          >
+            {CONTACT_EMAIL}
+          </a>{' '}
+          or{' '}
+          <a
+            href={`mailto:${SUPPORT_EMAIL}`}
+            className="underline text-emerald-400 hover:text-emerald-300 font-mono"
+          >
+            {SUPPORT_EMAIL}
+          </a>
+          .
         </p>
         <button
           type="button"

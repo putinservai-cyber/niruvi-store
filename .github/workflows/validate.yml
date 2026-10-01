@@ -24,8 +24,8 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Validate Application Catalog JSONs
-        run: npm run validate:catalog
+      - name: Validate & Generate Application Catalog JSONs
+        run: npm run build:catalog
 
       - name: Typecheck / Lint
         run: npm run lint

@@ -1,235 +1,93 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { usePreventBodyScroll } from '../hooks/usePreventBodyScroll';
-import { AppMetadata, ReleaseVersionEntry } from '../types';
-import { AppIcon } from './AppIcon';
+import React, { useState, useEffect } from 'react';
+import { AppMetadata } from '../types';
 import { generateNiruviProtocolUrl } from '../data/apps';
-import { useAuth } from '../context/AuthContext';
-import { sanitizeText, sanitizeUrl } from '../utils/sanitize';
-import { isValidHttpsDownloadUrl } from '../utils/catalogSchema';
-import { ThirdPartyEmbed } from './ThirdPartyEmbed';
+import { isGenuineSha256 } from '../utils/catalogSchema';
 import {
   X,
-  CheckCircle2,
+  ShieldCheck,
   Download,
+  Terminal,
   ExternalLink,
-  GitBranch,
-  Globe,
   Copy,
   Check,
-  ShieldCheck,
-  Calendar,
-  HardDrive,
-  Terminal,
-  AlertCircle,
-  Sparkles,
-  Layers,
   Cpu,
-  Star,
-  ThumbsUp,
-  MessageSquarePlus,
-  Loader2,
-  Heart,
-  XCircle,
-  RotateCcw,
-  Pause,
-  Play,
+  HardDrive,
+  Calendar,
+  Scale,
+  Bookmark,
+  FileCode,
+  Flag,
+  History,
+  Image as ImageIcon,
+  GitBranch,
+  AlertTriangle,
 } from 'lucide-react';
-
-const getOfficialSponsorUrl = (app: AppMetadata): string | null => {
-  const slug = app.id.toLowerCase().replace('app_', '');
-  
-  // Hardcoded official donation pages for catalog apps to make it work really!
-  const officialDonations: Record<string, string> = {
-    vlc: 'https://www.videolan.org/contribute.html',
-    joplin: 'https://joplinapp.org/donate/',
-    freetube: 'https://freetubeapp.io/#donate',
-    libreoffice: 'https://www.libreoffice.org/donate/',
-    audacity: 'https://www.audacityteam.org/donate/',
-    blender: 'https://fund.blender.org/',
-    gimp: 'https://www.gimp.org/donating/',
-    kdenlive: 'https://kdenlive.org/en/donate/',
-    handbrake: 'https://handbrake.fr/donation.php',
-    inkscape: 'https://inkscape.org/support-us/donate/',
-    qbittorrent: 'https://www.qbittorrent.org/donate',
-    vscodium: 'https://vscodium.com/#support',
-    keepassxc: 'https://keepassxc.org/donate/',
-  };
-
-  if (officialDonations[slug]) {
-    return officialDonations[slug];
-  }
-
-  // Fallback to GitHub sponsors if it's a github source url
-  if (app.sourceUrl && app.sourceUrl.includes('github.com')) {
-    return `${app.sourceUrl}/sponsors`;
-  }
-
-  return app.homepageUrl || app.sourceUrl || null;
-};
+import { AppIcon } from './AppIcon';
 
 interface AppDetailModalProps {
   app: AppMetadata | null;
   onClose: () => void;
-  onOpenInstall: (app: AppMetadata) => void;
-  isInstalled?: boolean;
-  onOpenSponsor?: (app: AppMetadata) => void;
-  onOpenPayment?: (app: AppMetadata) => void;
+  onInstall: (app: AppMetadata, e: React.MouseEvent, selectedArch?: string) => void;
+  isStarred?: boolean;
+  onToggleStar?: (appId: string, e: React.MouseEvent) => void;
+  onOpenVerifierWithHash?: (hash: string) => void;
+  onShowToast?: (msg: string, type?: 'success' | 'info') => void;
 }
 
-interface ReviewItem {
-  id: string;
-  rating: number;
-  title: string;
-  body: string;
-  isVerifiedPurchase: boolean;
-  helpfulCount: number;
-  createdAt: string;
-  userDisplayName?: string;
-  userAvatarUrl?: string;
-}
-
-export const AppDetailModal: React.FC<AppDetailModalProps> = ({ 
-  app, 
+export const AppDetailModal: React.FC<AppDetailModalProps> = ({
+  app,
   onClose,
-  onOpenInstall,
-  isInstalled = false,
-  onOpenSponsor,
-  onOpenPayment
+  onInstall,
+  isStarred = false,
+  onToggleStar,
+  onOpenVerifierWithHash,
+  onShowToast,
 }) => {
-  const { user, token, openAuthModal } = useAuth();
   const [copiedSha, setCopiedSha] = useState(false);
-  const [copiedProtocol, setCopiedProtocol] = useState(false);
-  const [copiedCli, setCopiedCli] = useState(false);
-  const [activeTab, setActiveTab] = useState<
-    'overview' | 'versions' | 'security' | 'cli' | 'changelog' | 'reviews' | 'report'
-  >('overview');
+  const [copiedCmd, setCopiedCmd] = useState(false);
+  const [selectedArch, setSelectedArch] = useState<string>('x86_64');
+  const [liveVersionHistory, setLiveVersionHistory] = useState(app?.versionHistory || []);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
-  // Version history state (enriched from Worker /api/catalog/:id or fallback)
-  const [versionHistory, setVersionHistory] = useState<ReleaseVersionEntry[]>([]);
-
-  // Report Broken App form state
+  // Report broken package form state
+  const [showReportForm, setShowReportForm] = useState(false);
   const [reportReason, setReportReason] = useState('Broken download link (404)');
   const [reportDetails, setReportDetails] = useState('');
   const [reportDistro, setReportDistro] = useState('');
   const [reportSubmitting, setReportSubmitting] = useState(false);
-  const [reportSubmitted, setReportSubmitted] = useState(false);
-  const [reportError, setReportError] = useState<string | null>(null);
-
-  // Inline AppImage download & cancellation state
-  const [dlPhase, setDlPhase] = useState<'idle' | 'downloading' | 'completed' | 'cancelled'>('idle');
-  const [dlProgress, setDlProgress] = useState(0);
-  const [dlPaused, setDlPaused] = useState(false);
-  const dlTimerRef = useRef<number | null>(null);
-
-  // Reviews state
-  const [reviewsList, setReviewsList] = useState<ReviewItem[]>([]);
-  const [loadingReviews, setLoadingReviews] = useState(false);
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewTitle, setReviewTitle] = useState('');
-  const [reviewBody, setReviewBody] = useState('');
-  const [reviewConsent, setReviewConsent] = useState(false);
-  const [submittingReview, setSubmittingReview] = useState(false);
-  const [reviewError, setReviewError] = useState<string | null>(null);
-  const [reviewSuccess, setReviewSuccess] = useState(false);
-
-  usePreventBodyScroll(!!app);
+  const [reportStatusMsg, setReportStatusMsg] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
 
   useEffect(() => {
-    setDlPhase('idle');
-    setDlProgress(0);
-    setDlPaused(false);
-    setReportSubmitted(false);
-    setReportError(null);
+    if (app && app.architectures.length > 0) {
+      setSelectedArch(app.architectures[0]);
+    }
+    setLiveVersionHistory(app?.versionHistory || []);
+    setShowReportForm(false);
     setReportDetails('');
-    if (dlTimerRef.current) {
-      window.clearInterval(dlTimerRef.current);
-      dlTimerRef.current = null;
-    }
+    setReportStatusMsg(null);
 
-    if (!app) {
-      setVersionHistory([]);
-      return;
-    }
-
-    // Build initial version history (current version + previous releases fallback)
-    const fallbackHistory: ReleaseVersionEntry[] =
-      app.versionHistory && app.versionHistory.length > 0
-        ? app.versionHistory
-        : [
-            {
-              version: app.version,
-              tagName: `v${app.version}`,
-              releaseDate: app.releaseDate,
-              releaseNotes:
-                app.changelog && app.changelog.length > 0
-                  ? app.changelog.join('\n')
-                  : `Latest ${app.name} AppImage release (${app.version}).`,
-              htmlUrl: app.releasesUrl || app.repositoryUrl,
-              prerelease: false,
-              assets: app.architectures.map((arch) => ({
-                name: `${app.id}-${app.version}-${arch}.AppImage`,
-                architecture: arch,
-                downloadUrl: app.downloadMap?.[arch] || app.downloadUrl,
-                size: app.size,
-                sha256: arch === 'x86_64' ? app.sha256 : '',
-                verified: Boolean(arch === 'x86_64' && app.publisher.verified && app.sha256),
-              })),
-            },
-          ];
-    setVersionHistory(fallbackHistory);
-
-    // Fetch live GitHub release history from Worker endpoint if available
-    if (typeof window !== 'undefined' && typeof fetch === 'function') {
+    if (app && (!app.versionHistory || app.versionHistory.length === 0) && app.githubRepo) {
+      let cancelled = false;
+      setLoadingHistory(true);
       fetch(`/api/catalog/${encodeURIComponent(app.id)}`)
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
-          if (data?.app?.versionHistory && Array.isArray(data.app.versionHistory) && data.app.versionHistory.length > 0) {
-            setVersionHistory(data.app.versionHistory);
+          if (!cancelled && data?.app?.versionHistory?.length) {
+            setLiveVersionHistory(data.app.versionHistory);
           }
         })
-        .catch(() => {
-          // Keep fallback history
+        .catch(() => {})
+        .finally(() => {
+          if (!cancelled) setLoadingHistory(false);
         });
+      return () => {
+        cancelled = true;
+      };
     }
-  }, [app?.id]);
-
-  useEffect(() => {
-    if (!app || dlPhase !== 'downloading' || dlPaused) {
-      if (dlTimerRef.current) {
-        window.clearInterval(dlTimerRef.current);
-        dlTimerRef.current = null;
-      }
-      return;
-    }
-    dlTimerRef.current = window.setInterval(() => {
-      setDlProgress((prev) => {
-        const next = Math.min(100, prev + 5);
-        if (next >= 100) {
-          if (dlTimerRef.current) {
-            window.clearInterval(dlTimerRef.current);
-            dlTimerRef.current = null;
-          }
-          setDlPhase('completed');
-          if (isValidHttpsDownloadUrl(app.downloadUrl)) {
-            const anchor = document.createElement('a');
-            anchor.href = sanitizeUrl(app.downloadUrl);
-            anchor.target = '_blank';
-            anchor.rel = 'noopener noreferrer';
-            document.body.appendChild(anchor);
-            anchor.click();
-            document.body.removeChild(anchor);
-          }
-        }
-        return next;
-      });
-    }, 100);
-    return () => {
-      if (dlTimerRef.current) {
-        window.clearInterval(dlTimerRef.current);
-        dlTimerRef.current = null;
-      }
-    };
-  }, [app, dlPhase, dlPaused]);
+  }, [app]);
 
   useEffect(() => {
     if (!app) return;
@@ -242,1261 +100,632 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [app, onClose]);
 
-  useEffect(() => {
-    if (!app) {
-      setReviewsList([]);
-      return;
-    }
-    setLoadingReviews(true);
-    fetch(`/api/apps/${app.id}`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (data && Array.isArray(data.reviews)) {
-          setReviewsList(data.reviews);
-        } else {
-          setReviewsList([]);
-        }
-      })
-      .catch(() => {
-        setReviewsList([]);
-      })
-      .finally(() => setLoadingReviews(false));
-  }, [app?.id]);
-
-  const handleReviewSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!app) return;
-    if (!user) {
-      openAuthModal();
-      return;
-    }
-    const cleanTitle = sanitizeText(reviewTitle, 120);
-    const cleanBody = sanitizeText(reviewBody, 2000);
-    if (!cleanTitle || !cleanBody) {
-      setReviewError('Please enter both a review headline and body.');
-      return;
-    }
-    if (!reviewConsent) {
-      setReviewError('Please confirm your consent to the Privacy Policy before submitting a review.');
-      return;
-    }
-
-    setSubmittingReview(true);
-    setReviewError(null);
-    try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-      const res = await fetch(`/api/apps/${app.id}/reviews`, {
-        method: 'POST',
-        credentials: 'include',
-        headers,
-        body: JSON.stringify({
-          rating: reviewRating,
-          title: cleanTitle,
-          body: cleanBody,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to submit review');
-      }
-      setReviewsList((prev) => [data.review, ...prev]);
-      setReviewTitle('');
-      setReviewBody('');
-      setReviewSuccess(true);
-      setTimeout(() => setReviewSuccess(false), 3000);
-    } catch (err: any) {
-      setReviewError(err?.message || 'Error submitting review');
-    } finally {
-      setSubmittingReview(false);
-    }
-  };
-
-  const handleHelpfulVote = async (reviewId: string) => {
-    if (!user) {
-      openAuthModal();
-      return;
-    }
-    try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-      await fetch(`/api/reviews/${reviewId}/vote`, {
-        method: 'POST',
-        credentials: 'include',
-        headers,
-        body: JSON.stringify({ isHelpful: true }),
-      });
-      setReviewsList((prev) =>
-        prev.map((r) => (r.id === reviewId ? { ...r, helpfulCount: r.helpfulCount + 1 } : r))
-      );
-    } catch (err) {
-      console.error('Vote error:', err);
-    }
-  };
-
-  const copyToClipboard = (text: string, setCopied: (v: boolean) => void) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   if (!app) return null;
 
-  const protocolUrl = generateNiruviProtocolUrl(app);
-  const appImageFileName = `${app.id}-${app.version}-x86_64.AppImage`;
-  const cliCommand = `niruvi install ${app.id}`;
+  const isTrulyVerified = Boolean(app.publisher.verified && isGenuineSha256(app.sha256));
+  const activeDownloadUrl = app.downloadMap?.[selectedArch] || app.downloadUrl;
+  const protocolUrl = generateNiruviProtocolUrl(app, selectedArch);
+  const fileName = `${app.id}-${app.version}-${selectedArch}.AppImage`;
+  const chmodCmd = `chmod +x ${fileName} && ./${fileName}`;
+  const verifyCmd = isTrulyVerified
+    ? `echo "${app.sha256}  ${fileName}" | sha256sum --check`
+    : `sha256sum ${fileName}`;
+
+  const sourceRepoUrl =
+    app.repositoryUrl ||
+    app.publisher.github ||
+    (app.githubRepo ? `https://github.com/${app.githubRepo}` : '') ||
+    app.sourceUrl;
+
+  const copySha = () => {
+    if (!isTrulyVerified) return;
+    navigator.clipboard.writeText(app.sha256);
+    setCopiedSha(true);
+    setTimeout(() => setCopiedSha(false), 2000);
+  };
+
+  const copyCmd = () => {
+    navigator.clipboard.writeText(`${verifyCmd}\n${chmodCmd}`);
+    setCopiedCmd(true);
+    setTimeout(() => setCopiedCmd(false), 2000);
+  };
+
+  const handleSubmitBrokenReport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reportDetails.trim() || reportDetails.trim().length < 5) {
+      setReportStatusMsg({
+        type: 'error',
+        text: 'Please enter at least 5 characters describing the issue.',
+      });
+      return;
+    }
+    setReportSubmitting(true);
+    setReportStatusMsg(null);
+    try {
+      const res = await fetch('/api/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          appId: app.id,
+          appName: app.name,
+          reason: reportReason,
+          details: reportDetails.trim(),
+          distro: reportDistro.trim(),
+          architecture: selectedArch,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        setReportStatusMsg({
+          type: 'success',
+          text: data.message || 'Report submitted.',
+        });
+        setReportDetails('');
+        if (onShowToast) {
+          onShowToast('Broken package report submitted.', 'success');
+        }
+      } else {
+        setReportStatusMsg({
+          type: 'error',
+          text: data.error || 'Could not submit report. Please try again.',
+        });
+      }
+    } catch {
+      setReportStatusMsg({
+        type: 'error',
+        text: 'Network error while submitting report.',
+      });
+    } finally {
+      setReportSubmitting(false);
+    }
+  };
+
+  const displayVersion =
+    app.version && app.version !== 'latest' ? `v${app.version.replace(/^v/i, '')}` : 'latest';
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-10 overflow-y-auto bg-neutral-950/80 backdrop-blur-sm animate-in fade-in duration-150"
+    <div
       role="dialog"
       aria-modal="true"
-      aria-labelledby="app-detail-title"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
+      aria-labelledby="app-detail-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm overflow-y-auto"
     >
-      <div 
-        id="app-detail-modal-container"
-        className="relative w-full max-w-4xl bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto"
+      <div
+        className="relative w-full max-w-4xl bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[90vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Modal Header */}
-        <div className="flex items-start justify-between p-6 border-b border-neutral-800 bg-neutral-900/50">
-          <div className="flex items-start gap-4">
-            <div 
-              className="w-16 h-16 rounded-2xl flex items-center justify-center bg-neutral-800/80 border border-neutral-700/60 p-2 shadow-lg flex-shrink-0 overflow-hidden"
-            >
-              <AppIcon 
-                slug={app.iconSlug} 
-                iconUrl={app.icon} 
-                name={app.name} 
-                brandColor={app.brandColor} 
-                className="w-12 h-12" 
-              />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 id="app-detail-title" className="text-xl font-bold text-white tracking-tight">{app.name}</h2>
-                {app.publisher.verified && (
-                  <span className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    Verified Publisher
-                  </span>
-                )}
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-neutral-800 text-neutral-300 border border-neutral-700 font-mono">
-                  v{app.version}
+        {/* Top Bar */}
+        <div className="relative px-6 pt-6 pb-5 bg-neutral-950 border-b border-neutral-800 shrink-0">
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="px-2.5 py-1 rounded-md bg-neutral-900 border border-neutral-800 text-xs font-medium text-neutral-300">
+                {app.simplifiedCategory || app.category}
+              </span>
+              {isTrulyVerified ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-xs font-medium text-emerald-400">
+                  <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
+                  <span>Verified SHA-256</span>
                 </span>
-                {app.sourceType === 'Official' ? (
-                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center gap-1">
-                    Official Upstream
-                  </span>
-                ) : app.sourceType === 'Community' ? (
-                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20 flex items-center gap-1">
-                    Community Builder
-                  </span>
-                ) : null}
-                {app.downloadUrl.toLowerCase().includes('github.com') && (
-                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-neutral-800/80 text-neutral-200 border border-neutral-700 flex items-center gap-1">
-                    GitHub Release
-                  </span>
-                )}
-                {app.downloadUrl.toLowerCase().includes('gitlab.com') && (
-                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-orange-950/40 text-orange-400 border border-orange-900/30 flex items-center gap-1">
-                    Collected from GitLab
-                  </span>
-                )}
-                {app.isUserAdded && (
-                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-950/40 text-amber-400 border border-amber-900/30 flex items-center gap-1">
-                    Community Contributed
-                  </span>
-                )}
-                {isInstalled && (
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-                    <Check className="w-3 h-3" />
-                    Installed
-                  </span>
-                )}
-              </div>
-              <p className="text-sm text-neutral-300 mt-1">{sanitizeText(app.tagline, 300)}</p>
-              <div className="flex items-center gap-3 text-xs text-neutral-400 mt-2 flex-wrap">
-                <span>By <strong className="text-neutral-200">{sanitizeText(app.publisher.name, 100)}</strong></span>
-                <span>•</span>
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5" />
-                  Released {app.releaseDate}
-                </span>
-                <span>•</span>
-                <span className="flex items-center gap-1">
-                  <HardDrive className="w-3.5 h-3.5" />
-                  {app.size}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <button
-            id="close-detail-modal-btn"
-            onClick={onClose}
-            className="text-neutral-400 hover:text-white p-2 rounded-lg bg-neutral-800/80 hover:bg-neutral-700 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Action Bar */}
-        <div className="bg-neutral-900/40 p-4 px-6 border-b border-neutral-800 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              id="detail-modal-install-btn"
-              type="button"
-              onClick={() => {
-                onClose();
-                onOpenInstall(app);
-              }}
-              className="min-h-[44px] flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-sm shadow-md transition-all cursor-pointer"
-            >
-              <Download className="w-4 h-4" aria-hidden="true" />
-              <span>{isInstalled ? `Manage ${app.name} Installation` : `Install ${app.name} with Niruvi`}</span>
-            </button>
-
-            {app.license && (
-              <a
-                id="detail-modal-license-btn"
-                href={
-                  app.licenseCategory === 'Proprietary'
-                    ? '#'
-                    : `https://spdx.org/licenses/${app.license.replace('-only', '').replace('-or-later', '')}.html`
-                }
-                target={app.licenseCategory === 'Proprietary' ? undefined : '_blank'}
-                rel="noopener noreferrer"
-                className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 text-xs font-semibold transition-colors"
-                title={`View ${app.license} open source license details`}
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-neutral-300" aria-hidden="true" />
-                <span>License: {app.license}</span>
-              </a>
-            )}
-
-            <button
-              id="detail-modal-copy-protocol-btn"
-              type="button"
-              onClick={() => copyToClipboard(protocolUrl, setCopiedProtocol)}
-              className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 text-xs font-medium transition-colors cursor-pointer"
-              title="Copy niruvi://install protocol URL"
-            >
-              {copiedProtocol ? (
-                <>
-                  <Check className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
-                  <span className="text-emerald-400 font-medium">Protocol Copied!</span>
-                </>
               ) : (
-                <>
-                  <Copy className="w-3.5 h-3.5 text-neutral-300" aria-hidden="true" />
-                  <span>Copy Niruvi Link</span>
-                </>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-neutral-900 border border-neutral-800 text-xs font-mono text-neutral-400">
+                  <span>Checksum not available</span>
+                </span>
               )}
-            </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {onToggleStar && (
+                <button
+                  type="button"
+                  onClick={(e) => onToggleStar(app.id, e)}
+                  aria-label={
+                    isStarred ? `Saved ${app.name}` : `Save ${app.name} to My Library`
+                  }
+                  aria-pressed={isStarred}
+                  className={`px-3 py-1.5 rounded-lg border text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
+                    isStarred
+                      ? 'bg-sky-500/15 border-sky-500/40 text-sky-400'
+                      : 'bg-neutral-900 border-neutral-800 text-neutral-300 hover:text-white'
+                  }`}
+                >
+                  <Bookmark className={`w-3.5 h-3.5 ${isStarred ? 'fill-sky-400' : ''}`} />
+                  <span>{isStarred ? 'Saved' : 'Save'}</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close application details"
+                className="p-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-white border border-neutral-800 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {sanitizeUrl(app.homepageUrl) && (
-              <a
-                href={sanitizeUrl(app.homepageUrl)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="min-h-[44px] flex items-center gap-1 text-xs text-neutral-200 hover:text-white bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 px-3 py-2 rounded-lg transition-colors"
-              >
-                <Globe className="w-3.5 h-3.5" aria-hidden="true" />
-                <span>Website</span>
-              </a>
-            )}
-            {sanitizeUrl(app.sourceUrl) && (
-              <a
-                href={sanitizeUrl(app.sourceUrl)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="min-h-[44px] flex items-center gap-1 text-xs text-neutral-200 hover:text-white bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 px-3 py-2 rounded-lg transition-colors"
-                title="View GitHub Repository"
-              >
-                <GitBranch className="w-3.5 h-3.5" aria-hidden="true" />
-                <span>Repository</span>
-              </a>
-            )}
-            {sanitizeUrl(app.releasesUrl) && (
-              <a
-                href={sanitizeUrl(app.releasesUrl)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="min-h-[44px] flex items-center gap-1 text-xs text-neutral-200 hover:text-white bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 px-3 py-2 rounded-lg transition-colors"
-                title="View GitHub Releases"
-              >
-                <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
-                <span>Releases</span>
-              </a>
-            )}
-            {sanitizeUrl(getOfficialSponsorUrl(app)) && (
-              <a
-                href={sanitizeUrl(getOfficialSponsorUrl(app))}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="min-h-[44px] flex items-center gap-1.5 px-3 py-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-semibold transition-colors"
-                title={`Support the official development of ${app.name}`}
-              >
-                <Heart className="w-3.5 h-3.5 fill-rose-400/30 text-rose-400" aria-hidden="true" />
-                <span>Support Developer</span>
-              </a>
-            )}
-            <button
-              id="detail-modal-report-btn"
-              type="button"
-              onClick={() => setActiveTab('report')}
-              className="min-h-[44px] flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold transition-colors cursor-pointer"
-              title={`Report a broken download or issue with ${app.name}`}
-            >
-              <AlertCircle className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
-              <span>Report Broken App</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Modal Navigation Tabs */}
-        <div className="flex items-center gap-5 px-6 pt-3 border-b border-neutral-800 text-xs font-medium text-neutral-400 overflow-x-auto no-scrollbar">
-          <button
-            id="tab-overview"
-            onClick={() => setActiveTab('overview')}
-            className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === 'overview'
-                ? 'border-white text-white font-semibold'
-                : 'border-transparent hover:text-neutral-200'
-            }`}
-          >
-            Overview & Features
-          </button>
-          <button
-            id="tab-versions"
-            onClick={() => setActiveTab('versions')}
-            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap ${
-              activeTab === 'versions'
-                ? 'border-white text-white font-semibold'
-                : 'border-transparent hover:text-neutral-200'
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5 text-sky-400" />
-            <span>Version History ({versionHistory.length})</span>
-          </button>
-          <button
-            id="tab-security"
-            onClick={() => setActiveTab('security')}
-            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 ${
-              activeTab === 'security'
-                ? 'border-white text-white font-semibold'
-                : 'border-transparent hover:text-neutral-200'
-            }`}
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            Security & SHA-256
-          </button>
-          <button
-            id="tab-cli"
-            onClick={() => setActiveTab('cli')}
-            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 ${
-              activeTab === 'cli'
-                ? 'border-white text-white font-semibold'
-                : 'border-transparent hover:text-neutral-200'
-            }`}
-          >
-            <Terminal className="w-3.5 h-3.5" />
-            Terminal & CLI
-          </button>
-          <button
-            id="tab-reviews"
-            onClick={() => setActiveTab('reviews')}
-            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 ${
-              activeTab === 'reviews'
-                ? 'border-white text-white font-semibold'
-                : 'border-transparent hover:text-neutral-200'
-            }`}
-          >
-            <Star className="w-3.5 h-3.5 text-amber-400" />
-            Reviews ({reviewsList.length})
-          </button>
-          {app.changelog && (
-            <button
-              id="tab-changelog"
-              onClick={() => setActiveTab('changelog')}
-              className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${
-                activeTab === 'changelog'
-                  ? 'border-white text-white font-semibold'
-                  : 'border-transparent hover:text-neutral-200'
-              }`}
-            >
-              Changelog
-            </button>
-          )}
-          <button
-            id="tab-report"
-            onClick={() => setActiveTab('report')}
-            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap ${
-              activeTab === 'report'
-                ? 'border-amber-400 text-amber-300 font-semibold'
-                : 'border-transparent hover:text-neutral-200'
-            }`}
-          >
-            <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
-            <span>Report Broken App</span>
-          </button>
-        </div>
-
-        {/* Modal Body Content */}
-        <div className="p-6 overflow-y-auto space-y-6 text-neutral-300 flex-1">
-          {activeTab === 'overview' && (
-            <>
-              {/* Description */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-300">
-                  About {sanitizeText(app.name, 100)}
-                </h4>
-                <p className="text-sm leading-relaxed text-neutral-200">
-                  {sanitizeText(app.description, 4000)}
-                </p>
-              </div>
-
-              {/* STEP 1: Niruvi Protocol Fallback + Manual HTTPS Download + SHA-256 Checksum */}
-              <div className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-3 text-xs">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <h4 className="font-bold text-white text-xs">
-                      Don’t have the Niruvi desktop app installed?
-                    </h4>
-                    <p className="text-neutral-300 mt-0.5">
-                      Download the standalone <code className="font-mono text-neutral-200">{appImageFileName}</code> ({app.size}) directly over HTTPS and verify its SHA-256 checksum before making it executable (<code className="font-mono">chmod +x</code>).
-                    </p>
-                  </div>
-                  {isValidHttpsDownloadUrl(app.downloadUrl) && (
-                    <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+            <div className="flex items-center gap-4">
+              <AppIcon
+                slug={app.iconSlug || app.id}
+                name={app.name}
+                iconUrl={app.icon}
+                brandColor={app.brandColor}
+                className="w-14 h-14 rounded-2xl"
+              />
+              <div>
+                <h2
+                  id="app-detail-modal-title"
+                  className="text-xl sm:text-2xl font-bold text-white tracking-tight"
+                >
+                  {app.name}
+                </h2>
+                <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-400 mt-1">
+                  <span>{app.publisher.name}</span>
+                  {sourceRepoUrl && (
+                    <>
+                      <span>•</span>
                       <a
-                        href={sanitizeUrl(app.downloadUrl)}
+                        href={sourceRepoUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={(e) => {
-                          if (dlPhase === 'idle' || dlPhase === 'cancelled') {
-                            e.preventDefault();
-                            setDlPaused(false);
-                            setDlProgress(5);
-                            setDlPhase('downloading');
-                          }
-                        }}
-                        className="min-h-[44px] px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-600 font-semibold inline-flex items-center gap-2 whitespace-nowrap transition-colors"
+                        className="inline-flex items-center gap-1 text-sky-400 hover:text-sky-300 underline"
                       >
-                        <Download className="w-4 h-4 text-sky-400" aria-hidden="true" />
-                        <span>
-                          Download {sanitizeText(app.name, 60)} AppImage ({app.architectures[0] || 'x86_64'})
-                        </span>
+                        <GitBranch className="w-3 h-3" aria-hidden="true" />
+                        <span>Source Repository</span>
+                        <ExternalLink className="w-3 h-3" aria-hidden="true" />
                       </a>
-                    </div>
+                    </>
                   )}
                 </div>
+              </div>
+            </div>
 
-                {/* Active Cancelable Download Progress Bar */}
-                {dlPhase === 'downloading' && (
-                  <div
-                    role="status"
-                    aria-live="polite"
-                    className="p-3.5 rounded-xl bg-neutral-900 border border-sky-500/40 space-y-2.5 animate-in fade-in duration-150"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-bold text-white flex items-center gap-2">
-                        <span
-                          aria-hidden="true"
-                          className={`w-2 h-2 rounded-full ${
-                            dlPaused ? 'bg-amber-400' : 'bg-sky-400 animate-ping'
-                          }`}
-                        />
-                        <span>
-                          {dlPaused
-                            ? `Download Paused (${dlProgress}%)`
-                            : dlProgress < 85
-                            ? `Streaming ${appImageFileName} (${app.size})...`
-                            : 'Preparing SHA-256 Checksum Verification...'}
-                        </span>
-                      </span>
-                      <span className="font-mono text-sky-300 font-semibold tabular-nums">
-                        {dlProgress}%
-                      </span>
-                    </div>
-
-                    <div className="w-full h-2.5 rounded-full bg-neutral-950 border border-neutral-800 overflow-hidden p-0.5">
-                      <div
-                        className={`h-full rounded-full transition-all duration-150 ${
-                          dlPaused
-                            ? 'bg-amber-400'
-                            : 'bg-gradient-to-r from-sky-500 via-emerald-400 to-sky-400'
-                        }`}
-                        style={{ width: `${dlProgress}%` }}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between gap-2 pt-1">
-                      <span className="text-[11px] text-neutral-300 font-mono">
-                        Target: ./{appImageFileName} · Arch: {app.architectures[0] || 'x86_64'}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setDlPaused((p) => !p)}
-                          className="min-h-[34px] px-3 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 text-xs font-semibold inline-flex items-center gap-1 cursor-pointer"
-                        >
-                          {dlPaused ? (
-                            <>
-                              <Play className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
-                              <span>Resume</span>
-                            </>
-                          ) : (
-                            <>
-                              <Pause className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
-                              <span>Pause</span>
-                            </>
-                          )}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (dlTimerRef.current) {
-                              window.clearInterval(dlTimerRef.current);
-                              dlTimerRef.current = null;
-                            }
-                            setDlPaused(false);
-                            setDlPhase('cancelled');
-                          }}
-                          className="min-h-[34px] px-3 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-200 border border-rose-500/40 text-xs font-bold inline-flex items-center gap-1 cursor-pointer"
-                        >
-                          <XCircle className="w-3.5 h-3.5 text-rose-400" aria-hidden="true" />
-                          <span>Cancel Download</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {dlPhase === 'cancelled' && (
-                  <div
-                    role="status"
-                    aria-live="polite"
-                    className="p-3 rounded-xl bg-rose-950/25 border border-rose-500/40 flex flex-wrap items-center justify-between gap-2 animate-in fade-in duration-150"
-                  >
-                    <span className="text-rose-200 font-medium flex items-center gap-1.5">
-                      <XCircle className="w-4 h-4 text-rose-400" aria-hidden="true" />
-                      <span>Download cancelled at {dlProgress}% — binary handoff aborted.</span>
-                    </span>
+            {/* Download Buttons (Direct Upstream Link) */}
+            <div className="flex flex-col sm:items-end gap-2 shrink-0">
+              {app.architectures.length > 1 && (
+                <div className="flex items-center gap-1 bg-neutral-900 p-1 rounded-lg border border-neutral-800">
+                  <span className="text-[11px] font-mono text-neutral-400 px-2">Arch:</span>
+                  {app.architectures.map((arch) => (
                     <button
                       type="button"
-                      onClick={() => {
-                        setDlPaused(false);
-                        setDlProgress(5);
-                        setDlPhase('downloading');
-                      }}
-                      className="min-h-[34px] px-3 py-1 rounded-lg bg-white hover:bg-neutral-200 text-black font-bold text-xs inline-flex items-center gap-1 cursor-pointer"
+                      key={arch}
+                      onClick={() => setSelectedArch(arch)}
+                      className={`px-2 py-1 rounded text-xs font-mono font-medium transition-colors cursor-pointer ${
+                        selectedArch === arch
+                          ? 'bg-sky-600 text-white'
+                          : 'text-neutral-400 hover:text-white'
+                      }`}
                     >
-                      <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
-                      <span>Retry Download</span>
+                      {arch}
                     </button>
-                  </div>
-                )}
-
-                {dlPhase === 'completed' && (
-                  <div
-                    role="status"
-                    aria-live="polite"
-                    className="p-3 rounded-xl bg-emerald-950/25 border border-emerald-500/40 space-y-2 animate-in fade-in duration-150"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-emerald-300 font-semibold flex items-center gap-1.5">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" aria-hidden="true" />
-                        <span>Download handed off to browser! Run in terminal after saving:</span>
-                      </span>
-                      <a
-                        href={sanitizeUrl(app.downloadUrl)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sky-400 hover:underline font-semibold"
-                      >
-                        Direct Mirror Link
-                      </a>
-                    </div>
-                    <pre className="p-2 bg-black/80 rounded border border-neutral-800 font-mono text-[11px] text-neutral-200 overflow-x-auto select-all">
-{`echo "${app.sha256}  ${appImageFileName}" | sha256sum --check && chmod +x ./${appImageFileName} && ./${appImageFileName}`}
-                    </pre>
-                  </div>
-                )}
-
-                <div className="pt-2 border-t border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div className="font-mono text-[11px] text-emerald-400 break-all">
-                    <span className="text-neutral-300 font-sans font-semibold mr-2">SHA-256:</span>
-                    {app.sha256}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => copyToClipboard(app.sha256, setCopiedSha)}
-                    className="min-h-[44px] px-3.5 py-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 inline-flex items-center gap-1.5 text-xs text-neutral-200 hover:text-white font-semibold whitespace-nowrap cursor-pointer"
-                  >
-                    {copiedSha ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5" aria-hidden="true" />
-                    )}
-                    <span>{copiedSha ? 'SHA-256 Copied' : 'Copy SHA-256'}</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Key Features List */}
-              {app.features && app.features.length > 0 && (
-                <div className="space-y-2.5">
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Key Features</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {app.features.map((feat, i) => (
-                      <div key={i} className="p-3 rounded-xl bg-neutral-950 border border-neutral-800 text-xs text-neutral-200 flex items-start gap-2.5">
-                        <CheckCircle2 className="w-4 h-4 text-neutral-400 flex-shrink-0 mt-0.5" />
-                        <span className="leading-relaxed">{feat}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Technical Specifications Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 rounded-xl bg-neutral-950 border border-neutral-800 text-xs">
-                <div>
-                  <span className="text-neutral-500 block mb-1">Architectures</span>
-                  <div className="flex gap-1">
-                    {app.architectures.map(arch => (
-                      <span key={arch} className="px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-mono border border-neutral-800">
-                        {arch}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <span className="text-neutral-500 block mb-1">License</span>
-                  <span className="text-neutral-200 font-medium">{app.license}</span>
-                </div>
-
-                <div>
-                  <span className="text-neutral-500 block mb-1">Category</span>
-                  <span className="text-neutral-200 font-medium">{app.category}</span>
-                </div>
-
-                <div>
-                  <span className="text-neutral-500 block mb-1">Package Format</span>
-                  <span className="text-emerald-400 font-medium">Standalone Linux AppImage</span>
-                </div>
-
-                <div>
-                  <span className="text-neutral-500 block mb-1">Trust & Verification</span>
-                  <span className={`font-medium ${
-                    (app.trustTier === 'Official Developer' || (!app.trustTier && app.sourceType === 'Official'))
-                      ? 'text-blue-400'
-                      : (app.trustTier === 'Unverified Community' ? 'text-neutral-400' : 'text-orange-400')
-                  }`}>
-                    {app.trustTier || (app.sourceType === 'Official' ? 'Official Developer' : 'Verified Community')}
-                  </span>
-                </div>
-
-                <div>
-                  <span className="text-neutral-400 block mb-1">Release Repository</span>
-                  {sanitizeUrl(app.repositoryUrl) ? (
-                    <a
-                      href={sanitizeUrl(app.repositoryUrl)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sky-400 hover:underline truncate block max-w-full"
-                    >
-                      {app.repositoryUrl!.replace('https://github.com/', '')}
-                    </a>
-                  ) : (
-                    <span className="text-neutral-300">Upstream Mirror</span>
-                  )}
-                </div>
-
-                <div>
-                  <span className="text-neutral-500 block mb-1">Verified Downloads</span>
-                  <span className="text-neutral-200 font-medium">{app.downloadsCount.toLocaleString()}</span>
-                </div>
-
-                <div>
-                  <span className="text-neutral-500 block mb-1">Host Requirements</span>
-                  <span className="text-neutral-200">{app.requirements || 'glibc 2.28+, FUSE 2/3'}</span>
-                </div>
-              </div>
-
-              {/* Optional Screenshots via Click-to-Load ThirdPartyEmbed */}
-              {app.screenshots && app.screenshots.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-300">
-                    Screenshots
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {app.screenshots.map((shot, idx) => (
-                      <ThirdPartyEmbed
-                        key={idx}
-                        type="image"
-                        src={shot.url}
-                        altOrTitle={shot.alt || `${app.name} screenshot ${idx + 1}`}
-                        caption={shot.caption}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Tags */}
-              <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400 block mb-2">Tags</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {app.tags.map(tag => (
-                    <span key={tag} className="px-2.5 py-1 rounded-md bg-neutral-950 text-neutral-300 text-xs border border-neutral-800">
-                      #{tag}
-                    </span>
                   ))}
                 </div>
-              </div>
-            </>
-          )}
-
-          {activeTab === 'security' && (
-            <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                <div className="text-xs space-y-1">
-                  <h4 className="font-semibold text-white text-sm">Niruvi Security Verification</h4>
-                  <p className="text-neutral-300">
-                    Niruvi verifies cryptographic SHA-256 checksums automatically before staging and executing AppImages on your Linux host.
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-neutral-300">
-                    Cryptographic SHA-256 Checksum
-                  </label>
-                  <button
-                    id="copy-sha-btn"
-                    type="button"
-                    onClick={() => copyToClipboard(app.sha256, setCopiedSha)}
-                    className="min-h-[44px] px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 flex items-center gap-1.5 text-xs text-neutral-200 hover:text-white cursor-pointer"
-                  >
-                    {copiedSha ? <Check className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" /> : <Copy className="w-3.5 h-3.5" aria-hidden="true" />}
-                    <span>{copiedSha ? 'SHA-256 Copied' : 'Copy SHA-256'}</span>
-                  </button>
-                </div>
-                <div className="p-3 bg-neutral-950 rounded-lg border border-neutral-800 font-mono text-xs text-emerald-400 break-all select-all">
-                  {app.sha256}
-                </div>
-              </div>
-
-              <div className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-2 text-xs">
-                <h5 className="font-semibold text-white">Manual Verification in Terminal:</h5>
-                <pre className="p-2.5 bg-black rounded border border-neutral-800 font-mono text-neutral-300 overflow-x-auto">
-{`echo "${app.sha256}  ${appImageFileName}" | sha256sum --check`}
-                </pre>
-              </div>
-
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-neutral-950 border border-neutral-800 text-xs text-neutral-300">
-                <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                <span>
-                  AppImages execute with user privileges. Always ensure your host system has <code className="text-neutral-200">fuse</code> or <code className="text-neutral-200">libfuse2/libfuse3</code> installed.
-                </span>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'cli' && (
-            <div className="space-y-4">
-              <p className="text-xs text-neutral-400">
-                You can install and run this application directly using the Niruvi CLI or standard Linux terminal commands.
-              </p>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-neutral-300">Via Niruvi CLI:</span>
-                  <button
-                    onClick={() => copyToClipboard(cliCommand, setCopiedCli)}
-                    className="flex items-center gap-1 text-xs text-neutral-300 hover:text-white"
-                  >
-                    {copiedCli ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedCli ? 'Copied' : 'Copy'}</span>
-                  </button>
-                </div>
-                <pre className="p-3 bg-neutral-950 rounded-lg border border-neutral-800 font-mono text-xs text-neutral-200 select-all overflow-x-auto">
-{cliCommand}
-                </pre>
-              </div>
-
-              <div className="space-y-2">
-                <span className="text-xs font-semibold text-neutral-300">Standard Linux Standalone Run:</span>
-                <pre className="p-3 bg-neutral-950 rounded-lg border border-neutral-800 font-mono text-xs text-neutral-300 select-all overflow-x-auto">
-{`# 1. Download AppImage
-curl -L -O "${app.downloadUrl}"
-
-# 2. Grant executable permission
-chmod +x "${appImageFileName}"
-
-# 3. Launch application
-./"${appImageFileName}"`}
-                </pre>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'reviews' && (
-            <div className="space-y-6">
-              {/* Reviews Summary */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-neutral-950 border border-neutral-800">
-                <div className="flex items-center gap-4">
-                  <div className="text-3xl font-extrabold text-white flex items-center gap-1.5 font-mono">
-                    <Star className="w-7 h-7 text-amber-400 fill-amber-400" />
-                    <span>{app.rating.toFixed(1)}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs font-semibold text-white block">Community Review Score</span>
-                    <span className="text-[11px] text-neutral-400">
-                      Based on verified Linux community installs and reviews
-                    </span>
-                  </div>
-                </div>
-
-                {!user && (
-                  <button
-                    onClick={openAuthModal}
-                    className="text-xs text-neutral-200 hover:text-white font-semibold px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 transition"
-                  >
-                    Sign in to Write a Review
-                  </button>
-                )}
-              </div>
-
-              {/* Review Submission Form */}
-              {user && (
-                <form onSubmit={handleReviewSubmit} className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-white flex items-center gap-1.5">
-                      <MessageSquarePlus className="w-4 h-4 text-neutral-300" />
-                      Write a Community Review
-                    </span>
-                    <div className="flex items-center gap-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          type="button"
-                          key={star}
-                          onClick={() => setReviewRating(star)}
-                          className="p-1 focus:outline-hidden"
-                        >
-                          <Star
-                            className={`w-4 h-4 ${
-                              star <= reviewRating
-                                ? 'text-amber-400 fill-amber-400'
-                                : 'text-neutral-700'
-                            } transition`}
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {reviewError && (
-                    <p role="alert" aria-live="assertive" className="text-xs text-red-400">
-                      {reviewError}
-                    </p>
-                  )}
-                  {reviewSuccess && (
-                    <p role="status" aria-live="polite" className="text-xs text-emerald-400">
-                      Review submitted successfully!
-                    </p>
-                  )}
-
-                  <div className="space-y-1">
-                    <label htmlFor="review-headline-input" className="text-xs font-semibold text-neutral-200 block">
-                      Review Headline <span className="text-neutral-400">(required)</span>
-                    </label>
-                    <input
-                      id="review-headline-input"
-                      type="text"
-                      required
-                      placeholder="Review headline (e.g., Flawless Wayland integration)"
-                      value={reviewTitle}
-                      onChange={(e) => setReviewTitle(e.target.value)}
-                      className="w-full min-h-[44px] px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-xs text-white placeholder-neutral-400 focus:outline-hidden focus:border-white transition-colors"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label htmlFor="review-body-input" className="text-xs font-semibold text-neutral-200 block">
-                      Review Details <span className="text-neutral-400">(required)</span>
-                    </label>
-                    <textarea
-                      id="review-body-input"
-                      required
-                      rows={3}
-                      placeholder="Share your experience running this AppImage on your Linux distro..."
-                      value={reviewBody}
-                      onChange={(e) => setReviewBody(e.target.value)}
-                      className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-xs text-white placeholder-neutral-400 focus:outline-hidden focus:border-white resize-none transition-colors"
-                    />
-                  </div>
-
-                  <div className="flex items-start gap-2.5 p-3 rounded-lg bg-neutral-900 border border-neutral-800">
-                    <input
-                      id="review-privacy-consent"
-                      type="checkbox"
-                      checked={reviewConsent}
-                      onChange={(e) => setReviewConsent(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 rounded accent-sky-400 cursor-pointer"
-                    />
-                    <label htmlFor="review-privacy-consent" className="text-xs text-neutral-300 leading-relaxed cursor-pointer">
-                      I agree to the{' '}
-                      <a href="#/privacy" className="underline text-sky-400 hover:text-sky-300">
-                        Privacy Policy
-                      </a>
-                      . My review text and display name will be shown publicly on this application page. (required)
-                    </label>
-                  </div>
-
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={submittingReview || !reviewConsent}
-                      className="min-h-[44px] flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white hover:bg-neutral-200 text-black font-semibold text-xs transition disabled:opacity-50 cursor-pointer"
-                    >
-                      {submittingReview ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Submit Review'}
-                    </button>
-                  </div>
-                </form>
               )}
 
-              {/* Reviews List */}
-              <div className="space-y-3">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-                  User Feedback ({reviewsList.length})
-                </h4>
+              <div className="flex flex-wrap items-center gap-2">
+                <a
+                  href={activeDownloadUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Download ${app.name} AppImage (${selectedArch})`}
+                  className="px-4 py-2.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs flex items-center gap-2 transition-colors"
+                >
+                  <Download className="w-4 h-4" aria-hidden="true" />
+                  <span>
+                    Manual Download ({selectedArch}
+                    {app.size ? ` • ${app.size}` : ''})
+                  </span>
+                </a>
 
-                {loadingReviews ? (
-                  <div className="flex items-center justify-center p-6 text-neutral-400 text-xs">
-                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                    Loading community reviews from Cloud SQL...
-                  </div>
-                ) : reviewsList.length === 0 ? (
-                  <div className="p-6 text-center text-xs text-neutral-500 border border-dashed border-neutral-800 rounded-xl">
-                    No community reviews yet. Be the first to share your thoughts!
-                  </div>
-                ) : (
-                  reviewsList.map((rev) => (
-                    <div
-                      key={rev.id}
-                      className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-2"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-neutral-800 flex items-center justify-center text-[10px] font-bold text-white">
-                            {sanitizeText(rev.userDisplayName || 'Linux User', 60).slice(0, 2).toUpperCase()}
-                          </div>
-                          <span className="text-xs font-medium text-white">
-                            {sanitizeText(rev.userDisplayName || 'Linux User', 60)}
-                          </span>
-                          {rev.isVerifiedPurchase && (
-                            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                              Verified Download
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-0.5">
-                          {[1, 2, 3, 4, 5].map((s) => (
-                            <Star
-                              key={s}
-                              className={`w-3 h-3 ${
-                                s <= rev.rating
-                                  ? 'text-amber-400 fill-amber-400'
-                                  : 'text-neutral-700'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <h5 className="text-xs font-semibold text-neutral-200">{sanitizeText(rev.title, 120)}</h5>
-                      <p className="text-xs text-neutral-400 leading-relaxed">{sanitizeText(rev.body, 2000)}</p>
-                      <div className="flex items-center justify-between pt-1 text-[11px] text-neutral-500">
-                        <span>{new Date(rev.createdAt).toLocaleDateString()}</span>
-                        <button
-                          onClick={() => handleHelpfulVote(rev.id)}
-                          className="flex items-center gap-1 text-neutral-400 hover:text-white transition"
-                        >
-                          <ThumbsUp className="w-3 h-3" />
-                          <span>Helpful ({rev.helpfulCount})</span>
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
+                <button
+                  type="button"
+                  onClick={(e) => onInstall(app, e, selectedArch)}
+                  className="px-3.5 py-2.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-700 font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Terminal className="w-3.5 h-3.5 text-sky-400" aria-hidden="true" />
+                  <span>niruvi:// Desktop Install</span>
+                </button>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Modal Body — Only sections with real data are rendered */}
+        <div className="p-6 overflow-y-auto space-y-6 text-sm">
+          {/* Metadata Grid — Only real fields */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="p-3.5 rounded-xl bg-neutral-950 border border-neutral-800">
+              <div className="flex items-center gap-1.5 text-neutral-400 text-xs mb-1">
+                <FileCode className="w-3.5 h-3.5 text-sky-400" aria-hidden="true" />
+                <span>Latest Version</span>
+              </div>
+              <p className="text-sm font-semibold text-white font-mono">{displayVersion}</p>
+            </div>
+
+            {app.size && (
+              <div className="p-3.5 rounded-xl bg-neutral-950 border border-neutral-800">
+                <div className="flex items-center gap-1.5 text-neutral-400 text-xs mb-1">
+                  <HardDrive className="w-3.5 h-3.5 text-sky-400" aria-hidden="true" />
+                  <span>Package Size</span>
+                </div>
+                <p className="text-sm font-semibold text-white font-mono">{app.size}</p>
+              </div>
+            )}
+
+            <div className="p-3.5 rounded-xl bg-neutral-950 border border-neutral-800">
+              <div className="flex items-center gap-1.5 text-neutral-400 text-xs mb-1">
+                <Cpu className="w-3.5 h-3.5 text-sky-400" aria-hidden="true" />
+                <span>Architecture</span>
+              </div>
+              <p className="text-sm font-semibold text-white font-mono">
+                {app.architectures.join(', ')}
+              </p>
+            </div>
+
+            {app.license && (
+              <div className="p-3.5 rounded-xl bg-neutral-950 border border-neutral-800">
+                <div className="flex items-center gap-1.5 text-neutral-400 text-xs mb-1">
+                  <Scale className="w-3.5 h-3.5 text-sky-400" aria-hidden="true" />
+                  <span>License</span>
+                </div>
+                <p className="text-sm font-semibold text-white truncate" title={app.license}>
+                  {app.license}
+                </p>
+              </div>
+            )}
+
+            {app.releaseDate && (
+              <div className="p-3.5 rounded-xl bg-neutral-950 border border-neutral-800">
+                <div className="flex items-center gap-1.5 text-neutral-400 text-xs mb-1">
+                  <Calendar className="w-3.5 h-3.5 text-sky-400" aria-hidden="true" />
+                  <span>Release Date</span>
+                </div>
+                <p className="text-sm font-semibold text-white font-mono">{app.releaseDate}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Description — Only shown if upstream has a real description */}
+          {app.description && app.description.trim().length > 0 && (
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">
+                Description
+              </h3>
+              <p className="text-neutral-200 leading-relaxed whitespace-pre-line">
+                {app.description}
+              </p>
+            </section>
           )}
 
-          {activeTab === 'versions' && (
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 rounded-xl bg-neutral-950 border border-neutral-800">
-                <div>
-                  <h4 className="text-sm font-bold text-white">
-                    Release &amp; Version History ({versionHistory.length})
-                  </h4>
-                  <p className="text-xs text-neutral-300 mt-0.5">
-                    Download the latest release or roll back to older GitHub Release builds per architecture.
-                  </p>
-                </div>
-                {sanitizeUrl(app.releasesUrl) && (
+          {/* Screenshots — Only shown when upstream provides real screenshots */}
+          {app.screenshots && app.screenshots.length > 0 && (
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2.5 flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-sky-400" aria-hidden="true" />
+                <span>Screenshots</span>
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {app.screenshots.slice(0, 4).map((shot, idx) => {
+                  const shotUrl = typeof shot === 'string' ? shot : shot.url;
+                  const shotAlt =
+                    typeof shot === 'string'
+                      ? `${app.name} screenshot ${idx + 1}`
+                      : shot.alt || `${app.name} screenshot ${idx + 1}`;
+                  return (
+                    <a
+                      key={`${shotUrl}-${idx}`}
+                      href={shotUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950 hover:border-sky-500/50 transition-colors"
+                    >
+                      <img
+                        src={shotUrl}
+                        alt={shotAlt}
+                        loading="lazy"
+                        onError={(e) => {
+                          (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
+                        }}
+                        className="w-full h-48 object-contain bg-neutral-950"
+                      />
+                    </a>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* Version History — Only shown when real release history exists */}
+          {(liveVersionHistory.length > 0 || loadingHistory) && (
+            <section className="p-4 rounded-xl bg-neutral-950 border border-neutral-800">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-300 flex items-center gap-1.5">
+                  <History className="w-3.5 h-3.5 text-sky-400" aria-hidden="true" />
+                  <span>Version History (GitHub Releases)</span>
+                </h3>
+                {app.releasesUrl && (
                   <a
-                    href={sanitizeUrl(app.releasesUrl)}
+                    href={app.releasesUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="min-h-[38px] px-3.5 py-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-xs font-semibold text-sky-400 inline-flex items-center gap-1.5 whitespace-nowrap"
+                    className="text-xs text-sky-400 hover:text-sky-300 inline-flex items-center gap-1"
                   >
-                    <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
-                    <span>All GitHub Releases</span>
+                    <span>All Releases</span>
+                    <ExternalLink className="w-3 h-3" aria-hidden="true" />
                   </a>
                 )}
               </div>
 
-              <div className="space-y-3">
-                {versionHistory.map((rel, idx) => (
-                  <div
-                    key={`${rel.tagName}-${idx}`}
-                    className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-3"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-sm text-white">
-                          v{rel.version}
-                        </span>
-                        {idx === 0 && (
-                          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                            Latest
-                          </span>
-                        )}
-                        {rel.prerelease && (
-                          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                            Pre-release
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-xs text-neutral-400 font-mono">
-                        Published {rel.releaseDate}
-                      </span>
-                    </div>
-
-                    {rel.releaseNotes && (
-                      <p className="text-xs text-neutral-300 whitespace-pre-line leading-relaxed bg-neutral-900/60 p-3 rounded-lg border border-neutral-800/80">
-                        {rel.releaseNotes}
-                      </p>
-                    )}
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                      {rel.assets.map((asset, aIdx) => (
-                        <div
-                          key={`${asset.name}-${aIdx}`}
-                          className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-neutral-900 border border-neutral-800"
-                        >
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-mono font-semibold text-white truncate">
-                                {asset.architecture}
-                              </span>
-                              <span className="text-[11px] text-neutral-400">({asset.size})</span>
-                              {asset.verified && asset.sha256 && (
-                                <span
-                                  className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-medium"
-                                  title={`SHA-256: ${asset.sha256}`}
-                                >
-                                  SHA-256 Verified
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-[11px] text-neutral-400 font-mono truncate block">
-                              {asset.name}
+              {loadingHistory ? (
+                <p className="text-xs text-neutral-400 font-mono">
+                  Loading release history from GitHub…
+                </p>
+              ) : (
+                <div className="space-y-2 max-h-56 overflow-y-auto">
+                  {liveVersionHistory.map((rel) => {
+                    const firstVerifiedAsset = rel.assets.find(
+                      (a) => a.verified && isGenuineSha256(a.sha256)
+                    );
+                    return (
+                      <div
+                        key={rel.tagName}
+                        className="p-3 rounded-lg bg-neutral-900 border border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                      >
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-bold text-white font-mono">
+                              v{rel.version}
                             </span>
+                            {rel.releaseDate && (
+                              <span className="text-xs text-neutral-400 font-mono">
+                                {rel.releaseDate}
+                              </span>
+                            )}
+                            {firstVerifiedAsset && (
+                              <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-[10px] font-mono text-emerald-400">
+                                Verified SHA-256
+                              </span>
+                            )}
                           </div>
-                          {isValidHttpsDownloadUrl(asset.downloadUrl) && (
-                            <a
-                              href={sanitizeUrl(asset.downloadUrl)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="min-h-[36px] px-3 py-1.5 rounded-lg bg-white hover:bg-neutral-200 text-black text-xs font-semibold inline-flex items-center gap-1.5 flex-shrink-0"
-                            >
-                              <Download className="w-3.5 h-3.5" aria-hidden="true" />
-                              <span>Download</span>
-                            </a>
+                          {firstVerifiedAsset && (
+                            <p className="text-[11px] text-neutral-400 font-mono mt-1 break-all">
+                              SHA-256: {firstVerifiedAsset.sha256}
+                            </p>
                           )}
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {rel.assets.map((asset) => (
+                            <a
+                              key={asset.downloadUrl}
+                              href={asset.downloadUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-2.5 py-1 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 text-xs font-mono inline-flex items-center gap-1"
+                            >
+                              <Download className="w-3 h-3 text-sky-400" aria-hidden="true" />
+                              <span>
+                                {asset.architecture}
+                                {asset.size ? ` (${asset.size})` : ''}
+                              </span>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
           )}
 
-          {activeTab === 'report' && (
-            <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-1">
-                <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-amber-400" aria-hidden="true" />
-                  <span>Report Broken Package: {app.name}</span>
-                </h4>
-                <p className="text-xs text-neutral-300">
-                  Found a dead download URL, SHA-256 mismatch, or launch failure on your Linux distro? Submit a report so our pipeline can refresh or flag the release.
-                </p>
+          {/* SHA-256 Checksum Verification Section */}
+          <section className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <ShieldCheck
+                  className={`w-4 h-4 ${isTrulyVerified ? 'text-emerald-400' : 'text-neutral-400'}`}
+                  aria-hidden="true"
+                />
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-white">
+                  SHA-256 Checksum Verification
+                </h3>
               </div>
+              <div className="flex items-center gap-2">
+                {onOpenVerifierWithHash && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenVerifierWithHash(isTrulyVerified ? app.sha256 : '')}
+                    className="text-xs font-medium text-sky-400 hover:text-sky-300 px-2.5 py-1 rounded-lg bg-sky-500/10 border border-sky-500/30 transition-colors cursor-pointer"
+                  >
+                    Open Integrity Verifier
+                  </button>
+                )}
+                {isTrulyVerified && (
+                  <button
+                    type="button"
+                    onClick={copySha}
+                    className="flex items-center gap-1 text-xs font-mono text-neutral-300 hover:text-white px-2.5 py-1 rounded-lg bg-neutral-900 border border-neutral-800 transition-colors cursor-pointer"
+                  >
+                    {copiedSha ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                    <span>{copiedSha ? 'Copied' : 'Copy SHA-256'}</span>
+                  </button>
+                )}
+              </div>
+            </div>
 
-              {reportSubmitted ? (
-                <div
-                  role="status"
-                  aria-live="polite"
-                  className="p-5 rounded-xl bg-emerald-950/30 border border-emerald-500/40 text-center space-y-2"
+            {isTrulyVerified ? (
+              <div className="p-3 rounded-lg bg-neutral-900 border border-neutral-800 font-mono text-xs text-emerald-400 break-all select-all">
+                {app.sha256}
+              </div>
+            ) : (
+              <p className="text-xs text-neutral-400 font-mono">
+                Checksum not available from upstream release metadata. Verify the downloaded file
+                locally with <code className="text-neutral-200">sha256sum</code> before execution.
+              </p>
+            )}
+          </section>
+
+          {/* Terminal Run Instructions */}
+          <section className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Terminal className="w-4 h-4 text-sky-400" aria-hidden="true" />
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-white">
+                  Make Executable &amp; Run
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={copyCmd}
+                className="flex items-center gap-1 text-xs font-mono text-neutral-300 hover:text-white px-2.5 py-1 rounded-lg bg-neutral-900 border border-neutral-800 transition-colors cursor-pointer"
+              >
+                {copiedCmd ? (
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5" />
+                )}
+                <span>{copiedCmd ? 'Copied' : 'Copy Commands'}</span>
+              </button>
+            </div>
+            <pre className="p-3 rounded-lg bg-neutral-900 border border-neutral-800 font-mono text-xs text-neutral-200 overflow-x-auto">
+              <code>
+                {verifyCmd}
+                {'\n'}
+                {chmodCmd}
+              </code>
+            </pre>
+            <div className="text-[11px] text-neutral-400 font-mono truncate">
+              Protocol URI: <span className="text-neutral-300">{protocolUrl}</span>
+            </div>
+          </section>
+
+          {/* Links & Report Broken Package */}
+          <div className="pt-2 border-t border-neutral-800 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              {app.homepageUrl && (
+                <a
+                  href={app.homepageUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-lg bg-neutral-950 hover:bg-neutral-800 text-neutral-300 border border-neutral-800 text-xs inline-flex items-center gap-1.5 transition-colors"
                 >
-                  <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" aria-hidden="true" />
-                  <h5 className="text-sm font-bold text-white">Broken Package Report Logged</h5>
-                  <p className="text-xs text-neutral-300">
-                    Thank you! We have queued <strong className="text-white">{app.name}</strong> for an automated GitHub Release &amp; checksum re-check.
-                  </p>
-                </div>
-              ) : (
-                <form
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    setReportError(null);
-                    if (reportDetails.trim().length < 5) {
-                      setReportError('Please describe the issue (at least 5 characters).');
-                      return;
-                    }
-                    setReportSubmitting(true);
-                    try {
-                      await fetch('/api/reports', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          appId: app.id,
-                          appName: app.name,
-                          reason: reportReason,
-                          details: reportDetails.trim(),
-                          distro: reportDistro.trim(),
-                          architecture: app.architectures[0] || 'x86_64',
-                        }),
-                      });
-                    } catch {
-                      // Local static fallback
-                    } finally {
-                      setReportSubmitting(false);
-                      setReportSubmitted(true);
-                    }
-                  }}
-                  className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-4 text-xs"
+                  <span>Project Website</span>
+                  <ExternalLink className="w-3 h-3" aria-hidden="true" />
+                </a>
+              )}
+              {sourceRepoUrl && (
+                <a
+                  href={sourceRepoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-lg bg-neutral-950 hover:bg-neutral-800 text-neutral-300 border border-neutral-800 text-xs inline-flex items-center gap-1.5 transition-colors"
                 >
-                  {reportError && (
-                    <p role="alert" className="text-rose-400 font-medium">
-                      {reportError}
-                    </p>
-                  )}
-
-                  <div className="space-y-1.5">
-                    <label htmlFor="report-reason-select" className="font-semibold text-neutral-200 block">
-                      Issue Category
-                    </label>
-                    <select
-                      id="report-reason-select"
-                      value={reportReason}
-                      onChange={(e) => setReportReason(e.target.value)}
-                      className="w-full min-h-[42px] px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-white"
-                    >
-                      <option value="Broken download link (404)">Broken download link (404)</option>
-                      <option value="SHA-256 checksum mismatch">SHA-256 checksum mismatch</option>
-                      <option value="Outdated version (newer GitHub Release exists)">
-                        Outdated version (newer GitHub Release exists)
-                      </option>
-                      <option value="Crashes on launch / missing FUSE or glibc dependency">
-                        Crashes on launch / missing FUSE or glibc dependency
-                      </option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label htmlFor="report-distro-input" className="font-semibold text-neutral-200 block">
-                      Linux Distribution &amp; Version (optional)
-                    </label>
-                    <input
-                      id="report-distro-input"
-                      type="text"
-                      value={reportDistro}
-                      onChange={(e) => setReportDistro(e.target.value)}
-                      placeholder="e.g. Ubuntu 24.04 LTS, Fedora 41, Arch Linux"
-                      className="w-full min-h-[42px] px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-white placeholder-neutral-400"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label htmlFor="report-details-textarea" className="font-semibold text-neutral-200 block">
-                      Issue Details <span className="text-neutral-400">(required)</span>
-                    </label>
-                    <textarea
-                      id="report-details-textarea"
-                      rows={3}
-                      required
-                      value={reportDetails}
-                      onChange={(e) => setReportDetails(e.target.value)}
-                      placeholder="Paste terminal output, HTTP error code, or expected release tag..."
-                      className="w-full px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-white placeholder-neutral-400 resize-none"
-                    />
-                  </div>
-
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={reportSubmitting}
-                      className="min-h-[42px] px-5 py-2 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-xs cursor-pointer disabled:opacity-50"
-                    >
-                      {reportSubmitting ? 'Submitting Report…' : 'Submit Broken App Report'}
-                    </button>
-                  </div>
-                </form>
+                  <span>Source Code</span>
+                  <ExternalLink className="w-3 h-3" aria-hidden="true" />
+                </a>
+              )}
+              {app.releasesUrl && (
+                <a
+                  href={app.releasesUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-lg bg-neutral-950 hover:bg-neutral-800 text-neutral-300 border border-neutral-800 text-xs inline-flex items-center gap-1.5 transition-colors"
+                >
+                  <span>Upstream Releases</span>
+                  <ExternalLink className="w-3 h-3" aria-hidden="true" />
+                </a>
               )}
             </div>
-          )}
 
-          {activeTab === 'changelog' && app.changelog && (
-            <div className="space-y-3">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-                What's new in v{app.version}
-              </h4>
-              <ul className="space-y-2 text-xs">
-                {app.changelog.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-neutral-300">
-                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 mt-1.5 flex-shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <button
+              type="button"
+              onClick={() => setShowReportForm((v) => !v)}
+              className="px-3 py-1.5 rounded-lg bg-neutral-950 hover:bg-neutral-800 text-neutral-400 hover:text-amber-300 border border-neutral-800 text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Flag className="w-3.5 h-3.5" aria-hidden="true" />
+              <span>Report Broken Package</span>
+            </button>
+          </div>
+
+          {showReportForm && (
+            <form
+              onSubmit={handleSubmitBrokenReport}
+              className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-semibold text-white flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
+                  <span>Report Broken AppImage ({app.name})</span>
+                </h4>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-neutral-400 mb-1">Issue Type</label>
+                  <select
+                    value={reportReason}
+                    onChange={(e) => setReportReason(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-800 text-xs text-white"
+                  >
+                    <option value="Broken download link (404)">Broken download link (404)</option>
+                    <option value="SHA-256 checksum mismatch">SHA-256 checksum mismatch</option>
+                    <option value="Outdated version">Outdated release version</option>
+                    <option value="Fails to launch on Linux">Fails to launch on Linux</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-neutral-400 mb-1">
+                    Linux Distribution (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={reportDistro}
+                    onChange={(e) => setReportDistro(e.target.value)}
+                    placeholder="e.g. Ubuntu 24.04, Fedora 41, Arch"
+                    className="w-full px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-800 text-xs text-white"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-neutral-400 mb-1">Details</label>
+                <textarea
+                  rows={2}
+                  required
+                  value={reportDetails}
+                  onChange={(e) => setReportDetails(e.target.value)}
+                  placeholder="Describe the broken link or checksum issue..."
+                  className="w-full px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-800 text-xs text-white"
+                />
+              </div>
+              {reportStatusMsg && (
+                <p
+                  className={`text-xs ${
+                    reportStatusMsg.type === 'success' ? 'text-emerald-400' : 'text-rose-400'
+                  }`}
+                >
+                  {reportStatusMsg.text}
+                </p>
+              )}
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowReportForm(false)}
+                  className="px-3 py-1.5 rounded-lg bg-neutral-900 text-neutral-300 border border-neutral-800 text-xs cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={reportSubmitting}
+                  className="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs cursor-pointer disabled:opacity-50"
+                >
+                  {reportSubmitting ? 'Submitting…' : 'Submit Report'}
+                </button>
+              </div>
+            </form>
           )}
         </div>
       </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Receipt, ArrowLeft, CheckCircle2, HelpCircle } from 'lucide-react';
+import { DEVELOPER_NAME, CONTACT_EMAIL, SUPPORT_EMAIL } from '../config/site';
 
 interface RefundsPageProps {
   onBackToStore: () => void;
@@ -19,21 +20,8 @@ export const Refunds: React.FC<RefundsPageProps> = ({ onBackToStore }) => {
         </button>
 
         <span className="text-xs font-mono text-neutral-400">
-          Last Updated: [LAST UPDATED DATE]
+          Last Updated: October 1, 2026
         </span>
-      </div>
-
-      <div
-        role="note"
-        aria-label="Legal template notice"
-        className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs leading-relaxed"
-      >
-        <strong>Legal Template Notice:</strong> This Refund Policy is a template tailored to Niruvi
-        Store. Replace <code className="font-mono">[OWNER NAME]</code>,{' '}
-        <code className="font-mono">[CONTACT EMAIL]</code>,{' '}
-        <code className="font-mono">[COUNTRY/JURISDICTION]</code>, and{' '}
-        <code className="font-mono">[LAST UPDATED DATE]</code> and have it reviewed by a qualified
-        lawyer before enabling commercial transactions.
       </div>
 
       <header className="space-y-3 border-b border-neutral-800 pb-6">
@@ -43,9 +31,9 @@ export const Refunds: React.FC<RefundsPageProps> = ({ onBackToStore }) => {
         </div>
         <h1 className="text-3xl font-extrabold text-white tracking-tight">Refund Policy</h1>
         <p className="text-sm text-neutral-300 leading-relaxed">
-          Niruvi Store, operated by <strong>[OWNER NAME]</strong>, provides open-source and
-          community Linux <code className="font-mono">.AppImage</code> discovery and installation
-          metadata free of charge.
+          Niruvi Store, developed and operated by <strong>{DEVELOPER_NAME}</strong>, provides
+          open-source and community Linux <code className="font-mono">.AppImage</code> discovery and
+          installation metadata free of charge.
         </p>
       </header>
 
@@ -55,10 +43,10 @@ export const Refunds: React.FC<RefundsPageProps> = ({ onBackToStore }) => {
           <span>1. Current Store Status: 100% Free Catalog Downloads</span>
         </h2>
         <p className="text-sm text-neutral-300 leading-relaxed">
-          All applications currently indexed in the static Niruvi Store catalog are free to browse
-          and download (<code className="font-mono">$0.00</code>). No payment, subscription, or
-          credit card is required to download any AppImage or use <code className="font-mono">niruvi://</code>{' '}
-          links. Because no purchases are processed on the static GitHub Pages store,{' '}
+          All applications indexed in the Niruvi Store catalog are free to browse and download (
+          <code className="font-mono">$0.00</code>). No payment, subscription, or credit card is
+          required to download any AppImage or use <code className="font-mono">niruvi://</code>{' '}
+          links. Because no purchases are required for catalog downloads,{' '}
           <strong>no commercial charges or refunds apply to free catalog downloads</strong>.
         </p>
       </section>
@@ -68,47 +56,36 @@ export const Refunds: React.FC<RefundsPageProps> = ({ onBackToStore }) => {
           2. Upstream Publisher Sponsorships &amp; Donations
         </h2>
         <p className="text-sm text-neutral-300 leading-relaxed">
-          Some application detail pages include outbound links to official upstream donation pages
-          (such as GitHub Sponsors, Blender Development Fund, KDE e.V., VideoLAN, or Ko-fi). Those
-          voluntary contributions are processed directly by the upstream project or their payment
-          platform and are governed by that third party&apos;s own refund and donation policies.
+          Some application detail pages include outbound links to official upstream project pages.
+          Any voluntary contributions to upstream open-source authors are processed directly by the
+          upstream project or their payment platform and are governed by that third party&apos;s own
+          refund and donation policies.
         </p>
       </section>
 
       <section aria-labelledby="refunds-future-paid" className="space-y-3">
         <h2 id="refunds-future-paid" className="text-xl font-bold text-white flex items-center gap-2">
           <HelpCircle className="w-5 h-5 text-sky-400" aria-hidden="true" />
-          <span>3. Policy for Future Paid Apps or Commercial Add-Ons</span>
+          <span>3. Support &amp; Billing Inquiries</span>
         </h2>
         <p className="text-sm text-neutral-300 leading-relaxed">
-          If paid commercial Linux applications or developer support plans are introduced in the
-          future, the following refund terms will apply in accordance with applicable consumer
-          protection laws in <strong>[COUNTRY/JURISDICTION]</strong>:
+          If you have any questions or need assistance from developer{' '}
+          <strong>{DEVELOPER_NAME}</strong>, please contact us at{' '}
+          <a
+            href={`mailto:${SUPPORT_EMAIL}`}
+            className="underline text-emerald-400 hover:text-emerald-300 font-mono"
+          >
+            {SUPPORT_EMAIL}
+          </a>{' '}
+          or{' '}
+          <a
+            href={`mailto:${CONTACT_EMAIL}`}
+            className="underline text-sky-400 hover:text-sky-300 font-mono"
+          >
+            {CONTACT_EMAIL}
+          </a>
+          .
         </p>
-        <ul className="list-disc pl-6 space-y-2 text-sm text-neutral-300">
-          <li>
-            <strong>14-Day Refund Window:</strong> Customers may request a full refund within 14
-            calendar days of purchase if a paid AppImage fails to launch on a supported Linux
-            distribution meeting the stated host requirements (<code className="font-mono">glibc</code>{' '}
-            and <code className="font-mono">FUSE</code>) or if the binary SHA-256 checksum fails
-            verification.
-          </li>
-          <li>
-            <strong>Duplicate or Unauthorized Charges:</strong> Any duplicate billing or
-            unauthorized transaction will be refunded in full upon verification.
-          </li>
-          <li>
-            <strong>How to Request a Refund:</strong> Email{' '}
-            <a
-              href="mailto:[CONTACT EMAIL]"
-              className="underline text-sky-400 hover:text-sky-300 font-mono"
-            >
-              [CONTACT EMAIL]
-            </a>{' '}
-            with your transaction receipt/order ID and a brief description of the issue. Approved
-            refunds are returned to the original payment method within 5–10 business days.
-          </li>
-        </ul>
       </section>
     </article>
   );

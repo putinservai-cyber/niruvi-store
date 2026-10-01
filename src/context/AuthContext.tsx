@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { hasProLicense, saveStoredPurchase, saveLicense } from '../lib/purchaseStore';
 import { auth, googleAuthProvider } from '../lib/firebase';
 import {
   signInWithPopup,
@@ -98,21 +97,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
-  // Cosmetic client-side indicator only; server endpoints always re-verify role/plan from DB
-  const [localPro, setLocalPro] = useState(() => hasProLicense());
+  const [localPro, setLocalPro] = useState(false);
   const syncingUidRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    const handleUpdate = () => {
-      setLocalPro(hasProLicense());
-    };
-    window.addEventListener('niruvi_purchases_updated', handleUpdate);
-    window.addEventListener('niruvi_licenses_updated', handleUpdate);
-    return () => {
-      window.removeEventListener('niruvi_purchases_updated', handleUpdate);
-      window.removeEventListener('niruvi_licenses_updated', handleUpdate);
-    };
-  }, []);
 
   const isPro = Boolean(
     localPro ||
@@ -404,24 +390,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        saveLicense({
-          key: trimmed,
-          planType: data.plan || 'pro_developer',
-          isActive: true,
-          registeredTo: user?.email || 'authenticated_developer',
-        });
-        saveStoredPurchase({
-          id: `pur_lic_${Date.now()}`,
-          orderId: 'license_redemption',
-          paymentId: 'crypto_license',
-          planId: data.plan || 'pro_developer',
-          amount: 500,
-          currency: 'INR',
-          status: 'completed',
-          createdAt: new Date().toISOString(),
-          licenseKey: trimmed,
-          customerEmail: user?.email || 'developer@niruvi.store',
-        });
         setLocalPro(true);
         if (user) {
           await fetchProfile();

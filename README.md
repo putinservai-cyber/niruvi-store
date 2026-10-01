@@ -174,12 +174,14 @@ To report security vulnerabilities, see [SECURITY.md](SECURITY.md).
 
 ---
 
-## ☕ Support the Project
+## ☕ Contact, Support & Developer
 
-Niruvi is an independent, community-driven project created and maintained by a single developer. If you find Niruvi Store valuable, you can support hosting, maintenance, and development:
+Niruvi Store is developed and maintained by **PutinServai**. For questions, app submissions, or support:
 
+- 👤 **Developer**: **PutinServai**
+- 📧 **Contact Email**: [niruvi.linux@gmail.com](mailto:niruvi.linux@gmail.com)
+- 🛠️ **Support Email**: [support.niruvi@gmail.com](mailto:support.niruvi@gmail.com)
 - ☕ **Ko-fi**: [ko-fi.com/putinservai](https://ko-fi.com/putinservai)
-- 💳 **Direct Sponsorship**: In-app supporter passes and licensing
 
 ---
 

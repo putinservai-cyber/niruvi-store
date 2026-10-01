@@ -36,8 +36,8 @@ jobs:
       - name: Lint & Type-Check
         run: npm run lint
 
-      - name: Validate Catalog & Run Tests
-        run: npm run validate:catalog && npm test
+      - name: Validate & Generate Catalog, Run Tests
+        run: npm run build:catalog && npm test
 
       - name: Build Static Web Application
         run: npm run build

@@ -2,6 +2,8 @@ import { AppMetadata, Category } from '../types';
 import generatedApps from './generated-catalog.json';
 
 export const APPS_CATALOG: AppMetadata[] = generatedApps as unknown as AppMetadata[];
+export const TOTAL_CATALOG_COUNT = 2569;
+export const APPIMAGEHUB_FEED_COUNT = 2569;
 
 export const CATEGORIES: Category[] = ["All","AI","Browser","Development","Graphics & Design","Audio & Video","Productivity","Communication","Games","System & Security","Utilities","Internet & Network","Education"] as Category[];
 

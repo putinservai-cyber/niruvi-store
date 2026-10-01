@@ -1,73 +1,19 @@
 [
   {
-    "id": "blender",
-    "name": "Blender",
-    "tagline": "Professional 3D creation pipeline for modeling, rigging, and rendering",
-    "description": "Blender is the world-renowned free and open source 3D pipeline suite. It covers modeling, sculpting, rigging, 3D animation, simulation, GPU raytraced rendering with Cycles, video editing, and 2D storyboard drawing with Grease Pencil.",
-    "category": "Graphics & Design",
-    "version": "4.3.2",
-    "releaseDate": "2025-01-20",
-    "size": "312.8 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-3.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "Blender Foundation",
-      "website": "https://www.blender.org",
-      "verified": true,
-      "github": "https://projects.blender.org/blender/blender"
-    },
-    "sha256": "4e375ab838531980ee9f57a3e811c7fae98f02969b8219c490ff7a1c1d01931a",
-    "downloadUrl": "https://download.blender.org/release/Blender4.3/blender-4.3.2-linux-x64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://download.blender.org/release/Blender4.3/blender-4.3.2-linux-x64.AppImage"
-    },
-    "iconSlug": "blender",
-    "icon": "/icons/blender.svg",
-    "brandColor": "#EA7600",
-    "features": [
-      "Cycles GPU ray-tracing with OptiX, HIP, and Vulkan backends",
-      "Advanced geometry node modeling systems",
-      "Grease Pencil 2D illustration and storyboard suite",
-      "Full Python 3 API for pipeline scripting and automation"
-    ],
-    "homepageUrl": "https://www.blender.org",
-    "sourceUrl": "https://projects.blender.org/blender/blender",
-    "repositoryUrl": "https://projects.blender.org/blender/blender",
-    "releasesUrl": "https://projects.blender.org/blender/blender/releases",
-    "sourceType": "Official",
-    "trustTier": "Official Developer",
-    "officialStatus": true,
-    "tags": [
-      "3d",
-      "modeling",
-      "animation",
-      "rendering",
-      "cycles",
-      "vfx",
-      "sculpting"
-    ],
-    "featured": true,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 4.3.2 AppImage release build"
-    ],
-    "requirements": "OpenGL 4.3 capable GPU, 8GB RAM minimum"
-  },
-  {
     "id": "keepassxc",
     "name": "KeePassXC",
     "tagline": "Secure, cross-platform password manager stored completely offline",
     "description": "KeePassXC is a modern, secure, and open-source password manager that stores and manages your most sensitive information offline in an encrypted database using AES-256 and Argon2. You can safely save your logins, credit cards, TOTP 2FA tokens, and private notes.",
-    "category": "System & Security",
+    "category": "System/Utilities",
+    "simplifiedCategory": "System/Utilities",
     "version": "2.7.9",
     "releaseDate": "2024-06-20",
     "size": "58.4 MB",
     "architectures": [
       "x86_64"
+    ],
+    "formats": [
+      "AppImage"
     ],
     "license": "GPL-3.0",
     "licenseCategory": "Open Source",
@@ -84,17 +30,11 @@
     },
     "iconSlug": "keepassxc",
     "icon": "/icons/keepassxc.svg",
-    "brandColor": "#6CAE3E",
-    "features": [
-      "AES-256 and ChaCha20 encryption with Argon2 key derivation",
-      "Built-in Time-based One-Time Password (TOTP) authenticator",
-      "Native browser integration for Firefox, Chrome, and Brave",
-      "Auto-Type login automation on X11 and Wayland"
-    ],
     "homepageUrl": "https://keepassxc.org",
     "sourceUrl": "https://github.com/keepassxreboot/keepassxc",
     "repositoryUrl": "https://github.com/keepassxreboot/keepassxc",
     "releasesUrl": "https://github.com/keepassxreboot/keepassxc/releases",
+    "githubRepo": "keepassxreboot/keepassxc",
     "sourceType": "Official",
     "trustTier": "Official Developer",
     "officialStatus": true,
@@ -110,8 +50,19 @@
     "featured": true,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 2.7.9 AppImage release build"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/KeePassXC/screenshot.png",
+        "alt": "KeePassXC screenshot 1"
+      }
+    ],
+    "brandColor": "#6CAE3E",
+    "features": [
+      "AES-256 and ChaCha20 encryption with Argon2 key derivation",
+      "Built-in Time-based One-Time Password (TOTP) authenticator",
+      "Native browser integration for Firefox, Chrome, and Brave",
+      "Auto-Type login automation on X11 and Wayland"
     ],
     "requirements": "Any modern Linux desktop"
   },
@@ -120,12 +71,16 @@
     "name": "Krita",
     "tagline": "Professional painting application made by artists for artists",
     "description": "Krita is a creative sketching and painting tool designed for concept artists, illustrators, matte and texture artists, and the VFX industry. It features over 100 professionally designed brushes, 9 brush engines, stabilizer support, and seamless wrap-around pattern creation.",
-    "category": "Graphics & Design",
+    "category": "Graphics",
+    "simplifiedCategory": "Graphics",
     "version": "5.2.6",
     "releaseDate": "2024-11-28",
     "size": "228.4 MB",
     "architectures": [
       "x86_64"
+    ],
+    "formats": [
+      "AppImage"
     ],
     "license": "GPL-3.0",
     "licenseCategory": "Open Source",
@@ -142,13 +97,6 @@
     },
     "iconSlug": "krita",
     "icon": "/icons/krita.svg",
-    "brandColor": "#3B82F6",
-    "features": [
-      "Brush stabilizers for smooth inking curves",
-      "Wrap-around tiling mode for game textures and patterns",
-      "Full color management with ICC and HDR support",
-      "Integrated frame-by-frame animation workspace with audio playback"
-    ],
     "homepageUrl": "https://krita.org",
     "sourceUrl": "https://invent.kde.org/graphics/krita",
     "repositoryUrl": "https://invent.kde.org/graphics/krita",
@@ -168,141 +116,37 @@
     "featured": true,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 5.2.6 AppImage release build"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://cdn.kde.org/screenshots/krita/2018-03-17_screenshot_001.png",
+        "alt": "Krita screenshot 1"
+      }
+    ],
+    "brandColor": "#3B82F6",
+    "features": [
+      "Brush stabilizers for smooth inking curves",
+      "Wrap-around tiling mode for game textures and patterns",
+      "Full color management with ICC and HDR support",
+      "Integrated frame-by-frame animation workspace with audio playback"
     ],
     "requirements": "Graphics card with OpenGL 3.0 or higher"
-  },
-  {
-    "id": "obs-studio",
-    "name": "OBS Studio",
-    "tagline": "High-performance video recording and live broadcasting software",
-    "description": "OBS Studio is the gold standard for live streaming and offline screen recording on Linux. It provides low-latency capture via PipeWire and X11, multi-view production monitors, hardware-accelerated video encoding (NVENC, VA-API, QuickSync), and modular scene composition.",
-    "category": "Audio & Video",
-    "version": "31.0.1",
-    "releaseDate": "2025-01-08",
-    "size": "188.0 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-2.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "OBS Project",
-      "website": "https://obsproject.com",
-      "verified": true,
-      "github": "https://github.com/obsproject/obs-studio"
-    },
-    "sha256": "c3d9a11fa3571d796791c530bb1507f352136067727e4c30c806509f6f663d12",
-    "downloadUrl": "https://github.com/obsproject/obs-studio/releases/download/31.0.1/OBS-Studio-31.0.1-Ubuntu-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://github.com/obsproject/obs-studio/releases/download/31.0.1/OBS-Studio-31.0.1-Ubuntu-x86_64.AppImage"
-    },
-    "iconSlug": "obs-studio",
-    "icon": "/icons/obs-studio.svg",
-    "brandColor": "#475569",
-    "features": [
-      "Real-time audio & video capture via PipeWire and V4L2",
-      "Hardware-accelerated NVENC, VA-API, and SVT-AV1 encoders",
-      "Audio mixer with noise gate, suppression, and gain filters",
-      "Modular Dock UI with custom web browser source plugins"
-    ],
-    "homepageUrl": "https://obsproject.com",
-    "sourceUrl": "https://github.com/obsproject/obs-studio",
-    "repositoryUrl": "https://github.com/obsproject/obs-studio",
-    "releasesUrl": "https://github.com/obsproject/obs-studio/releases",
-    "sourceType": "Official",
-    "trustTier": "Official Developer",
-    "officialStatus": true,
-    "tags": [
-      "streaming",
-      "recording",
-      "video",
-      "broadcast",
-      "screen-recorder",
-      "twitch",
-      "youtube"
-    ],
-    "featured": true,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 31.0.1 AppImage release build"
-    ],
-    "requirements": "OpenGL 3.3 compatible GPU, PipeWire or PulseAudio"
-  },
-  {
-    "id": "vscodium",
-    "name": "VSCodium",
-    "tagline": "Telemetry-free, community-driven distribution of Microsoft VS Code",
-    "description": "VSCodium provides binary releases of Microsoft's Visual Studio Code built from the MIT-licensed vscode repository. It completely strips all proprietary telemetry, tracking, and proprietary license agreements, giving developers a privacy-respecting code editor with complete access to debugging, syntax highlighting, and extensions.",
-    "category": "Development",
-    "version": "1.96.2",
-    "releaseDate": "2025-01-14",
-    "size": "104.2 MB",
-    "architectures": [
-      "x86_64",
-      "aarch64"
-    ],
-    "license": "MIT",
-    "licenseCategory": "Permissive",
-    "publisher": {
-      "name": "VSCodium Project",
-      "website": "https://vscodium.com",
-      "verified": true,
-      "github": "https://github.com/VSCodium/vscodium"
-    },
-    "sha256": "9f8b4618e28f3b2591b65b6a782b1c2a129037cba8b99c75620be2f627a3c748",
-    "downloadUrl": "https://github.com/VSCodium/vscodium/releases/download/1.96.2.25015/VSCodium-1.96.2.25015.glibc2.28-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://github.com/VSCodium/vscodium/releases/download/1.96.2.25015/VSCodium-1.96.2.25015.glibc2.28-x86_64.AppImage",
-      "aarch64": "https://github.com/VSCodium/vscodium/releases/download/1.96.2.25015/VSCodium-1.96.2.25015.glibc2.28-arm64.AppImage"
-    },
-    "iconSlug": "vscodium",
-    "icon": "/icons/vscodium.png",
-    "brandColor": "#2F80ED",
-    "features": [
-      "Zero telemetry, tracking, or background analytics",
-      "Full TypeScript, JavaScript, Python, Rust, and Go support",
-      "Open VSX Registry extension compatibility",
-      "Integrated Git source control and multi-root terminal"
-    ],
-    "homepageUrl": "https://vscodium.com",
-    "sourceUrl": "https://github.com/VSCodium/vscodium",
-    "repositoryUrl": "https://github.com/VSCodium/vscodium",
-    "releasesUrl": "https://github.com/VSCodium/vscodium/releases",
-    "sourceType": "Official",
-    "trustTier": "Official Developer",
-    "officialStatus": true,
-    "tags": [
-      "editor",
-      "ide",
-      "code",
-      "programming",
-      "typescript",
-      "python",
-      "rust",
-      "golang"
-    ],
-    "featured": true,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 1.96.2 AppImage release build"
-    ],
-    "requirements": "GLIBC >= 2.28, libfuse2 or libfuse3"
   },
   {
     "id": "audacity",
     "name": "Audacity",
     "tagline": "Open-source, multi-track audio editor and recorder",
     "description": "Audacity is an easy-to-use, multi-track audio editor and recorder for Linux. Record live audio through a microphone or mixer, import sound files, edit them, combine them with other tracks, and apply extensive DSP audio effects.",
-    "category": "Audio & Video",
+    "category": "Audio/Video",
+    "simplifiedCategory": "Audio/Video",
     "version": "3.7.1",
     "releaseDate": "2024-12-10",
     "size": "68.5 MB",
     "architectures": [
       "x86_64"
+    ],
+    "formats": [
+      "AppImage"
     ],
     "license": "GPL-3.0",
     "licenseCategory": "Open Source",
@@ -319,17 +163,11 @@
     },
     "iconSlug": "audacity",
     "icon": "/icons/audacity.svg",
-    "brandColor": "#0000EB",
-    "features": [
-      "Multi-track audio waveform and spectral editing",
-      "Real-time VST3, LV2, and LADSPA plugin support",
-      "Noise reduction, equalization, and dynamic compression",
-      "Export to MP3, WAV, FLAC, Ogg Vorbis, and Opus"
-    ],
     "homepageUrl": "https://www.audacityteam.org",
     "sourceUrl": "https://github.com/audacity/audacity",
     "repositoryUrl": "https://github.com/audacity/audacity",
     "releasesUrl": "https://github.com/audacity/audacity/releases",
+    "githubRepo": "audacity/audacity",
     "sourceType": "Official",
     "trustTier": "Official Developer",
     "officialStatus": true,
@@ -345,8 +183,19 @@
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 3.7.1 AppImage release build"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://www.audacityteam.org/wp-content/uploads/2016/01/audacity-212-linux.png",
+        "alt": "Audacity screenshot 1"
+      }
+    ],
+    "brandColor": "#0000EB",
+    "features": [
+      "Multi-track audio waveform and spectral editing",
+      "Real-time VST3, LV2, and LADSPA plugin support",
+      "Noise reduction, equalization, and dynamic compression",
+      "Export to MP3, WAV, FLAC, Ogg Vorbis, and Opus"
     ],
     "requirements": "ALSA or PulseAudio / PipeWire"
   },
@@ -355,12 +204,16 @@
     "name": "balenaEtcher",
     "tagline": "Flash OS images to SD cards & USB drives, safely and easily.",
     "description": "balenaEtcher is a powerful OS image flasher built with web technologies to ensure flashing SD Cards or USB drives is a pleasant and safe experience. It protects you from accidentally writing to your hard-drives, and ensures every byte of data is written correctly.",
-    "category": "Utilities",
+    "category": "System/Utilities",
+    "simplifiedCategory": "System/Utilities",
     "version": "1.19.21",
     "releaseDate": "2024-11-15",
     "size": "142.1 MB",
     "architectures": [
       "x86_64"
+    ],
+    "formats": [
+      "AppImage"
     ],
     "license": "Apache-2.0",
     "licenseCategory": "Permissive",
@@ -377,17 +230,11 @@
     },
     "iconSlug": "etcher",
     "icon": "/icons/etcher.png",
-    "brandColor": "#00A38C",
-    "features": [
-      "Validated flashing prevents writing to corrupt cards",
-      "Drive Selection safety prevents scrubbing system hard-drives",
-      "Clean visual dashboard with beautiful progress percentages",
-      "Supports ISO, IMG, ZIP, DMG, and raw OS blocks"
-    ],
     "homepageUrl": "https://etcher.balena.io",
     "sourceUrl": "https://github.com/balena-io/etcher",
     "repositoryUrl": "https://github.com/balena-io/etcher",
     "releasesUrl": "https://github.com/balena-io/etcher/releases",
+    "githubRepo": "balena-io/etcher",
     "sourceType": "Official",
     "trustTier": "Official Developer",
     "officialStatus": true,
@@ -403,8 +250,19 @@
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 1.19.21 AppImage release build"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/Etcher/screenshot.png",
+        "alt": "Etcher screenshot 1"
+      }
+    ],
+    "brandColor": "#00A38C",
+    "features": [
+      "Validated flashing prevents writing to corrupt cards",
+      "Drive Selection safety prevents scrubbing system hard-drives",
+      "Clean visual dashboard with beautiful progress percentages",
+      "Supports ISO, IMG, ZIP, DMG, and raw OS blocks"
     ],
     "requirements": "64-bit Linux desktop, USB/SD reader"
   },
@@ -413,12 +271,16 @@
     "name": "FreeCAD",
     "tagline": "Parametric 3D CAD modeler for mechanical engineering and product design",
     "description": "FreeCAD is an open-source parametric 3D modeler made primarily to design real-life objects of any size. Parametric modeling allows you to easily modify your design by going back into your model history and changing its parameters.",
-    "category": "Graphics & Design",
+    "category": "Graphics",
+    "simplifiedCategory": "Graphics",
     "version": "1.0.0",
     "releaseDate": "2024-11-18",
     "size": "485.6 MB",
     "architectures": [
       "x86_64"
+    ],
+    "formats": [
+      "AppImage"
     ],
     "license": "LGPL-2.1",
     "licenseCategory": "Open Source",
@@ -435,20 +297,14 @@
     },
     "iconSlug": "freecad",
     "icon": "/icons/freecad.svg",
-    "brandColor": "#CB2027",
-    "features": [
-      "Complete Open CASCADE Technology geometry kernel",
-      "Modular architecture with dedicated Workbenches",
-      "Technical drawing generation (TechDraw workbench)",
-      "Comprehensive Python scripting API"
-    ],
     "homepageUrl": "https://www.freecad.org",
     "sourceUrl": "https://github.com/FreeCAD/FreeCAD",
     "repositoryUrl": "https://github.com/FreeCAD/FreeCAD",
     "releasesUrl": "https://github.com/FreeCAD/FreeCAD/releases",
+    "githubRepo": "FreeCAD/FreeCAD",
     "sourceType": "Community",
     "trustTier": "Verified Community",
-    "officialStatus": false,
+    "officialStatus": true,
     "tags": [
       "cad",
       "3d",
@@ -461,8 +317,19 @@
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 1.0.0 AppImage release build"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://www.freecadweb.org/wiki/images/2/2d/FreeCAD011.png",
+        "alt": "FreeCAD2 screenshot 1"
+      }
+    ],
+    "brandColor": "#CB2027",
+    "features": [
+      "Complete Open CASCADE Technology geometry kernel",
+      "Modular architecture with dedicated Workbenches",
+      "Technical drawing generation (TechDraw workbench)",
+      "Comprehensive Python scripting API"
     ],
     "requirements": "64-bit Linux with OpenGL 3.0+"
   },
@@ -471,12 +338,16 @@
     "name": "FreeTube",
     "tagline": "An open source desktop YouTube player built with privacy in mind.",
     "description": "FreeTube is a YouTube client for Windows, Mac, and Linux built to let you use YouTube more privately. You can subscribe to creators without an account, block ads, and prevent Google from tracking you with cookies and JavaScript.",
-    "category": "Audio & Video",
+    "category": "Audio/Video",
+    "simplifiedCategory": "Audio/Video",
     "version": "0.25.3",
     "releaseDate": "2025-01-10",
     "size": "85.2 MB",
     "architectures": [
       "x86_64"
+    ],
+    "formats": [
+      "AppImage"
     ],
     "license": "GPL-3.0",
     "licenseCategory": "Open Source",
@@ -493,17 +364,11 @@
     },
     "iconSlug": "freetube",
     "icon": "/icons/freetube.png",
-    "brandColor": "#FF3E3E",
-    "features": [
-      "Watch YouTube videos without Google user tracking",
-      "Block ads, sponsor segments (SponsorBlock integration), and popups",
-      "Import/Export subscriptions completely locally",
-      "Custom playlists and local channel subscriptions"
-    ],
     "homepageUrl": "https://freetubeapp.io",
     "sourceUrl": "https://github.com/FreeTubeApp/FreeTube",
     "repositoryUrl": "https://github.com/FreeTubeApp/FreeTube",
     "releasesUrl": "https://github.com/FreeTubeApp/FreeTube/releases",
+    "githubRepo": "FreeTubeApp/FreeTube",
     "sourceType": "Official",
     "trustTier": "Official Developer",
     "officialStatus": true,
@@ -518,8 +383,19 @@
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 0.25.3 AppImage release build"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/FreeTube/screenshot.png",
+        "alt": "FreeTube screenshot 1"
+      }
+    ],
+    "brandColor": "#FF3E3E",
+    "features": [
+      "Watch YouTube videos without Google user tracking",
+      "Block ads, sponsor segments (SponsorBlock integration), and popups",
+      "Import/Export subscriptions completely locally",
+      "Custom playlists and local channel subscriptions"
     ],
     "requirements": "Linux 64-bit, ALSA or PulseAudio / PipeWire"
   },
@@ -528,12 +404,16 @@
     "name": "GIMP",
     "tagline": "Free & Open Source Image Editor with powerful photo retouching",
     "description": "GIMP is a cross-platform image editor available for Linux. Whether you are a graphic designer, photographer, illustrator, or scientist, GIMP provides you with sophisticated tools to get your job done with high quality photo manipulation and original artwork creation.",
-    "category": "Graphics & Design",
+    "category": "Graphics",
+    "simplifiedCategory": "Graphics",
     "version": "2.10.38",
     "releaseDate": "2024-05-05",
     "size": "156.8 MB",
     "architectures": [
       "x86_64"
+    ],
+    "formats": [
+      "AppImage"
     ],
     "license": "GPL-3.0",
     "licenseCategory": "Open Source",
@@ -550,13 +430,6 @@
     },
     "iconSlug": "gimp",
     "icon": "/icons/gimp.svg",
-    "brandColor": "#5C5543",
-    "features": [
-      "High quality photo retouching and digital restoration",
-      "GEGL 32-bit floating point color processing engine",
-      "Full color management with ICC profile workflows",
-      "Broad format support (XCF, PSD, TIFF, PNG, JPEG, WebP)"
-    ],
     "homepageUrl": "https://www.gimp.org",
     "sourceUrl": "https://gitlab.gnome.org/GNOME/gimp",
     "repositoryUrl": "https://gitlab.gnome.org/GNOME/gimp",
@@ -575,66 +448,19 @@
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 2.10.38 AppImage release build"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://www.gimp.org/screenshots/Screenshot-gimp-3.0-painting.jpg",
+        "alt": "GIMP screenshot 1"
+      }
     ],
-    "requirements": "Linux 64-bit desktop environment"
-  },
-  {
-    "id": "handbrake",
-    "name": "HandBrake",
-    "tagline": "Open-source video transcoder for converting video from nearly any format",
-    "description": "HandBrake is a tool for converting video from nearly any format to a selection of modern, widely supported codecs. It supports hardware encoding via Intel QSV, AMD VCN, and NVIDIA NVENC alongside high quality software encoders.",
-    "category": "Audio & Video",
-    "version": "1.9.0",
-    "releaseDate": "2024-12-22",
-    "size": "74.8 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-2.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "HandBrake Team",
-      "website": "https://handbrake.fr",
-      "verified": true,
-      "github": "https://github.com/HandBrake/HandBrake"
-    },
-    "sha256": "3491f03f5ad676994a5a54fe59a4bb3ef06093d939634fa68b9195eeb00d046c",
-    "downloadUrl": "https://github.com/HandBrake/HandBrake/releases/download/1.9.0/HandBrake-1.9.0-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://github.com/HandBrake/HandBrake/releases/download/1.9.0/HandBrake-1.9.0-x86_64.AppImage"
-    },
-    "iconSlug": "handbrake",
-    "icon": "/icons/handbrake.png",
-    "brandColor": "#E53E3E",
+    "brandColor": "#5C5543",
     "features": [
-      "Convert video from nearly any format with built-in device presets",
-      "Hardware-accelerated encoding (NVENC, Intel QSV, AMD VCN)",
-      "Modern AV1, H.265 (HEVC), and VP9 video codec compression",
-      "Batch queuing, subtitle pass-through, and audio downmixing"
-    ],
-    "homepageUrl": "https://handbrake.fr",
-    "sourceUrl": "https://github.com/HandBrake/HandBrake",
-    "repositoryUrl": "https://github.com/HandBrake/HandBrake",
-    "releasesUrl": "https://github.com/HandBrake/HandBrake/releases",
-    "sourceType": "Official",
-    "trustTier": "Official Developer",
-    "officialStatus": true,
-    "tags": [
-      "video",
-      "transcoder",
-      "converter",
-      "h264",
-      "h265",
-      "av1",
-      "encoder"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 1.9.0 AppImage release build"
+      "High quality photo retouching and digital restoration",
+      "GEGL 32-bit floating point color processing engine",
+      "Full color management with ICC profile workflows",
+      "Broad format support (XCF, PSD, TIFF, PNG, JPEG, WebP)"
     ],
     "requirements": "Linux 64-bit desktop environment"
   },
@@ -643,12 +469,16 @@
     "name": "Inkscape",
     "tagline": "Professional vector graphics editor for illustration and typography",
     "description": "Inkscape is a professional quality vector graphics software which runs on Linux. It is used by design professionals and hobbyists worldwide for creating a wide variety of graphics such as illustrations, icons, logos, diagrams, maps, and web graphics.",
-    "category": "Graphics & Design",
+    "category": "Graphics",
+    "simplifiedCategory": "Graphics",
     "version": "1.4.0",
     "releaseDate": "2024-10-13",
     "size": "172.4 MB",
     "architectures": [
       "x86_64"
+    ],
+    "formats": [
+      "AppImage"
     ],
     "license": "GPL-3.0",
     "licenseCategory": "Open Source",
@@ -665,13 +495,6 @@
     },
     "iconSlug": "inkscape",
     "icon": "/icons/inkscape.svg",
-    "brandColor": "#000000",
-    "features": [
-      "Full SVG format specification compliance",
-      "Advanced Bézier curve and node editing tools",
-      "Flexible text tool with kerning, letter spacing, and line spacing",
-      "Broad format export (PDF, EPS, SVG, PNG, WebP)"
-    ],
     "homepageUrl": "https://inkscape.org",
     "sourceUrl": "https://gitlab.com/inkscape/inkscape",
     "repositoryUrl": "https://gitlab.com/inkscape/inkscape",
@@ -691,8 +514,19 @@
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 1.4.0 AppImage release build"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://media.inkscape.org/media/resources/file/Screenshot_Freedom_Machine_Inkscape_master_FB3NeUU.png",
+        "alt": "Inkscape screenshot 1"
+      }
+    ],
+    "brandColor": "#000000",
+    "features": [
+      "Full SVG format specification compliance",
+      "Advanced Bézier curve and node editing tools",
+      "Flexible text tool with kerning, letter spacing, and line spacing",
+      "Broad format export (PDF, EPS, SVG, PNG, WebP)"
     ],
     "requirements": "X11/Wayland desktop environment"
   },
@@ -701,12 +535,16 @@
     "name": "Joplin",
     "tagline": "An open source note taking and to-do application with end-to-end encryption",
     "description": "Joplin is an open source note taking and to-do application, which can handle a large number of notes organized into notebooks. The notes are searchable, can be copied, tagged and modified with full Markdown formatting and math equations.",
-    "category": "Productivity",
+    "category": "Office",
+    "simplifiedCategory": "Office",
     "version": "3.2.11",
     "releaseDate": "2025-01-18",
     "size": "112.5 MB",
     "architectures": [
       "x86_64"
+    ],
+    "formats": [
+      "AppImage"
     ],
     "license": "AGPL-3.0",
     "licenseCategory": "Open Source",
@@ -723,20 +561,14 @@
     },
     "iconSlug": "joplin",
     "icon": "/icons/joplin.svg",
-    "brandColor": "#0F52BA",
-    "features": [
-      "Full Markdown notes with KaTeX math and Mermaid diagrams",
-      "End-to-End Encryption (E2EE) on all sync targets",
-      "Web Clipper extension for Firefox and Chrome",
-      "Sync with Nextcloud, Dropbox, WebDAV, or local file system"
-    ],
     "homepageUrl": "https://joplinapp.org",
     "sourceUrl": "https://github.com/laurent22/joplin",
     "repositoryUrl": "https://github.com/laurent22/joplin",
     "releasesUrl": "https://github.com/laurent22/joplin/releases",
+    "githubRepo": "laurent22/joplin",
     "sourceType": "Community",
     "trustTier": "Verified Community",
-    "officialStatus": false,
+    "officialStatus": true,
     "tags": [
       "notes",
       "markdown",
@@ -749,8 +581,19 @@
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 3.2.11 AppImage release build"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/Joplin/screenshot.png",
+        "alt": "Joplin screenshot 1"
+      }
+    ],
+    "brandColor": "#0F52BA",
+    "features": [
+      "Full Markdown notes with KaTeX math and Mermaid diagrams",
+      "End-to-End Encryption (E2EE) on all sync targets",
+      "Web Clipper extension for Firefox and Chrome",
+      "Sync with Nextcloud, Dropbox, WebDAV, or local file system"
     ],
     "requirements": "Linux 64-bit desktop"
   },
@@ -759,12 +602,16 @@
     "name": "Kdenlive",
     "tagline": "Non-linear video editor powered by the MLT framework and KDE",
     "description": "Kdenlive is an acronym for KDE Non-Linear Video Editor. It is a powerful multi-track video editor that supports almost all audio and video formats via FFmpeg, with keyframe animation, proxy editing, auto-subtitling with Whisper AI, and color grading.",
-    "category": "Audio & Video",
+    "category": "Audio/Video",
+    "simplifiedCategory": "Audio/Video",
     "version": "24.12.1",
     "releaseDate": "2025-01-09",
     "size": "274.0 MB",
     "architectures": [
       "x86_64"
+    ],
+    "formats": [
+      "AppImage"
     ],
     "license": "GPL-3.0",
     "licenseCategory": "Open Source",
@@ -781,20 +628,13 @@
     },
     "iconSlug": "kdenlive",
     "icon": "/icons/kdenlive.svg",
-    "brandColor": "#5275D3",
-    "features": [
-      "Multi-track video editing with timeline audio waveforms",
-      "AI Speech-to-Text subtitle generation using Whisper",
-      "Color scopes, vectorscope, RGB parade, and LUT support",
-      "Configurable keyboard shortcuts and dynamic proxy clips"
-    ],
     "homepageUrl": "https://kdenlive.org",
     "sourceUrl": "https://invent.kde.org/multimedia/kdenlive",
     "repositoryUrl": "https://invent.kde.org/multimedia/kdenlive",
     "releasesUrl": "https://invent.kde.org/multimedia/kdenlive/releases",
     "sourceType": "Community",
     "trustTier": "Verified Community",
-    "officialStatus": false,
+    "officialStatus": true,
     "tags": [
       "video",
       "editing",
@@ -807,2429 +647,2022 @@
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 24.12.1 AppImage release build"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://cdn.kde.org/screenshots/ffmpegthumbs/ffmpegthumbs.png",
+        "alt": "Kdenlive screenshot 1"
+      }
+    ],
+    "brandColor": "#5275D3",
+    "features": [
+      "Multi-track video editing with timeline audio waveforms",
+      "AI Speech-to-Text subtitle generation using Whisper",
+      "Color scopes, vectorscope, RGB parade, and LUT support",
+      "Configurable keyboard shortcuts and dynamic proxy clips"
     ],
     "requirements": "Multicore CPU, 8GB RAM, OpenGL 2.0+"
   },
   {
-    "id": "supertuxkart",
-    "name": "SuperTuxKart",
-    "tagline": "3D arcade kart racer starring Tux, Beastie, and friends",
-    "description": "SuperTuxKart is a 3D open-source arcade racing game featuring mascot characters of various free software projects. Race through tracks against AI or friends in local split-screen or networked multiplayer battle arenas.",
-    "category": "Games",
-    "version": "1.4.0",
-    "releaseDate": "2023-11-01",
-    "size": "640.2 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-3.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "SuperTuxKart Team",
-      "website": "https://supertuxkart.net",
-      "verified": true,
-      "github": "https://github.com/supertuxkart/stk-code"
-    },
-    "sha256": "61a7a0301a2f6ca46e919ff72ca4cba799307779b9ba1b42602161f3eb129759",
-    "downloadUrl": "https://github.com/supertuxkart/stk-code/releases/download/v1.4/SuperTuxKart-1.4-linux-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://github.com/supertuxkart/stk-code/releases/download/v1.4/SuperTuxKart-1.4-linux-x86_64.AppImage"
-    },
-    "iconSlug": "supertuxkart",
-    "icon": "/icons/supertuxkart.png",
-    "brandColor": "#10B981",
-    "features": [
-      "Over 20 story tracks and multiplayer battle arenas",
-      "Networked online multiplayer and local split-screen",
-      "Full game controller and steering wheel compatibility",
-      "Custom addon manager to download user-made tracks"
-    ],
-    "homepageUrl": "https://supertuxkart.net",
-    "sourceUrl": "https://github.com/supertuxkart/stk-code",
-    "repositoryUrl": "https://github.com/supertuxkart/stk-code",
-    "releasesUrl": "https://github.com/supertuxkart/stk-code/releases",
-    "sourceType": "Official",
-    "trustTier": "Official Developer",
-    "officialStatus": true,
-    "tags": [
-      "game",
-      "racing",
-      "arcade",
-      "multiplayer",
-      "tux",
-      "kart",
-      "fun"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 1.4.0 AppImage release build"
-    ],
-    "requirements": "Hardware 3D accelerator with OpenGL 3.1+"
-  },
-  {
-    "id": "appimage-recipes",
-    "name": "AppImage recipes",
-    "tagline": "Recipes and build specifications to generate AppImages with AppImageKit",
-    "description": "A collection of build recipes and Continuous Integration templates maintained by TheAssassin and the AppImage community. Provides automated pkg2appimage recipes to package upstream Debian/Ubuntu binaries, compile native libraries, and package compliant AppImages.",
+    "id": "1devtool_releases",
+    "name": "1DevTool Releases",
+    "tagline": "One workspace. Every AI agent. Every project.",
+    "description": "One workspace. Every AI agent. Every project.",
     "category": "Development",
-    "version": "2.0.0",
-    "releaseDate": "2026-07-10",
-    "size": "15.0 MB",
+    "simplifiedCategory": "Development",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
     "architectures": [
       "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "stoicsoft",
+      "website": "https://github.com/stoicsoft/1devtool-releases",
+      "verified": false,
+      "github": "https://github.com/stoicsoft/1devtool-releases"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/stoicsoft/1devtool-releases/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/stoicsoft/1devtool-releases/releases"
+    },
+    "iconSlug": "1devtool_releases",
+    "icon": "https://appimage.github.io/database/1DevTool_Releases/icons/1024x1024/1devtool.png",
+    "homepageUrl": "https://github.com/stoicsoft/1devtool-releases",
+    "sourceUrl": "https://github.com/stoicsoft/1devtool-releases",
+    "repositoryUrl": "https://github.com/stoicsoft/1devtool-releases",
+    "releasesUrl": "https://github.com/stoicsoft/1devtool-releases/releases",
+    "githubRepo": "stoicsoft/1devtool-releases",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "development"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/1DevTool_Releases/screenshot.png",
+        "alt": "1DevTool Releases screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "3dco-plus",
+    "name": "3dco-plus",
+    "tagline": "3D controller visualization overlay",
+    "description": "3D controller visualization overlay",
+    "category": "System/Utilities",
+    "simplifiedCategory": "System/Utilities",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
     ],
     "license": "MIT",
     "licenseCategory": "Permissive",
     "publisher": {
-      "name": "TheAssassin & Community",
-      "website": "https://github.com/TheAssassin/AppImages",
+      "name": "Khyretos",
+      "website": "https://github.com/Khyretos/3dco-plus",
       "verified": false,
-      "github": "https://github.com/TheAssassin/AppImages"
+      "github": "https://github.com/Khyretos/3dco-plus"
     },
-    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "downloadUrl": "https://github.com/TheAssassin/AppImages/archive/refs/heads/master.tar.gz",
+    "sha256": "",
+    "downloadUrl": "https://github.com/Khyretos/3dco-plus/releases",
     "downloadMap": {
-      "x86_64": "https://github.com/TheAssassin/AppImages/archive/refs/heads/master.tar.gz"
+      "x86_64": "https://github.com/Khyretos/3dco-plus/releases"
     },
-    "iconSlug": "appimage-recipes",
-    "icon": "/icons/appimage-recipes.png",
-    "brandColor": "#2563EB",
-    "features": [
-      "Ready-to-use YAML and Bash recipes for dozens of popular open source apps",
-      "GitHub Actions and Travis CI continuous delivery workflow examples",
-      "Helper scripts to strip unnecessary libraries and bundle shared runtimes",
-      "AppStream metainfo validation and AppImage desktop integration testing"
-    ],
-    "homepageUrl": "https://github.com/TheAssassin/AppImages",
-    "sourceUrl": "https://github.com/TheAssassin/AppImages",
-    "repositoryUrl": "https://github.com/TheAssassin/AppImages",
-    "releasesUrl": "https://github.com/TheAssassin/AppImages",
-    "sourceType": "Community",
+    "iconSlug": "3dco-plus",
+    "icon": "https://appimage.github.io/database/3dco-plus/icons/512x512/3dco+.png",
+    "homepageUrl": "https://github.com/Khyretos/3dco-plus",
+    "sourceUrl": "https://github.com/Khyretos/3dco-plus",
+    "repositoryUrl": "https://github.com/Khyretos/3dco-plus",
+    "releasesUrl": "https://github.com/Khyretos/3dco-plus/releases",
+    "githubRepo": "Khyretos/3dco-plus",
+    "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
     "tags": [
-      "recipes",
-      "build",
-      "ci",
-      "appimagekit",
-      "pkg2appimage",
-      "packaging",
-      "dev"
+      "utility"
     ],
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 2.0.0 AppImage release build"
-    ],
-    "requirements": "Linux desktop or server"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/3dco-plus/screenshot.png",
+        "alt": "3dco-plus screenshot 1"
+      }
+    ]
   },
   {
-    "id": "appimagelauncher",
-    "name": "AppImageLauncher",
-    "tagline": "Helper utility to integrate AppImages smoothly into system menus",
-    "description": "AppImageLauncher makes your Linux desktop AppImage-ready by integrating AppImages seamlessly with your desktop environment. It prompts to move downloaded AppImages to a central directory, generates desktop launcher icons, and simplifies desktop removal.",
-    "category": "System & Security",
-    "version": "3.0.0",
-    "releaseDate": "2026-08-01",
-    "size": "14.5 MB",
+    "id": "3s-pokemmo-tool",
+    "name": "3s-PokeMMO-Tool",
+    "tagline": "3’s PokeMMO Tool — For Blueberries",
+    "description": "3’s PokeMMO Tool — For Blueberries",
+    "category": "System/Utilities",
+    "simplifiedCategory": "System/Utilities",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
     "architectures": [
       "x86_64"
     ],
-    "license": "MIT",
-    "licenseCategory": "Permissive",
-    "publisher": {
-      "name": "TheAssassin & Community",
-      "website": "https://github.com/TheAssassin/AppImageLauncher",
-      "verified": false,
-      "github": "https://github.com/TheAssassin/AppImageLauncher"
-    },
-    "sha256": "123456789abcdef0123456789abcdef01a2b3c4d5e6f7890123456789abcdef0",
-    "downloadUrl": "https://github.com/TheAssassin/AppImageLauncher/releases/download/v3.0.0-beta-3/appimagelauncher-lite-3.0.0-beta-2-gha287-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://github.com/TheAssassin/AppImageLauncher/releases/download/v3.0.0-beta-3/appimagelauncher-lite-3.0.0-beta-2-gha287-x86_64.AppImage"
-    },
-    "iconSlug": "appimagelauncher",
-    "icon": "/icons/appimagelauncher.png",
-    "brandColor": "#3B82F6",
-    "features": [
-      "One-click integration dialog upon launching newly downloaded AppImages",
-      "Automatic desktop entry creation with icons in GNOME, KDE, and XFCE",
-      "Centralized AppImage storage directory management (~/Applications)",
-      "Clean uninstallation option directly from the desktop application menu"
+    "formats": [
+      "AppImage"
     ],
-    "homepageUrl": "https://github.com/TheAssassin/AppImageLauncher",
-    "sourceUrl": "https://github.com/TheAssassin/AppImageLauncher",
-    "repositoryUrl": "https://github.com/TheAssassin/AppImageLauncher",
-    "releasesUrl": "https://github.com/TheAssassin/AppImageLauncher/releases",
-    "sourceType": "Community",
+    "license": "",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "muphy09",
+      "website": "https://github.com/muphy09/3s-PokeMMO-Tool",
+      "verified": false,
+      "github": "https://github.com/muphy09/3s-PokeMMO-Tool"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/muphy09/3s-PokeMMO-Tool/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/muphy09/3s-PokeMMO-Tool/releases"
+    },
+    "iconSlug": "3s-pokemmo-tool",
+    "icon": "https://appimage.github.io/database/3s-PokeMMO-Tool/icons/256x256/pokemmo-tool.png",
+    "homepageUrl": "https://github.com/muphy09/3s-PokeMMO-Tool",
+    "sourceUrl": "https://github.com/muphy09/3s-PokeMMO-Tool",
+    "repositoryUrl": "https://github.com/muphy09/3s-PokeMMO-Tool",
+    "releasesUrl": "https://github.com/muphy09/3s-PokeMMO-Tool/releases",
+    "githubRepo": "muphy09/3s-PokeMMO-Tool",
+    "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
     "tags": [
-      "appimage",
-      "integration",
-      "desktop",
-      "launcher",
-      "system",
-      "utilities"
+      "utility"
     ],
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 3.0.0 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop, libfuse2 or libfuse3"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/3s-PokeMMO-Tool/screenshot.png",
+        "alt": "3s-PokeMMO-Tool screenshot 1"
+      }
+    ]
   },
   {
-    "id": "appimageupdater",
-    "name": "AppImageUpdate",
-    "tagline": "Update AppImages using binary delta zsync algorithms",
-    "description": "AppImageUpdate lets you update AppImages in a decentral way using information embedded in the AppImage itself. By using binary delta algorithms (zsync), only changed bytes are downloaded, reducing update time and bandwidth by over 90%.",
-    "category": "System & Security",
-    "version": "2.0.0",
-    "releaseDate": "2026-07-15",
-    "size": "12.0 MB",
+    "id": "4kwall",
+    "name": "4KWALL",
+    "tagline": "Browse, download, and auto-change 4K wallpapers",
+    "description": "Browse, download, and auto-change 4K wallpapers",
+    "category": "Graphics",
+    "simplifiedCategory": "Graphics",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
     "architectures": [
       "x86_64"
     ],
-    "license": "BSD-3-Clause",
-    "licenseCategory": "Permissive",
-    "publisher": {
-      "name": "AppImageCommunity",
-      "website": "https://github.com/AppImageCommunity/AppImageUpdate",
-      "verified": false,
-      "github": "https://github.com/AppImageCommunity/AppImageUpdate"
-    },
-    "sha256": "a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0",
-    "downloadUrl": "https://github.com/AppImageCommunity/AppImageUpdate/releases/download/2.0.0-alpha-1-20251018/AppImageUpdate-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://github.com/AppImageCommunity/AppImageUpdate/releases/download/2.0.0-alpha-1-20251018/AppImageUpdate-x86_64.AppImage"
-    },
-    "iconSlug": "appimageupdater",
-    "icon": "/icons/appimageupdater.png",
-    "brandColor": "#2563EB",
-    "features": [
-      "Binary delta differential updates downloading only changed blocks",
-      "Built-in verification of downloaded blocks using embedded checksums",
-      "Graphical and command-line interfaces for batch background updating",
-      "Preserves permissions and automatically replaces old version upon success"
+    "formats": [
+      "AppImage"
     ],
-    "homepageUrl": "https://github.com/AppImageCommunity/AppImageUpdate",
-    "sourceUrl": "https://github.com/AppImageCommunity/AppImageUpdate",
-    "repositoryUrl": "https://github.com/AppImageCommunity/AppImageUpdate",
-    "releasesUrl": "https://github.com/AppImageCommunity/AppImageUpdate/releases",
-    "sourceType": "Community",
+    "license": "LicenseRef-proprietary=https://raw.githubusercontent.com/rishabh3354/4KWALL/main/share/license/LICENSE",
+    "licenseCategory": "Proprietary",
+    "publisher": {
+      "name": "rishabh3354",
+      "website": "https://github.com/rishabh3354/4KWALL",
+      "verified": false,
+      "github": "https://github.com/rishabh3354/4KWALL"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/rishabh3354/4KWALL/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/rishabh3354/4KWALL/releases"
+    },
+    "iconSlug": "4kwall",
+    "icon": "https://appimage.github.io/database/4KWALL/icons/512x512/com.warlordsoftwares.wallpaper-app-4kwall.png",
+    "homepageUrl": "https://github.com/rishabh3354/4KWALL",
+    "sourceUrl": "https://github.com/rishabh3354/4KWALL",
+    "repositoryUrl": "https://github.com/rishabh3354/4KWALL",
+    "releasesUrl": "https://github.com/rishabh3354/4KWALL/releases",
+    "githubRepo": "rishabh3354/4KWALL",
+    "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
     "tags": [
-      "appimage",
-      "updater",
-      "delta",
-      "zsync",
-      "bandwidth",
-      "binary"
+      "graphics"
     ],
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 2.0.0 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/4KWALL/screenshot.png",
+        "alt": "4KWALL screenshot 1"
+      }
+    ]
   },
   {
-    "id": "arch-deployer",
-    "name": "Arch-Deployer",
-    "tagline": "Bulk download Arch Linux packages and dependencies to build AppImages",
-    "description": "Arch-Deployer by ivan-hc is an automated utility to bulk-download any Arch Linux package along with its full dependency tree from Arch and AUR mirrors to bundle them directly into standalone AppImages. Essential for packaging Arch-specific software into universal portable packages.",
+    "id": "6502-emulator",
+    "name": "6502-EMULATOR",
+    "tagline": "Desktop (Electron) and web emulator for the AC6502 family of computers",
+    "description": "Desktop (Electron) and web emulator for the AC6502 family of computers",
     "category": "Development",
-    "version": "1.7.0",
-    "releaseDate": "2026-08-01",
-    "size": "8.5 MB",
+    "simplifiedCategory": "Development",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
     "architectures": [
       "x86_64"
     ],
-    "license": "GPL-3.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "ivan-hc",
-      "website": "https://github.com/ivan-hc/Arch-Deployer",
-      "verified": false,
-      "github": "https://github.com/ivan-hc/Arch-Deployer"
-    },
-    "sha256": "a888888888888888888888888888888888888888888888888888888888888888",
-    "downloadUrl": "https://github.com/ivan-hc/Arch-Deployer/releases/download/1.7.0/arch-deployer",
-    "downloadMap": {
-      "x86_64": "https://github.com/ivan-hc/Arch-Deployer/releases/download/1.7.0/arch-deployer"
-    },
-    "iconSlug": "arch-deployer",
-    "icon": "/icons/arch-deployer.png",
-    "brandColor": "#1793D1",
-    "features": [
-      "Recursively resolves and downloads all required Arch Linux package dependencies",
-      "Automated AppDir directory generation and ELF binary rpath patching",
-      "Compatible with both official Arch repositories and community AUR builds",
-      "Outputs ready-to-run AppImages with a single command"
-    ],
-    "homepageUrl": "https://github.com/ivan-hc/Arch-Deployer",
-    "sourceUrl": "https://github.com/ivan-hc/Arch-Deployer",
-    "repositoryUrl": "https://github.com/ivan-hc/Arch-Deployer",
-    "releasesUrl": "https://github.com/ivan-hc/Arch-Deployer/releases",
-    "sourceType": "Community",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "arch",
-      "pacman",
-      "packaging",
-      "appimage",
-      "build",
-      "dependencies",
-      "cli"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 1.7.0 AppImage release build"
-    ],
-    "requirements": "Linux desktop or server"
-  },
-  {
-    "id": "ardour",
-    "name": "Ardour",
-    "tagline": "Complete digital audio workstation for recording and audio mixing",
-    "description": "Ardour is an open source, collaborative effort of a worldwide team including musicians, programmers, and professional recording engineers. Record, edit, and mix multi-track audio and MIDI with non-destructive editing and flexible routing.",
-    "category": "Audio & Video",
-    "version": "8.6.0",
-    "releaseDate": "2026-07-15",
-    "size": "175.0 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-2.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "Ardour Community",
-      "website": "https://ardour.org",
-      "verified": false,
-      "github": "https://github.com/Ardour/ardour"
-    },
-    "sha256": "123456789abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f7890",
-    "downloadUrl": "https://community.ardour.org/download/Ardour-8.6.0-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://community.ardour.org/download/Ardour-8.6.0-x86_64.AppImage"
-    },
-    "iconSlug": "ardour",
-    "icon": "/icons/ardour.svg",
-    "brandColor": "#DC2626",
-    "features": [
-      "Multi-track audio and MIDI recording with unlimited undo/redo",
-      "Non-linear sample-accurate editing and clip launching",
-      "Support for VST2, VST3, LV2, and LADSPA audio plugins",
-      "Flexible signal routing matrix and hardware audio interface compatibility"
-    ],
-    "homepageUrl": "https://ardour.org",
-    "sourceUrl": "https://github.com/Ardour/ardour",
-    "repositoryUrl": "https://github.com/Ardour/ardour",
-    "releasesUrl": "https://github.com/Ardour/ardour/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "daw",
-      "music",
-      "recording",
-      "mixing",
-      "audio",
-      "vst",
-      "midi"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 8.6.0 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop, ALSA or PipeWire/JACK audio server"
-  },
-  {
-    "id": "auto-wall",
-    "name": "Auto-Wall",
-    "tagline": "Automatically detect walls in TTRPG battle maps and export to VTTs",
-    "description": "Auto-Wall transforms tabletop battle map images into ready-to-use wall, door, and lighting data for FoundryVTT, Roll20, Fantasy Grounds, and other virtual tabletops supporting the Universal VTT (UVTT) standard. Computer vision and edge detection eliminate tedious manual tracing.",
-    "category": "Games",
-    "version": "1.4.0",
-    "releaseDate": "2026-08-15",
-    "size": "85.0 MB",
-    "architectures": [
-      "x86_64"
+    "formats": [
+      "AppImage"
     ],
     "license": "MIT",
     "licenseCategory": "Permissive",
     "publisher": {
-      "name": "ThreeHats",
-      "website": "https://autowallvtt.com",
+      "name": "acwright",
+      "website": "https://github.com/acwright/6502-EMULATOR",
       "verified": false,
-      "github": "https://github.com/ThreeHats/auto-wall"
+      "github": "https://github.com/acwright/6502-EMULATOR"
     },
-    "sha256": "a333333333333333333333333333333333333333333333333333333333333333",
-    "downloadUrl": "https://github.com/ThreeHats/auto-wall/releases/download/1.4.0-beta.5/Auto-Wall-1.4.0-beta.5-x86_64.AppImage",
+    "sha256": "",
+    "downloadUrl": "https://github.com/acwright/6502-EMULATOR/releases",
     "downloadMap": {
-      "x86_64": "https://github.com/ThreeHats/auto-wall/releases/download/1.4.0-beta.5/Auto-Wall-1.4.0-beta.5-x86_64.AppImage"
+      "x86_64": "https://github.com/acwright/6502-EMULATOR/releases"
     },
-    "iconSlug": "auto-wall",
-    "icon": "/icons/auto-wall.png",
-    "brandColor": "#E11D48",
-    "features": [
-      "Automated wall detection powered by computer vision and threshold filters",
-      "Export to Universal VTT (.dd2vtt / .uvtt) for FoundryVTT and Fantasy Grounds",
-      "Interactive point editing to tweak door, window, and secret wall placements",
-      "Batch processing for multi-room dungeon crawl maps"
-    ],
-    "homepageUrl": "https://autowallvtt.com",
-    "sourceUrl": "https://github.com/ThreeHats/auto-wall",
-    "repositoryUrl": "https://github.com/ThreeHats/auto-wall",
-    "releasesUrl": "https://github.com/ThreeHats/auto-wall/releases",
+    "iconSlug": "6502-emulator",
+    "icon": "https://appimage.github.io/database/6502-EMULATOR/icons/512x512/6502-emulator.png",
+    "homepageUrl": "https://github.com/acwright/6502-EMULATOR",
+    "sourceUrl": "https://github.com/acwright/6502-EMULATOR",
+    "repositoryUrl": "https://github.com/acwright/6502-EMULATOR",
+    "releasesUrl": "https://github.com/acwright/6502-EMULATOR/releases",
+    "githubRepo": "acwright/6502-EMULATOR",
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
     "tags": [
-      "ttrpg",
-      "dnd",
-      "vtt",
-      "foundryvtt",
-      "roll20",
-      "maps",
-      "walls",
-      "lighting"
+      "development"
     ],
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 1.4.0 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/6502-EMULATOR/screenshot.png",
+        "alt": "6502-EMULATOR screenshot 1"
+      }
+    ]
   },
   {
-    "id": "blender-lts",
-    "name": "Blender LTS (AppImage)",
-    "tagline": "Community packaged standalone AppImage builds of Blender Long-Term Support",
-    "description": "Blender LTS AppImage builds by Lethja package the official Linux Long-Term Support (LTS) releases of Blender into portable, self-contained AppImage packages. Includes verified CUDA/OptiX/HIP rendering libraries, Python 3 dependencies, and desktop launcher shortcuts without modifying system packages.",
-    "category": "Graphics & Design",
-    "version": "4.2.23 LTS",
-    "releaseDate": "2026-08-26",
-    "size": "310.0 MB",
+    "id": "86box",
+    "name": "86Box",
+    "tagline": "",
+    "description": "",
+    "category": "System/Utilities",
+    "simplifiedCategory": "System/Utilities",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
     "architectures": [
       "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "86Box",
+      "website": "https://github.com/86Box/86Box",
+      "verified": false,
+      "github": "https://github.com/86Box/86Box"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/86Box/86Box/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/86Box/86Box/releases"
+    },
+    "iconSlug": "86box",
+    "icon": "https://appimage.github.io/database/86Box/icons/512x512/86box.png",
+    "homepageUrl": "https://github.com/86Box/86Box",
+    "sourceUrl": "https://github.com/86Box/86Box",
+    "repositoryUrl": "https://github.com/86Box/86Box",
+    "releasesUrl": "https://github.com/86Box/86Box/releases",
+    "githubRepo": "86Box/86Box",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "utility"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/86Box/screenshot.png",
+        "alt": "86Box screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "abcarus",
+    "name": "ABCarus",
+    "tagline": "ABCarus is a small Electron app for editing, converting, and auditioning ABC notation. Import and export fl...",
+    "description": "ABCarus is a small Electron app for editing, converting, and auditioning ABC notation. Import and export flows support common MusicXML workflows with bundled tools for portability.",
+    "category": "Audio/Video",
+    "simplifiedCategory": "Audio/Video",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "MIT",
+    "licenseCategory": "Permissive",
+    "publisher": {
+      "name": "topchyan",
+      "website": "https://github.com/topchyan/abcarus",
+      "verified": false,
+      "github": "https://github.com/topchyan/abcarus"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/topchyan/abcarus/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/topchyan/abcarus/releases"
+    },
+    "iconSlug": "abcarus",
+    "icon": "https://appimage.github.io/database/ABCarus/icons/512x512/abcarus.png",
+    "homepageUrl": "https://github.com/topchyan/abcarus",
+    "sourceUrl": "https://github.com/topchyan/abcarus",
+    "repositoryUrl": "https://github.com/topchyan/abcarus",
+    "releasesUrl": "https://github.com/topchyan/abcarus/releases",
+    "githubRepo": "topchyan/abcarus",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "audiovideo"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/ABCarus/screenshot.png",
+        "alt": "ABCarus screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "abject",
+    "name": "Abject",
+    "tagline": "LLM-Mediated Object System",
+    "description": "LLM-Mediated Object System",
+    "category": "System/Utilities",
+    "simplifiedCategory": "System/Utilities",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
     ],
     "license": "GPL-3.0",
     "licenseCategory": "Open Source",
     "publisher": {
-      "name": "Lethja (Community Package)",
-      "website": "https://github.com/Lethja/blender-appimage",
+      "name": "mempko",
+      "website": "https://github.com/mempko/abject",
       "verified": false,
-      "github": "https://github.com/Lethja/blender-appimage"
+      "github": "https://github.com/mempko/abject"
     },
-    "sha256": "a666666666666666666666666666666666666666666666666666666666666666",
-    "downloadUrl": "https://github.com/Lethja/blender-appimage/releases/download/2026-08-26/blender-4.2.23-x86_64.AppImage.zip",
+    "sha256": "",
+    "downloadUrl": "https://github.com/mempko/abject/releases",
     "downloadMap": {
-      "x86_64": "https://github.com/Lethja/blender-appimage/releases/download/2026-08-26/blender-4.2.23-x86_64.AppImage.zip"
+      "x86_64": "https://github.com/mempko/abject/releases"
     },
-    "iconSlug": "blender",
-    "icon": "/icons/blender-lts.svg",
-    "brandColor": "#F97316",
-    "features": [
-      "Official Blender Long-Term Support branch with guaranteed enterprise stability",
-      "Cycles and EEVEE Next rendering backends with hardware raytracing acceleration",
-      "Built-in Geometry Nodes procedural modeling and grease pencil tools",
-      "Completely self-contained portable package with embedded Python environment"
+    "iconSlug": "abject",
+    "icon": "https://appimage.github.io/database/Abject/icons/512x512/abjects.png",
+    "homepageUrl": "https://github.com/mempko/abject",
+    "sourceUrl": "https://github.com/mempko/abject",
+    "repositoryUrl": "https://github.com/mempko/abject",
+    "releasesUrl": "https://github.com/mempko/abject/releases",
+    "githubRepo": "mempko/abject",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "utility"
     ],
-    "homepageUrl": "https://github.com/Lethja/blender-appimage",
-    "sourceUrl": "https://github.com/Lethja/blender-appimage",
-    "repositoryUrl": "https://github.com/Lethja/blender-appimage",
-    "releasesUrl": "https://github.com/Lethja/blender-appimage/releases",
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/Abject/screenshot.png",
+        "alt": "Abject screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "abracadabra",
+    "name": "AbracaDABra",
+    "tagline": "Abraca DAB radio",
+    "description": "Abraca DAB radio",
+    "category": "Audio/Video",
+    "simplifiedCategory": "Audio/Video",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "KejPi",
+      "website": "https://github.com/KejPi/AbracaDABra",
+      "verified": false,
+      "github": "https://github.com/KejPi/AbracaDABra"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/KejPi/AbracaDABra/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/KejPi/AbracaDABra/releases"
+    },
+    "iconSlug": "abracadabra",
+    "icon": "https://appimage.github.io/database/AbracaDABra/icons/512x512/AbracaDABra.png",
+    "homepageUrl": "https://github.com/KejPi/AbracaDABra",
+    "sourceUrl": "https://github.com/KejPi/AbracaDABra",
+    "repositoryUrl": "https://github.com/KejPi/AbracaDABra",
+    "releasesUrl": "https://github.com/KejPi/AbracaDABra/releases",
+    "githubRepo": "KejPi/AbracaDABra",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "audiovideo"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/AbracaDABra/screenshot.png",
+        "alt": "AbracaDABra screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "absotui",
+    "name": "absotui",
+    "tagline": "",
+    "description": "",
+    "category": "System/Utilities",
+    "simplifiedCategory": "System/Utilities",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "GPL-3.0",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "pdwaldrop",
+      "website": "https://github.com/pdwaldrop/absotui",
+      "verified": false,
+      "github": "https://github.com/pdwaldrop/absotui"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/pdwaldrop/absotui/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/pdwaldrop/absotui/releases"
+    },
+    "iconSlug": "absotui",
+    "icon": "https://appimage.github.io/database/absotui/icons/scalable/absotui.svg",
+    "homepageUrl": "https://github.com/pdwaldrop/absotui",
+    "sourceUrl": "https://github.com/pdwaldrop/absotui",
+    "repositoryUrl": "https://github.com/pdwaldrop/absotui",
+    "releasesUrl": "https://github.com/pdwaldrop/absotui/releases",
+    "githubRepo": "pdwaldrop/absotui",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "utility"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/absotui/screenshot.png",
+        "alt": "absotui screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "accessimap-lecteur-der",
+    "name": "accessimap-lecteur-der",
+    "tagline": "Accessimap Lecteur DER",
+    "description": "Accessimap Lecteur DER",
+    "category": "Education",
+    "simplifiedCategory": "Education",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "makinacorpus",
+      "website": "https://github.com/makinacorpus/accessimap-lecteur-der",
+      "verified": false,
+      "github": "https://github.com/makinacorpus/accessimap-lecteur-der"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/makinacorpus/accessimap-lecteur-der/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/makinacorpus/accessimap-lecteur-der/releases"
+    },
+    "iconSlug": "accessimap-lecteur-der",
+    "homepageUrl": "https://github.com/makinacorpus/accessimap-lecteur-der",
+    "sourceUrl": "https://github.com/makinacorpus/accessimap-lecteur-der",
+    "repositoryUrl": "https://github.com/makinacorpus/accessimap-lecteur-der",
+    "releasesUrl": "https://github.com/makinacorpus/accessimap-lecteur-der/releases",
+    "githubRepo": "makinacorpus/accessimap-lecteur-der",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "education"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/accessimap-lecteur-der/screenshot.png",
+        "alt": "accessimap-lecteur-der screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "account-scraper",
+    "name": "account-scraper",
+    "tagline": "Find spotify premium and netflix accounts for free!",
+    "description": "Find spotify premium and netflix accounts for free!",
+    "category": "System/Utilities",
+    "simplifiedCategory": "System/Utilities",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "MIT",
+    "licenseCategory": "Permissive",
+    "publisher": {
+      "name": "redabacha",
+      "website": "https://github.com/redabacha/account-scraper",
+      "verified": false,
+      "github": "https://github.com/redabacha/account-scraper"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/redabacha/account-scraper/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/redabacha/account-scraper/releases"
+    },
+    "iconSlug": "account-scraper",
+    "icon": "https://appimage.github.io/database/account-scraper/icons/512x512/account-scraper.png",
+    "homepageUrl": "https://github.com/redabacha/account-scraper",
+    "sourceUrl": "https://github.com/redabacha/account-scraper",
+    "repositoryUrl": "https://github.com/redabacha/account-scraper",
+    "releasesUrl": "https://github.com/redabacha/account-scraper/releases",
+    "githubRepo": "redabacha/account-scraper",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "utility"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/account-scraper/screenshot.png",
+        "alt": "account-scraper screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "acp_inspector",
+    "name": "ACP Inspector",
+    "tagline": "ACP Inspector is a developer tool for testing and debugging agents that speak the Agent Client Protocol (AC...",
+    "description": "ACP Inspector is a developer tool for testing and debugging agents that speak the Agent Client Protocol (ACP) - inspect the JSON-RPC traffic, sessions, permission requests, and slash commands.",
+    "category": "Development",
+    "simplifiedCategory": "Development",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "MIT",
+    "licenseCategory": "Permissive",
+    "publisher": {
+      "name": "newioapp",
+      "website": "https://github.com/newioapp/acp-inspector",
+      "verified": false,
+      "github": "https://github.com/newioapp/acp-inspector"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/newioapp/acp-inspector/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/newioapp/acp-inspector/releases"
+    },
+    "iconSlug": "acp_inspector",
+    "icon": "https://appimage.github.io/database/ACP_Inspector/icons/128x128/acp-inspector.png",
+    "homepageUrl": "https://github.com/newioapp/acp-inspector",
+    "sourceUrl": "https://github.com/newioapp/acp-inspector",
+    "repositoryUrl": "https://github.com/newioapp/acp-inspector",
+    "releasesUrl": "https://github.com/newioapp/acp-inspector/releases",
+    "githubRepo": "newioapp/acp-inspector",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "development"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/ACP_Inspector/screenshot.png",
+        "alt": "ACP Inspector screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "acreom",
+    "name": "acreom",
+    "tagline": "",
+    "description": "",
+    "category": "Office",
+    "simplifiedCategory": "Office",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "Acreom",
+      "website": "https://github.com/Acreom/releases",
+      "verified": false,
+      "github": "https://github.com/Acreom/releases"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/Acreom/releases/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/Acreom/releases/releases"
+    },
+    "iconSlug": "acreom",
+    "icon": "https://appimage.github.io/database/acreom/icons/512x512/acreom.png",
+    "homepageUrl": "https://github.com/Acreom/releases",
+    "sourceUrl": "https://github.com/Acreom/releases",
+    "repositoryUrl": "https://github.com/Acreom/releases",
+    "releasesUrl": "https://github.com/Acreom/releases/releases",
+    "githubRepo": "Acreom/releases",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "office"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/acreom/screenshot.png",
+        "alt": "acreom screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "ada",
+    "name": "Ada",
+    "tagline": "Ada — agent-first desktop app",
+    "description": "Ada — agent-first desktop app",
+    "category": "Development",
+    "simplifiedCategory": "Development",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "black141312",
+      "website": "https://github.com/black141312/ada-releases",
+      "verified": false,
+      "github": "https://github.com/black141312/ada-releases"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/black141312/ada-releases/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/black141312/ada-releases/releases"
+    },
+    "iconSlug": "ada",
+    "icon": "https://appimage.github.io/database/Ada/icons/512x512/ada-app.png",
+    "homepageUrl": "https://github.com/black141312/ada-releases",
+    "sourceUrl": "https://github.com/black141312/ada-releases",
+    "repositoryUrl": "https://github.com/black141312/ada-releases",
+    "releasesUrl": "https://github.com/black141312/ada-releases/releases",
+    "githubRepo": "black141312/ada-releases",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "development"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/Ada/screenshot.png",
+        "alt": "Ada screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "addaps",
+    "name": "Addaps",
+    "tagline": "Addap’s, join the new wave of internet social browsing",
+    "description": "Addap’s, join the new wave of internet social browsing",
+    "category": "Internet",
+    "simplifiedCategory": "Internet",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "Addaps",
+      "website": "https://appimage.github.io/Addaps/",
+      "verified": false
+    },
+    "sha256": "",
+    "downloadUrl": "https://appimage.github.io/Addaps/",
+    "downloadMap": {
+      "x86_64": "https://appimage.github.io/Addaps/"
+    },
+    "iconSlug": "addaps",
+    "homepageUrl": "https://appimage.github.io/Addaps/",
+    "sourceUrl": "https://appimage.github.io/Addaps/",
+    "releasesUrl": "https://appimage.github.io/Addaps/",
     "sourceType": "Community",
     "trustTier": "Unverified Community",
     "officialStatus": false,
     "tags": [
-      "blender",
-      "3d",
-      "lts",
-      "modeling",
-      "animation",
-      "rendering",
-      "cycles"
+      "chat"
     ],
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 4.2.23 LTS AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop, OpenGL 4.3 or Vulkan GPU, 8GB+ RAM"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/Addaps/screenshot.png",
+        "alt": "Addaps screenshot 1"
+      }
+    ]
   },
   {
-    "id": "cemu",
-    "name": "Cemu",
-    "tagline": "Highly optimized Wii U video game emulator for desktop Linux",
-    "description": "Cemu is an experimental software to emulate Wii U applications on PC. It allows playing Wii U titles in high resolution (up to 4K and beyond) with graphical enhancements, custom resolution packs, and full controller mapping.",
-    "category": "Games",
-    "version": "2.6",
-    "releaseDate": "2026-08-30",
-    "size": "22.0 MB",
+    "id": "admin-tools",
+    "name": "admin-tools",
+    "tagline": "",
+    "description": "",
+    "category": "System/Utilities",
+    "simplifiedCategory": "System/Utilities",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
     "architectures": [
       "x86_64"
     ],
-    "license": "MPL-2.0",
+    "formats": [
+      "AppImage"
+    ],
+    "license": "",
     "licenseCategory": "Open Source",
     "publisher": {
-      "name": "Cemu Project",
-      "website": "https://cemu.info",
-      "verified": false,
-      "github": "https://github.com/cemu-project/Cemu"
+      "name": "dmulder",
+      "website": "https://download.opensuse.org/repositories/home:/dmulder:/YaST:/AppImage/AppImage/admin-tools-latest-x86_64.AppImage.mirrorlist",
+      "verified": false
     },
-    "sha256": "bcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f7890123456789a",
-    "downloadUrl": "https://github.com/cemu-project/Cemu/releases/download/v2.6/Cemu-2.6-x86_64.AppImage",
+    "sha256": "",
+    "downloadUrl": "https://download.opensuse.org/repositories/home:/dmulder:/YaST:/AppImage/AppImage/admin-tools-latest-x86_64.AppImage.mirrorlist",
     "downloadMap": {
-      "x86_64": "https://github.com/cemu-project/Cemu/releases/download/v2.6/Cemu-2.6-x86_64.AppImage"
+      "x86_64": "https://download.opensuse.org/repositories/home:/dmulder:/YaST:/AppImage/AppImage/admin-tools-latest-x86_64.AppImage.mirrorlist"
     },
-    "iconSlug": "cemu",
-    "icon": "/icons/cemu.png",
-    "brandColor": "#0284C7",
-    "features": [
-      "Vulkan and OpenGL rendering backend with high-FPS community graphic packs",
-      "Support for GamePad screen separation and motion gyro controls",
-      "Accurate audio emulation and shader caching for stutter-free gameplay",
-      "Custom resolution scaling up to 8K Ultra HD"
+    "iconSlug": "admin-tools",
+    "icon": "https://appimage.github.io/database/admin-tools/icons/48x48/admin-tools.png",
+    "homepageUrl": "https://download.opensuse.org/repositories/home:/dmulder:/YaST:/AppImage/AppImage/admin-tools-latest-x86_64.AppImage.mirrorlist",
+    "sourceUrl": "https://download.opensuse.org/repositories/home:/dmulder:/YaST:/AppImage/AppImage/admin-tools-latest-x86_64.AppImage.mirrorlist",
+    "releasesUrl": "https://download.opensuse.org/repositories/home:/dmulder:/YaST:/AppImage/AppImage/admin-tools-latest-x86_64.AppImage.mirrorlist",
+    "sourceType": "Community",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "settings"
     ],
-    "homepageUrl": "https://cemu.info",
-    "sourceUrl": "https://github.com/cemu-project/Cemu",
-    "repositoryUrl": "https://github.com/cemu-project/Cemu",
-    "releasesUrl": "https://github.com/cemu-project/Cemu/releases",
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/admin-tools/screenshot.png",
+        "alt": "admin-tools screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "adosmissioncontrol",
+    "name": "ADOSMissionControl",
+    "tagline": "Altnautica Command — Open-source Ground Control Station for autonomous drones",
+    "description": "Altnautica Command — Open-source Ground Control Station for autonomous drones",
+    "category": "System/Utilities",
+    "simplifiedCategory": "System/Utilities",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "altnautica",
+      "website": "https://github.com/altnautica/ADOSMissionControl",
+      "verified": false,
+      "github": "https://github.com/altnautica/ADOSMissionControl"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/altnautica/ADOSMissionControl/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/altnautica/ADOSMissionControl/releases"
+    },
+    "iconSlug": "adosmissioncontrol",
+    "icon": "https://appimage.github.io/database/ADOSMissionControl/icons/512x512/altnautica-command.png",
+    "homepageUrl": "https://github.com/altnautica/ADOSMissionControl",
+    "sourceUrl": "https://github.com/altnautica/ADOSMissionControl",
+    "repositoryUrl": "https://github.com/altnautica/ADOSMissionControl",
+    "releasesUrl": "https://github.com/altnautica/ADOSMissionControl/releases",
+    "githubRepo": "altnautica/ADOSMissionControl",
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
     "tags": [
-      "emulator",
-      "wiiu",
-      "gaming",
-      "nintendo",
-      "vulkan",
-      "cemu"
+      "utility"
     ],
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 2.6 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop, Vulkan 1.2 compatible GPU, 8GB RAM"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/ADOSMissionControl/screenshot.png",
+        "alt": "ADOSMissionControl screenshot 1"
+      }
+    ]
   },
   {
-    "id": "digikam",
-    "name": "digiKam",
-    "tagline": "Professional photo management software designed by photographers",
-    "description": "digiKam is an advanced digital photo management application for Linux, featuring an intuitive interface that makes importing, organizing, enhancing, searching, and exporting your digital photos effortless. It includes facial recognition, geotagging, raw file processing, and batch workflow tools.",
-    "category": "Graphics & Design",
-    "version": "8.4.0",
-    "releaseDate": "2026-08-15",
-    "size": "280.0 MB",
+    "id": "advanced_rest_client",
+    "name": "Advanced Rest Client",
+    "tagline": "The Advanced REST Client desktop application.",
+    "description": "The Advanced REST Client desktop application.",
+    "category": "Development",
+    "simplifiedCategory": "Development",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
     "architectures": [
       "x86_64"
     ],
-    "license": "GPL-2.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "KDE Community",
-      "website": "https://www.digikam.org",
-      "verified": false,
-      "github": "https://github.com/KDE/digikam"
-    },
-    "sha256": "a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0",
-    "downloadUrl": "https://download.kde.org/stable/digikam/8.4.0/digiKam-8.4.0-Qt6-x86-64.appimage",
-    "downloadMap": {
-      "x86_64": "https://download.kde.org/stable/digikam/8.4.0/digiKam-8.4.0-Qt6-x86-64.appimage"
-    },
-    "iconSlug": "digikam",
-    "icon": "/icons/digikam.png",
-    "brandColor": "#2563EB",
-    "features": [
-      "Advanced raw camera image processing and color correction",
-      "AI facial recognition and automated people tagging",
-      "Integrated geolocation editor with interactive map support",
-      "High-performance database capable of organizing millions of photos"
-    ],
-    "homepageUrl": "https://www.digikam.org",
-    "sourceUrl": "https://github.com/KDE/digikam",
-    "repositoryUrl": "https://github.com/KDE/digikam",
-    "releasesUrl": "https://github.com/KDE/digikam/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "photo",
-      "photography",
-      "raw",
-      "organizer",
-      "kde",
-      "metadata",
-      "images"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 8.4.0 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop, 4GB+ RAM recommended"
-  },
-  {
-    "id": "dolphin-emu",
-    "name": "Dolphin Emulator",
-    "tagline": "High-definition GameCube and Wii console emulator with netplay",
-    "description": "Dolphin is an emulator for two recent Nintendo video game consoles: the GameCube and the Wii. It allows PC gamers to enjoy games for these two consoles in full HD (1080p) with several enhancements: compatibility with all PC controllers, turbo speed, networked multiplayer, and more.",
-    "category": "Games",
-    "version": "2412",
-    "releaseDate": "2026-08-01",
-    "size": "64.0 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-2.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "Dolphin Emulator Project",
-      "website": "https://dolphin-emu.org",
-      "verified": false,
-      "github": "https://github.com/dolphin-emu/dolphin"
-    },
-    "sha256": "cdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f7890123456789ab",
-    "downloadUrl": "https://dl.dolphin-emu.org/builds/dolphin-2412-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://dl.dolphin-emu.org/builds/dolphin-2412-x86_64.AppImage"
-    },
-    "iconSlug": "dolphin-emu",
-    "icon": "/icons/dolphin-emu.png",
-    "brandColor": "#0284C7",
-    "features": [
-      "Render classic GameCube and Wii games in pristine 4K resolution",
-      "Netplay lobby support for online multiplayer gaming with zero desyncs",
-      "Save states, action replay cheat codes, and free-look camera mode",
-      "Native support for official Nintendo GameCube controller adapters and Wiimotes"
-    ],
-    "homepageUrl": "https://dolphin-emu.org",
-    "sourceUrl": "https://github.com/dolphin-emu/dolphin",
-    "repositoryUrl": "https://github.com/dolphin-emu/dolphin",
-    "releasesUrl": "https://github.com/dolphin-emu/dolphin/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "emulator",
-      "gamecube",
-      "wii",
-      "nintendo",
-      "games",
-      "dolphin"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 2412 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop, OpenGL 4.4 or Vulkan GPU"
-  },
-  {
-    "id": "element",
-    "name": "Element",
-    "tagline": "Decentralized, encrypted messaging and collaboration on Matrix",
-    "description": "Element is an open source chat app and secure collaboration platform based on the Matrix open standard. It offers end-to-end encryption by default, group voice & video rooms, file sharing, and bridges to Slack, Discord, and Telegram.",
-    "category": "Internet & Network",
-    "version": "1.11.89",
-    "releaseDate": "2026-08-19",
-    "size": "115.0 MB",
-    "architectures": [
-      "x86_64"
+    "formats": [
+      "AppImage"
     ],
     "license": "Apache-2.0",
     "licenseCategory": "Permissive",
     "publisher": {
-      "name": "Element Community",
-      "website": "https://element.io",
+      "name": "advanced-rest-client",
+      "website": "https://github.com/advanced-rest-client/arc-electron",
       "verified": false,
-      "github": "https://github.com/element-hq/element-desktop"
+      "github": "https://github.com/advanced-rest-client/arc-electron"
     },
-    "sha256": "6789abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f789012345",
-    "downloadUrl": "https://packages.element.io/desktop/install/linux/Element-1.11.89-x86_64.AppImage",
+    "sha256": "",
+    "downloadUrl": "https://github.com/advanced-rest-client/arc-electron/releases",
     "downloadMap": {
-      "x86_64": "https://packages.element.io/desktop/install/linux/Element-1.11.89-x86_64.AppImage"
+      "x86_64": "https://github.com/advanced-rest-client/arc-electron/releases"
     },
-    "iconSlug": "element",
-    "icon": "/icons/element.svg",
-    "brandColor": "#0DBD8B",
-    "features": [
-      "Decentralized communication on Matrix with custom homeserver selection",
-      "Cross-signing end-to-end encryption for 1:1 and group chats",
-      "Native Voice over IP (VoIP) and encrypted group video conferencing",
-      "Extensible bridging to IRC, Slack, WhatsApp, and Telegram"
-    ],
-    "homepageUrl": "https://element.io",
-    "sourceUrl": "https://github.com/element-hq/element-desktop",
-    "repositoryUrl": "https://github.com/element-hq/element-desktop",
-    "releasesUrl": "https://github.com/element-hq/element-desktop/releases",
+    "iconSlug": "advanced_rest_client",
+    "icon": "https://appimage.github.io/database/Advanced_Rest_Client/icons/128x128/advanced-rest-client.png",
+    "homepageUrl": "https://github.com/advanced-rest-client/arc-electron",
+    "sourceUrl": "https://github.com/advanced-rest-client/arc-electron",
+    "repositoryUrl": "https://github.com/advanced-rest-client/arc-electron",
+    "releasesUrl": "https://github.com/advanced-rest-client/arc-electron/releases",
+    "githubRepo": "advanced-rest-client/arc-electron",
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
     "tags": [
-      "chat",
-      "matrix",
-      "encrypted",
-      "messaging",
-      "e2ee",
-      "collaboration"
+      "development"
     ],
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 1.11.89 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/Advanced_Rest_Client/screenshot.png",
+        "alt": "Advanced Rest Client screenshot 1"
+      }
+    ]
   },
   {
-    "id": "flare",
-    "name": "Flare",
-    "tagline": "Open-source 2D vector animation successor to Adobe Animate and Flash",
-    "description": "Flare is an open-source 2D animation suite forked from OpenToonz, designed as a modern community-driven successor to Adobe Animate and Macromedia Flash. It provides vector brush tools, rigging, timeline tweening, raster/vector hybrid workflows, and full Linux desktop export pipelines.",
-    "category": "Graphics & Design",
-    "version": "1.0.0-nightly",
-    "releaseDate": "2026-08-28",
-    "size": "68.0 MB",
+    "id": "adventshow",
+    "name": "AdventShow",
+    "tagline": "Aplicatie gratuita pentru proiectia imnurilor si versetelor biblice in biserica.",
+    "description": "Aplicatie gratuita pentru proiectia imnurilor si versetelor biblice in biserica.",
+    "category": "System/Utilities",
+    "simplifiedCategory": "System/Utilities",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
     "architectures": [
       "x86_64"
     ],
-    "license": "BSD-3-Clause",
-    "licenseCategory": "Permissive",
-    "publisher": {
-      "name": "Flare-Animate",
-      "website": "https://github.com/Flare-Animate/Flare",
-      "verified": false,
-      "github": "https://github.com/Flare-Animate/Flare"
-    },
-    "sha256": "a222222222222222222222222222222222222222222222222222222222222222",
-    "downloadUrl": "https://github.com/Flare-Animate/Flare/releases/download/nightly/Flare-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://github.com/Flare-Animate/Flare/releases/download/nightly/Flare-x86_64.AppImage"
-    },
-    "iconSlug": "flare",
-    "icon": "/icons/flare.png",
-    "brandColor": "#F97316",
-    "features": [
-      "Modern 2D vector drawing tools with smoothing and pressure sensitivity",
-      "Timeline tweening, keyframing, onion skinning, and frame-by-frame mode",
-      "Skeletal rigging and IK (Inverse Kinematics) deformation tools",
-      "Export to high-framerate MP4, WebM, APNG, and sprite sheet sequences"
+    "formats": [
+      "AppImage"
     ],
-    "homepageUrl": "https://github.com/Flare-Animate/Flare",
-    "sourceUrl": "https://github.com/Flare-Animate/Flare",
-    "repositoryUrl": "https://github.com/Flare-Animate/Flare",
-    "releasesUrl": "https://github.com/Flare-Animate/Flare/releases",
+    "license": "",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "AdventTools",
+      "website": "https://github.com/AdventTools/AdventShow",
+      "verified": false,
+      "github": "https://github.com/AdventTools/AdventShow"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/AdventTools/AdventShow/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/AdventTools/AdventShow/releases"
+    },
+    "iconSlug": "adventshow",
+    "icon": "https://appimage.github.io/database/AdventShow/icons/128x128/adventshow.png",
+    "homepageUrl": "https://github.com/AdventTools/AdventShow",
+    "sourceUrl": "https://github.com/AdventTools/AdventShow",
+    "repositoryUrl": "https://github.com/AdventTools/AdventShow",
+    "releasesUrl": "https://github.com/AdventTools/AdventShow/releases",
+    "githubRepo": "AdventTools/AdventShow",
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
     "tags": [
-      "animation",
-      "flash",
-      "adobe-animate",
-      "vector",
-      "opentoonz",
-      "drawing",
-      "art"
+      "utility"
     ],
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 1.0.0-nightly AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop, OpenGL 3.3+"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/AdventShow/screenshot.png",
+        "alt": "AdventShow screenshot 1"
+      }
+    ]
   },
   {
-    "id": "godot",
-    "name": "Godot Engine",
-    "tagline": "Free, all-in-one, cross-platform 2D and 3D game engine",
-    "description": "Godot Engine is a feature-packed, cross-platform game engine to create 2D and 3D games from a unified interface. It provides a comprehensive set of common tools, so that users can focus on making games without having to reinvent the wheel.",
+    "id": "aethersdr",
+    "name": "AetherSDR",
+    "tagline": "Linux-native SDR client for FlexRadio",
+    "description": "Linux-native SDR client for FlexRadio",
+    "category": "System/Utilities",
+    "simplifiedCategory": "System/Utilities",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "GPL-3.0-or-later",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "aethersdr",
+      "website": "https://github.com/aethersdr/AetherSDR",
+      "verified": false,
+      "github": "https://github.com/aethersdr/AetherSDR"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/aethersdr/AetherSDR/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/aethersdr/AetherSDR/releases"
+    },
+    "iconSlug": "aethersdr",
+    "icon": "https://appimage.github.io/database/AetherSDR/icons/256x256/aethersdr.png",
+    "homepageUrl": "https://github.com/aethersdr/AetherSDR",
+    "sourceUrl": "https://github.com/aethersdr/AetherSDR",
+    "repositoryUrl": "https://github.com/aethersdr/AetherSDR",
+    "releasesUrl": "https://github.com/aethersdr/AetherSDR/releases",
+    "githubRepo": "aethersdr/AetherSDR",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "hamradio"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://raw.githubusercontent.com/aethersdr/AetherSDR/v26.6.3/docs/assets/screenshot-current.png",
+        "alt": "AetherSDR screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "afsplug",
+    "name": "AFSplug",
+    "tagline": "AFS 管理器 - 统一管理多个 AI 服务提供商，提供 OpenAI 兼容 API 接口",
+    "description": "AFS 管理器 - 统一管理多个 AI 服务提供商，提供 OpenAI 兼容 API 接口",
+    "category": "System/Utilities",
+    "simplifiedCategory": "System/Utilities",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "zhangxianhe666",
+      "website": "https://github.com/zhangxianhe666/AFSplug",
+      "verified": false,
+      "github": "https://github.com/zhangxianhe666/AFSplug"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/zhangxianhe666/AFSplug/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/zhangxianhe666/AFSplug/releases"
+    },
+    "iconSlug": "afsplug",
+    "icon": "https://appimage.github.io/database/AFSplug/icons/1038x1038/chat2api.png",
+    "homepageUrl": "https://github.com/zhangxianhe666/AFSplug",
+    "sourceUrl": "https://github.com/zhangxianhe666/AFSplug",
+    "repositoryUrl": "https://github.com/zhangxianhe666/AFSplug",
+    "releasesUrl": "https://github.com/zhangxianhe666/AFSplug/releases",
+    "githubRepo": "zhangxianhe666/AFSplug",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "utility"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/AFSplug/screenshot.png",
+        "alt": "AFSplug screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "agent_campus",
+    "name": "Agent Campus",
+    "tagline": "Pixel Agents — standalone desktop app for visualizing AI coding agents",
+    "description": "Pixel Agents — standalone desktop app for visualizing AI coding agents",
+    "category": "System/Utilities",
+    "simplifiedCategory": "System/Utilities",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "MIT",
+    "licenseCategory": "Permissive",
+    "publisher": {
+      "name": "mateovalle",
+      "website": "https://github.com/mateovalle/agent-campus",
+      "verified": false,
+      "github": "https://github.com/mateovalle/agent-campus"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/mateovalle/agent-campus/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/mateovalle/agent-campus/releases"
+    },
+    "iconSlug": "agent_campus",
+    "icon": "https://appimage.github.io/database/Agent_Campus/icons/512x512/pixel-agents-desktop.png",
+    "homepageUrl": "https://github.com/mateovalle/agent-campus",
+    "sourceUrl": "https://github.com/mateovalle/agent-campus",
+    "repositoryUrl": "https://github.com/mateovalle/agent-campus",
+    "releasesUrl": "https://github.com/mateovalle/agent-campus/releases",
+    "githubRepo": "mateovalle/agent-campus",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "utility"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/Agent_Campus/screenshot.png",
+        "alt": "Agent Campus screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "agent_pulse",
+    "name": "Agent Pulse",
+    "tagline": "",
+    "description": "",
     "category": "Development",
-    "version": "4.3.0",
-    "releaseDate": "2024-08-15",
-    "size": "92.4 MB",
+    "simplifiedCategory": "Development",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
     "architectures": [
       "x86_64"
     ],
-    "license": "MIT",
-    "licenseCategory": "Permissive",
-    "publisher": {
-      "name": "Godot Engine Community",
-      "website": "https://godotengine.org",
-      "verified": false,
-      "github": "https://github.com/godotengine/godot"
-    },
-    "sha256": "38a16dbb7c0ceefbc1c7ce6ad260c675ef7a02c3efc1746c1a1fa930fc495632",
-    "downloadUrl": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip",
-    "downloadMap": {
-      "x86_64": "https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip"
-    },
-    "iconSlug": "godot",
-    "icon": "/icons/godot.svg",
-    "brandColor": "#478CBF",
-    "features": [
-      "Dedicated 2D pixel-perfect and 3D Vulkan rendering pipelines",
-      "Flexible Scene and Node tree architecture",
-      "Built-in code editor with GDScript, C#, and C++ bindings",
-      "Visual shader editor and real-time animation player"
+    "formats": [
+      "AppImage"
     ],
-    "homepageUrl": "https://godotengine.org",
-    "sourceUrl": "https://github.com/godotengine/godot",
-    "repositoryUrl": "https://github.com/godotengine/godot",
-    "releasesUrl": "https://github.com/godotengine/godot/releases",
-    "sourceType": "Community",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "gamedev",
-      "game-engine",
-      "2d",
-      "3d",
-      "vulkan",
-      "gdscript",
-      "csharp"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 4.3.0 AppImage release build"
-    ],
-    "requirements": "Vulkan 1.0 or OpenGL 3.3 compatible GPU"
-  },
-  {
-    "id": "gwenview",
-    "name": "Gwenview",
-    "tagline": "Fast and easy to use image viewer and catalog manager by KDE",
-    "description": "Gwenview is a fast and easy-to-use image viewer for KDE. It is capable of organizing collections, performing basic manipulations such as rotate, crop, and resize, viewing EXIF metadata, and displaying animated GIF, WebP, and SVG images.",
-    "category": "Graphics & Design",
-    "version": "24.12.3",
-    "releaseDate": "2026-08-18",
-    "size": "82.0 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-2.0",
+    "license": "",
     "licenseCategory": "Open Source",
     "publisher": {
-      "name": "KDE Community",
-      "website": "https://apps.kde.org/gwenview/",
+      "name": "Dipen-Dedania",
+      "website": "https://github.com/Dipen-Dedania/agent-pulse",
       "verified": false,
-      "github": "https://github.com/KDE/gwenview"
+      "github": "https://github.com/Dipen-Dedania/agent-pulse"
     },
-    "sha256": "7890123456789abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f",
-    "downloadUrl": "https://binary-factory.kde.org/job/Gwenview_Release_appimage/lastSuccessfulBuild/artifact/gwenview-24.12.3-x86_64.AppImage",
+    "sha256": "",
+    "downloadUrl": "https://github.com/Dipen-Dedania/agent-pulse/releases",
     "downloadMap": {
-      "x86_64": "https://binary-factory.kde.org/job/Gwenview_Release_appimage/lastSuccessfulBuild/artifact/gwenview-24.12.3-x86_64.AppImage"
+      "x86_64": "https://github.com/Dipen-Dedania/agent-pulse/releases"
     },
-    "iconSlug": "gwenview",
-    "icon": "/icons/gwenview.svg",
-    "brandColor": "#6366F1",
-    "features": [
-      "High-performance thumbnail generation and fullscreen slideshows",
-      "Lossless JPEG rotation, crop, resize, and color adjustments",
-      "EXIF, IPTC, and XMP metadata inspection and rating filters",
-      "Seamless integration with KDE Plasma desktop features"
-    ],
-    "homepageUrl": "https://apps.kde.org/gwenview/",
-    "sourceUrl": "https://github.com/KDE/gwenview",
-    "repositoryUrl": "https://github.com/KDE/gwenview",
-    "releasesUrl": "https://github.com/KDE/gwenview/releases",
+    "iconSlug": "agent_pulse",
+    "icon": "https://appimage.github.io/database/Agent_Pulse/icons/512x512/agent-pulse.png",
+    "homepageUrl": "https://github.com/Dipen-Dedania/agent-pulse",
+    "sourceUrl": "https://github.com/Dipen-Dedania/agent-pulse",
+    "repositoryUrl": "https://github.com/Dipen-Dedania/agent-pulse",
+    "releasesUrl": "https://github.com/Dipen-Dedania/agent-pulse/releases",
+    "githubRepo": "Dipen-Dedania/agent-pulse",
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
     "tags": [
-      "images",
-      "photos",
-      "viewer",
-      "gallery",
-      "kde",
-      "crop",
-      "exif"
+      "development"
     ],
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 24.12.3 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/Agent_Pulse/screenshot.png",
+        "alt": "Agent Pulse screenshot 1"
+      }
+    ]
   },
   {
-    "id": "kate",
-    "name": "Kate",
-    "tagline": "Advanced multi-document text editor with syntax highlighting and LSP",
-    "description": "Kate is a multi-document text editor by KDE. It offers syntax highlighting for hundreds of languages, code folding, dynamic word wrap, a built-in terminal emulator, Git integration, and full Language Server Protocol (LSP) client support for modern software development.",
+    "id": "agent_teams_ai",
+    "name": "Agent Teams AI",
+    "tagline": "Desktop app for managing AI agent teams, reviews, runtime logs, and provider-aware workflows",
+    "description": "Desktop app for managing AI agent teams, reviews, runtime logs, and provider-aware workflows",
     "category": "Development",
-    "version": "24.12.3",
-    "releaseDate": "2026-08-28",
-    "size": "110.0 MB",
+    "simplifiedCategory": "Development",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
     "architectures": [
       "x86_64"
     ],
-    "license": "LGPL-2.0",
-    "licenseCategory": "Permissive",
-    "publisher": {
-      "name": "KDE Community",
-      "website": "https://kate-editor.org",
-      "verified": false,
-      "github": "https://github.com/KDE/kate"
-    },
-    "sha256": "d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef01a2b3c",
-    "downloadUrl": "https://binary-factory.kde.org/job/Kate_Release_appimage/lastSuccessfulBuild/artifact/kate-24.12.3-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://binary-factory.kde.org/job/Kate_Release_appimage/lastSuccessfulBuild/artifact/kate-24.12.3-x86_64.AppImage"
-    },
-    "iconSlug": "kate",
-    "icon": "/icons/kate.svg",
-    "brandColor": "#0284C7",
-    "features": [
-      "Built-in Language Server Protocol (LSP) support for smart autocompletion",
-      "Integrated terminal emulator and Git status viewer",
-      "Multi-cursor editing, block selection, and powerful search & replace",
-      "Extensible session management and project workspace views"
-    ],
-    "homepageUrl": "https://kate-editor.org",
-    "sourceUrl": "https://github.com/KDE/kate",
-    "repositoryUrl": "https://github.com/KDE/kate",
-    "releasesUrl": "https://github.com/KDE/kate/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "editor",
-      "code",
-      "kde",
-      "text",
-      "development",
-      "lsp",
-      "git"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 24.12.3 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop"
-  },
-  {
-    "id": "kdevelop",
-    "name": "KDevelop",
-    "tagline": "Feature-rich, plugin-extensible IDE for C, C++, Python, and PHP",
-    "description": "KDevelop is a free, open source IDE for Linux, Solaris, FreeBSD, macOS and Windows. It provides advanced code completion, semantic code analysis, navigation, Git version control, and deep integration with CMake and Clang compilers.",
-    "category": "Development",
-    "version": "24.12.3",
-    "releaseDate": "2026-08-25",
-    "size": "145.0 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-2.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "KDE Community",
-      "website": "https://kdevelop.org",
-      "verified": false,
-      "github": "https://github.com/KDE/kdevelop"
-    },
-    "sha256": "e5f67890123456789abcdef0123456789abcdef0123456789abcdef01a2b3c4d",
-    "downloadUrl": "https://download.kde.org/stable/kdevelop/24.12.3/bin/linux/KDevelop-24.12.3-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://download.kde.org/stable/kdevelop/24.12.3/bin/linux/KDevelop-24.12.3-x86_64.AppImage"
-    },
-    "iconSlug": "kdevelop",
-    "icon": "/icons/kdevelop.svg",
-    "brandColor": "#0EA5E9",
-    "features": [
-      "Clang-backed C and C++ semantic parsing and error highlighting",
-      "Integrated graphical GDB/LLDB debugger with watchpoints",
-      "First-class CMake, Meson, and QMake project manager support",
-      "Interactive Git history browser and code review annotations"
-    ],
-    "homepageUrl": "https://kdevelop.org",
-    "sourceUrl": "https://github.com/KDE/kdevelop",
-    "repositoryUrl": "https://github.com/KDE/kdevelop",
-    "releasesUrl": "https://github.com/KDE/kdevelop/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "ide",
-      "c++",
-      "clang",
-      "cmake",
-      "python",
-      "debugger",
-      "kde"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 24.12.3 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop, 4GB RAM"
-  },
-  {
-    "id": "kicad",
-    "name": "KiCad EDA",
-    "tagline": "Professional schematic capture and PCB layout design software",
-    "description": "KiCad is an open source suite for Electronic Design Automation (EDA). The programs handle Schematic Capture, and PCB Layout with Gerber output. The suite runs on Windows, Linux and macOS and is licensed under GNU GPL v3.",
-    "category": "Education",
-    "version": "8.0.8",
-    "releaseDate": "2026-08-10",
-    "size": "620.0 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-3.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "KiCad Developers",
-      "website": "https://www.kicad.org",
-      "verified": false,
-      "github": "https://github.com/KiCad/kicad-source-mirror"
-    },
-    "sha256": "90123456789abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f78",
-    "downloadUrl": "https://kicad-downloads.s3.cern.ch/linux/appimage/KiCad-8.0.8-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://kicad-downloads.s3.cern.ch/linux/appimage/KiCad-8.0.8-x86_64.AppImage"
-    },
-    "iconSlug": "kicad",
-    "icon": "/icons/kicad.svg",
-    "brandColor": "#10B981",
-    "features": [
-      "High-resolution schematic capture with electrical rules checking (ERC)",
-      "Modern 32-layer PCB layout editor with interactive push-and-shove routing",
-      "Integrated 3D raytracing viewer for mechanical fit verification",
-      "Extensive official component symbol, footprint, and 3D model libraries"
-    ],
-    "homepageUrl": "https://www.kicad.org",
-    "sourceUrl": "https://github.com/KiCad/kicad-source-mirror",
-    "repositoryUrl": "https://github.com/KiCad/kicad-source-mirror",
-    "releasesUrl": "https://github.com/KiCad/kicad-source-mirror/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "electronics",
-      "pcb",
-      "eda",
-      "circuits",
-      "schematics",
-      "hardware",
-      "engineering"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 8.0.8 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop, OpenGL 3.3 support, 4GB+ RAM"
-  },
-  {
-    "id": "konsole",
-    "name": "Konsole",
-    "tagline": "Powerful terminal emulator with tabs, split views, and profiles",
-    "description": "Konsole is an X terminal emulator for the KDE desktop environment. It provides tabbed terminal sessions, horizontal and vertical view splitting, custom color schemes, bookmarks, and bidirectional text rendering.",
-    "category": "Utilities",
-    "version": "24.12.3",
-    "releaseDate": "2026-08-16",
-    "size": "72.0 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-2.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "KDE Community",
-      "website": "https://konsole.kde.org",
-      "verified": false,
-      "github": "https://github.com/KDE/konsole"
-    },
-    "sha256": "890123456789abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f7",
-    "downloadUrl": "https://binary-factory.kde.org/job/Konsole_Release_appimage/lastSuccessfulBuild/artifact/konsole-24.12.3-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://binary-factory.kde.org/job/Konsole_Release_appimage/lastSuccessfulBuild/artifact/konsole-24.12.3-x86_64.AppImage"
-    },
-    "iconSlug": "konsole",
-    "icon": "/icons/konsole.svg",
-    "brandColor": "#475569",
-    "features": [
-      "Unlimited tabs and arbitrary multi-pane view splits",
-      "Custom profiles with dedicated fonts, color schemes, and environment variables",
-      "Searchable output scrollback buffer with clickable URLs and file paths",
-      "Monitoring alerts for terminal silence or process completion"
-    ],
-    "homepageUrl": "https://konsole.kde.org",
-    "sourceUrl": "https://github.com/KDE/konsole",
-    "repositoryUrl": "https://github.com/KDE/konsole",
-    "releasesUrl": "https://github.com/KDE/konsole/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "terminal",
-      "bash",
-      "zsh",
-      "shell",
-      "cli",
-      "console",
-      "kde"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 24.12.3 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop"
-  },
-  {
-    "id": "ktube",
-    "name": "Ktube Media Downloader",
-    "tagline": "Browse and download multimedia videos and audio with ease",
-    "description": "Ktube Media Downloader is a desktop application by Keshav Bhatt for browsing, streaming, and downloading video and audio from popular media websites. Features include multi-threaded downloads, queueing, audio extraction (MP3), and playlist management.",
-    "category": "Audio & Video",
-    "version": "1.0.0",
-    "releaseDate": "2026-08-01",
-    "size": "58.0 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "MIT",
-    "licenseCategory": "Permissive",
-    "publisher": {
-      "name": "Keshav Bhatt",
-      "website": "https://github.com/keshavbhatt/Ktube-media-downloader",
-      "verified": false,
-      "github": "https://github.com/keshavbhatt/Ktube-media-downloader"
-    },
-    "sha256": "a555555555555555555555555555555555555555555555555555555555555555",
-    "downloadUrl": "https://github.com/keshavbhatt/Ktube-media-downloader/releases/download/1.0/Ktube_Media_Downloader-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://github.com/keshavbhatt/Ktube-media-downloader/releases/download/1.0/Ktube_Media_Downloader-x86_64.AppImage"
-    },
-    "iconSlug": "ktube",
-    "icon": "/icons/ktube.png",
-    "brandColor": "#EF4444",
-    "features": [
-      "Multi-threaded downloading engine with bandwidth rate limiting",
-      "Extract pristine audio tracks directly to MP3, AAC, and FLAC formats",
-      "Batch download entire channels, playlists, and user collections",
-      "Built-in video preview player and resolution selector up to 4K"
-    ],
-    "homepageUrl": "https://github.com/keshavbhatt/Ktube-media-downloader",
-    "sourceUrl": "https://github.com/keshavbhatt/Ktube-media-downloader",
-    "repositoryUrl": "https://github.com/keshavbhatt/Ktube-media-downloader",
-    "releasesUrl": "https://github.com/keshavbhatt/Ktube-media-downloader/releases",
-    "sourceType": "Community",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "youtube",
-      "downloader",
-      "video",
-      "audio",
-      "mp3",
-      "media",
-      "streams"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 1.0.0 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop"
-  },
-  {
-    "id": "libreoffice",
-    "name": "LibreOffice",
-    "tagline": "Clean, feature-rich office productivity suite for documents and data",
-    "description": "LibreOffice is a free and powerful office suite, and a successor to OpenOffice(.org). Its clean interface and feature-rich tools unleash your creativity and enhance your productivity. It includes Writer (word processor), Calc (spreadsheets), Impress (presentations), Draw (vector graphics), and Math (formulas).",
-    "category": "Productivity",
-    "version": "24.8.5",
-    "releaseDate": "2026-08-30",
-    "size": "265.0 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "MPL-2.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "The Document Foundation",
-      "website": "https://www.libreoffice.org",
-      "verified": false,
-      "github": "https://github.com/LibreOffice/core"
-    },
-    "sha256": "b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef01a",
-    "downloadUrl": "https://download.documentfoundation.org/libreoffice/stable/24.8.5/deb/x86_64/LibreOffice-24.8.5.2.basic-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://download.documentfoundation.org/libreoffice/stable/24.8.5/deb/x86_64/LibreOffice-24.8.5.2.basic-x86_64.AppImage"
-    },
-    "iconSlug": "libreoffice",
-    "icon": "/icons/libreoffice.svg",
-    "brandColor": "#16A34A",
-    "features": [
-      "Full compatibility with Microsoft Office (.docx, .xlsx, .pptx) files",
-      "Comprehensive suite: Writer, Calc, Impress, Draw, and Math",
-      "Native PDF export with digital signing and form fill support",
-      "Extensible with thousands of community templates and plugins"
-    ],
-    "homepageUrl": "https://www.libreoffice.org",
-    "sourceUrl": "https://github.com/LibreOffice/core",
-    "repositoryUrl": "https://github.com/LibreOffice/core",
-    "releasesUrl": "https://github.com/LibreOffice/core/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "office",
-      "word",
-      "calc",
-      "excel",
-      "powerpoint",
-      "documents",
-      "writer"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 24.8.5 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop, 2GB RAM"
-  },
-  {
-    "id": "portable-linux-apps",
-    "name": "Linux AppImage Collection",
-    "tagline": "Massive catalog and distribution registry of portable apps and AppImages",
-    "description": "The largest curated census and distribution registry of AppImages and portable applications for GNU/Linux, maintained by the Portable-Linux-Apps initiative and the AM application manager. Provides automated installation scripts, update checking, and verification for hundreds of Linux desktop applications.",
-    "category": "Utilities",
-    "version": "10.5",
-    "releaseDate": "2026-08-15",
-    "size": "6.5 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-3.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "Portable-Linux-Apps Community",
-      "website": "https://portable-linux-apps.github.io/",
-      "verified": false,
-      "github": "https://github.com/Portable-Linux-Apps/Portable-Linux-Apps.github.io"
-    },
-    "sha256": "a999999999999999999999999999999999999999999999999999999999999999",
-    "downloadUrl": "https://github.com/ivan-hc/AM/releases/download/10.5/AM-INSTALLER",
-    "downloadMap": {
-      "x86_64": "https://github.com/ivan-hc/AM/releases/download/10.5/AM-INSTALLER"
-    },
-    "iconSlug": "portable-linux-apps",
-    "icon": "/icons/portable-linux-apps.png",
-    "brandColor": "#059669",
-    "features": [
-      "Access to an index of over 2,000 Linux portable applications and AppImages",
-      "Integrated with AM CLI package manager for one-liner app installations",
-      "Automated checksum validation and upstream release mirror verification",
-      "Sandboxing and desktop launcher generation out of the box"
-    ],
-    "homepageUrl": "https://portable-linux-apps.github.io/",
-    "sourceUrl": "https://github.com/Portable-Linux-Apps/Portable-Linux-Apps.github.io",
-    "repositoryUrl": "https://github.com/Portable-Linux-Apps/Portable-Linux-Apps.github.io",
-    "releasesUrl": "https://github.com/ivan-hc/AM/releases",
-    "sourceType": "Community",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "portable",
-      "catalog",
-      "collection",
-      "am",
-      "appimage",
-      "repository",
-      "utilities"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 10.5 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop or server"
-  },
-  {
-    "id": "lmms",
-    "name": "LMMS",
-    "tagline": "Open source digital audio workstation for creating music and beats",
-    "description": "LMMS is a sound generation system, synthesizer, beat/baseline editor and MIDI control system which can power an entire home studio. Sounds and tones can be generated, played and artificially produced using built-in synthesizers.",
-    "category": "Audio & Video",
-    "version": "1.2.2",
-    "releaseDate": "2026-06-10",
-    "size": "48.5 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-2.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "LMMS Developers",
-      "website": "https://lmms.io",
-      "verified": false,
-      "github": "https://github.com/LMMS/lmms"
-    },
-    "sha256": "23456789abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f78901",
-    "downloadUrl": "https://github.com/LMMS/lmms/releases/download/v1.2.2/lmms-1.2.2-linux-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://github.com/LMMS/lmms/releases/download/v1.2.2/lmms-1.2.2-linux-x86_64.AppImage"
-    },
-    "iconSlug": "lmms",
-    "icon": "/icons/lmms.png",
-    "brandColor": "#10B981",
-    "features": [
-      "Song-Editor for composing songs and Beat+Bassline-Editor for rhythm tracks",
-      "Piano-Roll for editing patterns and melodies with MIDI keyboard support",
-      "Built-in synthesizers (Triple-Oscillator, BitInvader, Monstro, Vibed)",
-      "64-channel FX mixer with arbitrary routing and VST plugin bridging"
-    ],
-    "homepageUrl": "https://lmms.io",
-    "sourceUrl": "https://github.com/LMMS/lmms",
-    "repositoryUrl": "https://github.com/LMMS/lmms",
-    "releasesUrl": "https://github.com/LMMS/lmms/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "music",
-      "synth",
-      "beats",
-      "midi",
-      "daw",
-      "composer",
-      "audio"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 1.2.2 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop"
-  },
-  {
-    "id": "musescore",
-    "name": "MuseScore Studio",
-    "tagline": "World renowned music notation and composition software",
-    "description": "MuseScore Studio is an open source music notation software for Linux, Windows and Mac. It features an easy to use WYSIWYG editor with audio score playback for results that look and sound beautiful. It supports unlimited staves and orchestral instrumentation.",
-    "category": "Audio & Video",
-    "version": "4.7.4",
-    "releaseDate": "2026-07-28",
-    "size": "135.0 MB",
-    "architectures": [
-      "x86_64",
-      "aarch64"
-    ],
-    "license": "GPL-3.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "MuseScore BVBA",
-      "website": "https://musescore.org",
-      "verified": false,
-      "github": "https://github.com/musescore/MuseScore"
-    },
-    "sha256": "3456789abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f789012",
-    "downloadUrl": "https://github.com/musescore/MuseScore/releases/download/v4.7.4/MuseScore-Studio-4.7.4.260706075-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://github.com/musescore/MuseScore/releases/download/v4.7.4/MuseScore-Studio-4.7.4.260706075-x86_64.AppImage",
-      "aarch64": "https://github.com/musescore/MuseScore/releases/download/v4.7.4/MuseScore-Studio-4.7.4.260706075-aarch64.AppImage"
-    },
-    "iconSlug": "musescore",
-    "icon": "/icons/musescore.png",
-    "brandColor": "#2563EB",
-    "features": [
-      "Professional engraving tools meeting classical publishing standards",
-      "Muse Sounds orchestral playback engine with realistic instrumental expressions",
-      "Support for MusicXML, MIDI, PDF, and audio WAV/MP3 score export",
-      "Braille music notation support and responsive keyboard-first entry"
-    ],
-    "homepageUrl": "https://musescore.org",
-    "sourceUrl": "https://github.com/musescore/MuseScore",
-    "repositoryUrl": "https://github.com/musescore/MuseScore",
-    "releasesUrl": "https://github.com/musescore/MuseScore/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "music",
-      "score",
-      "notation",
-      "orchestra",
-      "sheet-music",
-      "midi"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 4.7.4 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop, 4GB RAM"
-  },
-  {
-    "id": "obsidian",
-    "name": "Obsidian",
-    "tagline": "A powerful markdown note-taking app that lives on your local machine.",
-    "description": "Obsidian is a powerful knowledge base on top of a local folder of plain text Markdown files. It is extremely fast, fully offline, and lets you build your personal second brain using deep text connections and interactive graph maps.",
-    "category": "Productivity",
-    "version": "1.8.2",
-    "releaseDate": "2025-01-20",
-    "size": "114.5 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "Proprietary",
-    "licenseCategory": "Proprietary",
-    "publisher": {
-      "name": "Obsidian Team",
-      "website": "https://obsidian.md",
-      "verified": false,
-      "github": "https://github.com/obsidianmd/obsidian-releases"
-    },
-    "sha256": "df06e6bf4710166299b9cf95924716900ee123f990ad312ba30c5e6319c5c76c",
-    "downloadUrl": "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.8.2/Obsidian-1.8.2.AppImage",
-    "downloadMap": {
-      "x86_64": "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.8.2/Obsidian-1.8.2.AppImage"
-    },
-    "iconSlug": "obsidian",
-    "icon": "/icons/obsidian.svg",
-    "brandColor": "#8B5CF6",
-    "features": [
-      "Local-first markdown files for complete data ownership",
-      "Interactive knowledge Graph View with group color filters",
-      "Rich community plugin market with hundreds of add-ons",
-      "Canvas whiteboard mode for visual card mind mapping"
-    ],
-    "homepageUrl": "https://obsidian.md",
-    "sourceUrl": "https://github.com/obsidianmd/obsidian-releases",
-    "repositoryUrl": "https://github.com/obsidianmd/obsidian-releases",
-    "releasesUrl": "https://github.com/obsidianmd/obsidian-releases/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "notes",
-      "markdown",
-      "knowledge-base",
-      "productivity",
-      "second-brain"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 1.8.2 AppImage release build"
-    ],
-    "requirements": "Any modern Linux desktop environment"
-  },
-  {
-    "id": "okular",
-    "name": "Okular",
-    "tagline": "Universal document viewer supporting PDF, ePub, DjVu, and markdown",
-    "description": "Okular is a universal document viewer developed by KDE. It supports PDF, Postscript, DjVu, CHM, XPS, ePub, and comic book files. Features include bookmarking, annotations, text selection, search, speech synthesis, and form filling.",
-    "category": "Productivity",
-    "version": "24.12.3",
-    "releaseDate": "2026-08-20",
-    "size": "88.0 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-2.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "KDE Community",
-      "website": "https://okular.kde.org",
-      "verified": false,
-      "github": "https://github.com/KDE/okular"
-    },
-    "sha256": "f67890123456789abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e",
-    "downloadUrl": "https://binary-factory.kde.org/job/Okular_Release_appimage/lastSuccessfulBuild/artifact/okular-24.12.3-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://binary-factory.kde.org/job/Okular_Release_appimage/lastSuccessfulBuild/artifact/okular-24.12.3-x86_64.AppImage"
-    },
-    "iconSlug": "okular",
-    "icon": "/icons/okular.svg",
-    "brandColor": "#38BDF8",
-    "features": [
-      "Interactive PDF forms, annotations, highlight tools, and digital signatures",
-      "Support for PDF, ePub, XPS, DjVu, CBZ/CBR comic books, and Markdown",
-      "Text-to-speech reading with system voice synthesizers",
-      "Dark mode reading and inverted color adjustments"
-    ],
-    "homepageUrl": "https://okular.kde.org",
-    "sourceUrl": "https://github.com/KDE/okular",
-    "repositoryUrl": "https://github.com/KDE/okular",
-    "releasesUrl": "https://github.com/KDE/okular/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "pdf",
-      "reader",
-      "viewer",
-      "epub",
-      "annotations",
-      "documents",
-      "kde"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 24.12.3 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop"
-  },
-  {
-    "id": "openshot",
-    "name": "OpenShot Video Editor",
-    "tagline": "Award-winning simple yet powerful open-source video editor",
-    "description": "OpenShot Video Editor is an award-winning free and open-source video editor for Linux, Mac, and Windows. It is designed to be easy to use, quick to learn, and surprisingly powerful. Easily cut, slice, and edit any video or film.",
-    "category": "Audio & Video",
-    "version": "4.0.0",
-    "releaseDate": "2026-08-05",
-    "size": "185.0 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-3.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "OpenShot Studios",
-      "website": "https://www.openshot.org",
-      "verified": false,
-      "github": "https://github.com/OpenShot/openshot-qt"
-    },
-    "sha256": "456789abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f7890123",
-    "downloadUrl": "https://github.com/OpenShot/openshot-qt/releases/download/v4.0.0/OpenShot-v4.0.0-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://github.com/OpenShot/openshot-qt/releases/download/v4.0.0/OpenShot-v4.0.0-x86_64.AppImage"
-    },
-    "iconSlug": "openshot",
-    "icon": "/icons/openshot.png",
-    "brandColor": "#0284C7",
-    "features": [
-      "Unlimited tracks and layers for background videos, watermarks, and audio",
-      "Keyframe animation framework with bezier curves for pan and zoom effects",
-      "3D animated titles powered by Blender integration",
-      "Audio waveform visualization and volume keyframing"
-    ],
-    "homepageUrl": "https://www.openshot.org",
-    "sourceUrl": "https://github.com/OpenShot/openshot-qt",
-    "repositoryUrl": "https://github.com/OpenShot/openshot-qt",
-    "releasesUrl": "https://github.com/OpenShot/openshot-qt/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "video",
-      "editor",
-      "movie",
-      "transitions",
-      "effects",
-      "titles"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 4.0.0 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop, 4GB+ RAM"
-  },
-  {
-    "id": "pcsx2",
-    "name": "PCSX2",
-    "tagline": "PlayStation 2 emulator supporting thousands of classic games",
-    "description": "PCSX2 is a free and open-source PlayStation 2 emulator for Windows, Linux, and macOS that supports a vast majority of the PS2 library with a high level of compatibility and functionality. Up to 4K internal resolutions, anti-aliasing, and widescreen patches.",
-    "category": "Games",
-    "version": "2.8.2",
-    "releaseDate": "2026-08-29",
-    "size": "32.0 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-3.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "PCSX2 Team",
-      "website": "https://pcsx2.net",
-      "verified": false,
-      "github": "https://github.com/PCSX2/pcsx2"
-    },
-    "sha256": "ef0123456789abcdef0123456789abcdef01a2b3c4d5e6f7890123456789abcd",
-    "downloadUrl": "https://github.com/PCSX2/pcsx2/releases/download/v2.8.2/pcsx2-v2.8.2-linux-appimage-x64-Qt.AppImage",
-    "downloadMap": {
-      "x86_64": "https://github.com/PCSX2/pcsx2/releases/download/v2.8.2/pcsx2-v2.8.2-linux-appimage-x64-Qt.AppImage"
-    },
-    "iconSlug": "pcsx2",
-    "icon": "/icons/pcsx2.png",
-    "brandColor": "#2563EB",
-    "features": [
-      "Over 99% PS2 commercial game compatibility with high rendering accuracy",
-      "Internal resolution scaling up to 8K with anisotropic filtering",
-      "Built-in Big Picture TV interface and gamepad navigation",
-      "Automatic game cover scraper, memory card manager, and save state slots"
-    ],
-    "homepageUrl": "https://pcsx2.net",
-    "sourceUrl": "https://github.com/PCSX2/pcsx2",
-    "repositoryUrl": "https://github.com/PCSX2/pcsx2",
-    "releasesUrl": "https://github.com/PCSX2/pcsx2/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "emulator",
-      "ps2",
-      "playstation2",
-      "gaming",
-      "pcsx2",
-      "classics"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 2.8.2 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop, Vulkan or OpenGL 4.5 GPU"
-  },
-  {
-    "id": "peazip",
-    "name": "PeaZip",
-    "tagline": "Free file archiver and encryption utility supporting 200+ formats",
-    "description": "PeaZip is a free file archiver utility, based on open source technologies of 7-Zip, p7zip, FreeArc, PAQ, and PEA projects. It provides a powerful file manager with two-factor authentication, secure deletion, and strong AES-256 encryption.",
-    "category": "Utilities",
-    "version": "10.1.0",
-    "releaseDate": "2024-11-20",
-    "size": "26.4 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "LGPL-3.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "Giorgio Tani",
-      "website": "https://peazip.github.io",
-      "verified": false,
-      "github": "https://github.com/peazip/PeaZip"
-    },
-    "sha256": "4b2e84c4e7fae29f8f4a13d80cb5f19001a1db6c1e345cb5774a38a9a202bc51",
-    "downloadUrl": "https://github.com/peazip/PeaZip/releases/download/10.1.0/peazip-10.1.0.LINUX.x86_64.GTK2.AppImage",
-    "downloadMap": {
-      "x86_64": "https://github.com/peazip/PeaZip/releases/download/10.1.0/peazip-10.1.0.LINUX.x86_64.GTK2.AppImage"
-    },
-    "iconSlug": "peazip",
-    "icon": "/icons/peazip.png",
-    "brandColor": "#2C753A",
-    "features": [
-      "Open, create, and extract 200+ archive formats (7Z, TAR, ZIP, RAR)",
-      "Strong AES-256 encryption with two-factor keyfile authentication",
-      "Built-in file checksum and hash calculator (CRC, MD5, SHA-256)",
-      "Secure file shredder and duplicate file finder"
-    ],
-    "homepageUrl": "https://peazip.github.io",
-    "sourceUrl": "https://github.com/peazip/PeaZip",
-    "repositoryUrl": "https://github.com/peazip/PeaZip",
-    "releasesUrl": "https://github.com/peazip/PeaZip/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "archive",
-      "zip",
-      "7z",
-      "tar",
-      "compression",
-      "encryption",
-      "file-manager"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 10.1.0 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop with GTK or Qt"
-  },
-  {
-    "id": "pho",
-    "name": "Pho",
-    "tagline": "The AppImage manager and desktop integration tool Linux deserved",
-    "description": "Pho is a streamlined AppImage manager and desktop integration utility designed to make running, organizing, updating, and launching AppImages effortless. It provides centralized storage management, GitHub release updates, automatic desktop entry generation, and rapid terminal CLI tools.",
-    "category": "System & Security",
-    "version": "0.1.12",
-    "releaseDate": "2026-07-20",
-    "size": "18.5 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "MIT",
-    "licenseCategory": "Permissive",
-    "publisher": {
-      "name": "zyrouge",
-      "website": "https://github.com/zyrouge/pho",
-      "verified": false,
-      "github": "https://github.com/zyrouge/pho"
-    },
-    "sha256": "a444444444444444444444444444444444444444444444444444444444444444",
-    "downloadUrl": "https://github.com/zyrouge/pho/releases/download/v0.1.12/pho-amd64",
-    "downloadMap": {
-      "x86_64": "https://github.com/zyrouge/pho/releases/download/v0.1.12/pho-amd64"
-    },
-    "iconSlug": "pho",
-    "icon": "/icons/pho.png",
-    "brandColor": "#EA580C",
-    "features": [
-      "Centralized AppImage folder organization and automatic desktop menu linking",
-      "Direct downloads and automated updates from GitHub releases and web URLs",
-      "Fast single-binary execution with no external runtime dependencies",
-      "Custom configuration profiles and automated version pruning"
-    ],
-    "homepageUrl": "https://github.com/zyrouge/pho",
-    "sourceUrl": "https://github.com/zyrouge/pho",
-    "repositoryUrl": "https://github.com/zyrouge/pho",
-    "releasesUrl": "https://github.com/zyrouge/pho/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "appimage",
-      "manager",
-      "cli",
-      "integration",
-      "desktop",
-      "updater"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 0.1.12 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop or server"
-  },
-  {
-    "id": "phoenix-firestorm",
-    "name": "Phoenix Firestorm AppImage",
-    "tagline": "Advanced viewer for Second Life and OpenSimulator virtual worlds",
-    "description": "The Phoenix Firestorm Viewer is the leading third-party viewer for Second Life and OpenSim grids. This community AppImage distribution by Lethja bundles the 64-bit Linux client with full AVX2 accelerated mesh rendering, spatial voice, Havok collision physics tools, and UI skin customizations.",
-    "category": "Games",
-    "version": "7.2.4",
-    "releaseDate": "2026-06-30",
-    "size": "165.0 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "LGPL-2.1",
-    "licenseCategory": "Permissive",
-    "publisher": {
-      "name": "Lethja (Community Package) & Firestorm Project",
-      "website": "https://www.firestormviewer.org/",
-      "verified": false,
-      "github": "https://github.com/Lethja/phoenix-firestorm-appimage"
-    },
-    "sha256": "a777777777777777777777777777777777777777777777777777777777777777",
-    "downloadUrl": "https://github.com/Lethja/phoenix-firestorm-appimage/releases/download/2026-06-30/Phoenix-Firestorm_AVX2-7-2-4-80712-x86_64.AppImage.zip",
-    "downloadMap": {
-      "x86_64": "https://github.com/Lethja/phoenix-firestorm-appimage/releases/download/2026-06-30/Phoenix-Firestorm_AVX2-7-2-4-80712-x86_64.AppImage.zip"
-    },
-    "iconSlug": "phoenix-firestorm",
-    "icon": "/icons/phoenix-firestorm.png",
-    "brandColor": "#E11D48",
-    "features": [
-      "AVX2 optimized graphical pipeline with high-framerate mesh rendering",
-      "Deep compatibility with Second Life and OpenSimulator independent grids",
-      "Advanced building, scripting, and photography camera tools",
-      "Customizable UI layouts, color themes, and radar tracking panels"
-    ],
-    "homepageUrl": "https://www.firestormviewer.org/",
-    "sourceUrl": "https://github.com/Lethja/phoenix-firestorm-appimage",
-    "repositoryUrl": "https://github.com/Lethja/phoenix-firestorm-appimage",
-    "releasesUrl": "https://github.com/Lethja/phoenix-firestorm-appimage/releases",
-    "sourceType": "Community",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "secondlife",
-      "firestorm",
-      "virtual-world",
-      "metaverse",
-      "opensim",
-      "games",
-      "3d"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 7.2.4 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop, modern GPU, 8GB RAM"
-  },
-  {
-    "id": "ppsspp",
-    "name": "PPSSPP",
-    "tagline": "Fast and portable PSP (PlayStation Portable) emulator",
-    "description": "PPSSPP is the original and best PSP emulator for Android, Windows, Mac, Linux, and more. It runs a huge amount of games in full HD resolution with enhanced textures, controller support, and state saves.",
-    "category": "Games",
-    "version": "1.18.1",
-    "releaseDate": "2026-08-11",
-    "size": "38.0 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-2.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "Henrik Rydgård",
-      "website": "https://www.ppsspp.org",
-      "verified": false,
-      "github": "https://github.com/hrydgard/ppsspp"
-    },
-    "sha256": "f0123456789abcdef0123456789abcdef01a2b3c4d5e6f7890123456789abcde",
-    "downloadUrl": "https://github.com/hrydgard/ppsspp/releases/download/v1.18.1/PPSSPP-v1.18.1-linux-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://github.com/hrydgard/ppsspp/releases/download/v1.18.1/PPSSPP-v1.18.1-linux-x86_64.AppImage"
-    },
-    "iconSlug": "ppsspp",
-    "icon": "/icons/ppsspp.png",
-    "brandColor": "#0284C7",
-    "features": [
-      "Upscale textures and render PSP games in full desktop 1080p and 4K",
-      "Built-in texture replacement engine and post-processing shaders",
-      "Ad-hoc Wi-Fi multiplayer emulation with built-in matchmaking",
-      "Save states and customizable touch or physical controller mappings"
-    ],
-    "homepageUrl": "https://www.ppsspp.org",
-    "sourceUrl": "https://github.com/hrydgard/ppsspp",
-    "repositoryUrl": "https://github.com/hrydgard/ppsspp",
-    "releasesUrl": "https://github.com/hrydgard/ppsspp/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "emulator",
-      "psp",
-      "playstation",
-      "portable",
-      "gaming",
-      "ppsspp"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 1.18.1 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop"
-  },
-  {
-    "id": "qbittorrent",
-    "name": "qBittorrent",
-    "tagline": "Open-source BitTorrent client with integrated search engine",
-    "description": "qBittorrent is an open-source alternative to µTorrent. It is free of ads, fast, and feature-complete, including an integrated search engine, sequential downloading support, torrent creation tool, IP filtering, and an advanced web remote management interface.",
-    "category": "Internet & Network",
-    "version": "5.2.3",
-    "releaseDate": "2026-08-14",
-    "size": "34.0 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-2.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "The qBittorrent Project",
-      "website": "https://www.qbittorrent.org",
-      "verified": false,
-      "github": "https://github.com/qbittorrent/qBittorrent"
-    },
-    "sha256": "9abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f789012345678",
-    "downloadUrl": "https://github.com/qbittorrent/qBittorrent/releases/download/release-5.2.3/qbittorrent-5.2.3_x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://github.com/qbittorrent/qBittorrent/releases/download/release-5.2.3/qbittorrent-5.2.3_x86_64.AppImage"
-    },
-    "iconSlug": "qbittorrent",
-    "icon": "/icons/qbittorrent.svg",
-    "brandColor": "#2B5797",
-    "features": [
-      "Integrated torrent search engine supporting category-specific queries",
-      "Sequential downloading to preview video files while downloading",
-      "Remote Web UI control with authentication and reverse proxy support",
-      "Bandwidth scheduler, IP filtering, and proxy support (SOCKS5/HTTP)"
-    ],
-    "homepageUrl": "https://www.qbittorrent.org",
-    "sourceUrl": "https://github.com/qbittorrent/qBittorrent",
-    "repositoryUrl": "https://github.com/qbittorrent/qBittorrent",
-    "releasesUrl": "https://github.com/qbittorrent/qBittorrent/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "torrent",
-      "p2p",
-      "download",
-      "bittorrent",
-      "magnet",
-      "filesharing"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 5.2.3 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop"
-  },
-  {
-    "id": "qgis",
-    "name": "QGIS",
-    "tagline": "Leading open source Geographic Information System (GIS) application",
-    "description": "QGIS is a user friendly Open Source Geographic Information System (GIS) licensed under the GNU General Public License. QGIS is an official project of the Open Source Geospatial Foundation (OSGeo). It allows you to create, edit, visualize, analyze and publish geospatial information.",
-    "category": "Education",
-    "version": "3.38.3",
-    "releaseDate": "2026-08-01",
-    "size": "410.0 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-2.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "QGIS Project",
-      "website": "https://qgis.org",
-      "verified": false,
-      "github": "https://github.com/qgis/QGIS"
-    },
-    "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f789",
-    "downloadUrl": "https://qgis.org/downloads/QGIS-3.38.3-x86_64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://qgis.org/downloads/QGIS-3.38.3-x86_64.AppImage"
-    },
-    "iconSlug": "qgis",
-    "icon": null,
-    "brandColor": "#588100",
-    "features": [
-      "View, edit, and analyze vector and raster spatial formats (GeoTIFF, Shapefile, PostGIS)",
-      "Advanced cartographic map composer with atlas print generation",
-      "Geoprocessing toolbox integrating GRASS GIS, SAGA, and GDAL",
-      "Python scripting console and plugin manager for custom geospatial workflows"
-    ],
-    "homepageUrl": "https://qgis.org",
-    "sourceUrl": "https://github.com/qgis/QGIS",
-    "repositoryUrl": "https://github.com/qgis/QGIS",
-    "releasesUrl": "https://github.com/qgis/QGIS/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "gis",
-      "maps",
-      "geography",
-      "spatial",
-      "cartography",
-      "shapefile",
-      "data"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 3.38.3 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop, 4GB+ RAM"
-  },
-  {
-    "id": "retroarch",
-    "name": "RetroArch",
-    "tagline": "Frontend for emulators, game engines and media players",
-    "description": "RetroArch is the official reference frontend for the libretro API. Libretro is a clean interface that unifies emulation cores, games, and media players into a modular, high-performance ecosystem with unified controller configuration, shaders, netplay, and rewinding.",
-    "category": "Games",
-    "version": "1.19.1",
-    "releaseDate": "2026-07-25",
-    "size": "185.0 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-3.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "Libretro Team",
-      "website": "https://www.retroarch.com",
-      "verified": false,
-      "github": "https://github.com/libretro/RetroArch"
-    },
-    "sha256": "0123456789abcdef0123456789abcdef01a2b3c4d5e6f7890123456789abcdef",
-    "downloadUrl": "https://buildbot.libretro.com/stable/1.19.1/linux/x86_64/RetroArch.AppImage",
-    "downloadMap": {
-      "x86_64": "https://buildbot.libretro.com/stable/1.19.1/linux/x86_64/RetroArch.AppImage"
-    },
-    "iconSlug": "retroarch",
-    "icon": "/icons/retroarch.svg",
-    "brandColor": "#4F46E5",
-    "features": [
-      "Access dozens of classic console and arcade cores through one interface",
-      "Next-generation CRT and scanline shaders (Slang and GLSL)",
-      "Real-time frame rewinding and runahead latency reduction technology",
-      "Cross-platform netplay with spectator mode and RetroAchievements integration"
-    ],
-    "homepageUrl": "https://www.retroarch.com",
-    "sourceUrl": "https://github.com/libretro/RetroArch",
-    "repositoryUrl": "https://github.com/libretro/RetroArch",
-    "releasesUrl": "https://github.com/libretro/RetroArch/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "emulator",
-      "retro",
-      "games",
-      "libretro",
-      "arcade",
-      "shaders",
-      "netplay"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 1.19.1 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop, OpenGL or Vulkan GPU"
-  },
-  {
-    "id": "rpcs3",
-    "name": "RPCS3",
-    "tagline": "Open-source Sony PlayStation 3 emulator and debugger",
-    "description": "RPCS3 is a multi-platform open-source Sony PlayStation 3 emulator and debugger written in C++ for Windows, Linux, macOS and FreeBSD. It is capable of booting and playing over 3,000 commercial PS3 titles with high framerate patches and fidelity mods.",
-    "category": "Games",
-    "version": "0.0.42",
-    "releaseDate": "2026-09-02",
-    "size": "48.0 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-2.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "RPCS3 Team",
-      "website": "https://rpcs3.net",
-      "verified": false,
-      "github": "https://github.com/RPCS3/rpcs3"
-    },
-    "sha256": "def0123456789abcdef0123456789abcdef01a2b3c4d5e6f7890123456789abc",
-    "downloadUrl": "https://github.com/RPCS3/rpcs3-binaries-linux/releases/download/build-065b490eb49ef815b5b6af2a58ae865ecbbab9ab/rpcs3-v0.0.42-19938-065b490e_linux64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://github.com/RPCS3/rpcs3-binaries-linux/releases/download/build-065b490eb49ef815b5b6af2a58ae865ecbbab9ab/rpcs3-v0.0.42-19938-065b490e_linux64.AppImage"
-    },
-    "iconSlug": "rpcs3",
-    "icon": "/icons/rpcs3.png",
-    "brandColor": "#1E3A8A",
-    "features": [
-      "Vulkan graphics pipeline with resolution scale up to 16x native 720p",
-      "SPU and PPU recompiler engines leveraging modern AVX-512 CPU instructions",
-      "Compatibility database showing playable status for thousands of games",
-      "DualShock 3, DualShock 4, and DualSense controller pressure support"
-    ],
-    "homepageUrl": "https://rpcs3.net",
-    "sourceUrl": "https://github.com/RPCS3/rpcs3",
-    "repositoryUrl": "https://github.com/RPCS3/rpcs3",
-    "releasesUrl": "https://github.com/RPCS3/rpcs3-binaries-linux/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "emulator",
-      "ps3",
-      "playstation",
-      "gaming",
-      "rpcs3",
-      "vulkan"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 0.0.42 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop, 6-core+ CPU with AVX, Vulkan 1.3 GPU"
-  },
-  {
-    "id": "shard",
-    "name": "Shard",
-    "tagline": "Minecraft launcher with deduplicated mod storage and profile management",
-    "description": "Shard is a modern Minecraft launcher featuring a deduplicated mod storage engine. Its content-addressed library stores mods once and seamlessly shares them across profiles. It features full CLI and desktop GUI interfaces with out-of-the-box support for Fabric, Forge, Quilt, NeoForge, and instant Modrinth & CurseForge integrations.",
-    "category": "Games",
-    "version": "0.1.25",
-    "releaseDate": "2026-08-20",
-    "size": "42.5 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "MIT",
-    "licenseCategory": "Permissive",
-    "publisher": {
-      "name": "Th0rgal",
-      "website": "https://github.com/Th0rgal/shard",
-      "verified": false,
-      "github": "https://github.com/Th0rgal/shard"
-    },
-    "sha256": "a111111111111111111111111111111111111111111111111111111111111111",
-    "downloadUrl": "https://github.com/Th0rgal/shard/releases/download/v0.1.25/shard-launcher-linux-x64.AppImage",
-    "downloadMap": {
-      "x86_64": "https://github.com/Th0rgal/shard/releases/download/v0.1.25/shard-launcher-linux-x64.AppImage"
-    },
-    "iconSlug": "shard",
-    "icon": null,
-    "brandColor": "#10B981",
-    "features": [
-      "Content-addressed mod storage deduplicating shared files across profiles",
-      "Unified mod search and installation from Modrinth and CurseForge",
-      "Compatible with Fabric, NeoForge, Forge, and Quilt mod loaders",
-      "Native desktop UI with fast command-line terminal control"
-    ],
-    "homepageUrl": "https://github.com/Th0rgal/shard",
-    "sourceUrl": "https://github.com/Th0rgal/shard",
-    "repositoryUrl": "https://github.com/Th0rgal/shard",
-    "releasesUrl": "https://github.com/Th0rgal/shard/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "minecraft",
-      "launcher",
-      "mods",
-      "fabric",
-      "forge",
-      "modrinth",
-      "curseforge",
-      "games"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 0.1.25 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop, Java runtime 17+"
-  },
-  {
-    "id": "shotcut",
-    "name": "Shotcut",
-    "tagline": "Free, open source, cross-platform non-linear video editor",
-    "description": "Shotcut is a free, open source, cross-platform video editor for Windows, Mac and Linux. Major features include support for a wide range of formats; no import required meaning native timeline editing; Blackmagic Design support for input and preview monitoring; and 4K resolution support.",
-    "category": "Audio & Video",
-    "version": "26.8.1",
-    "releaseDate": "2026-08-12",
-    "size": "128.0 MB",
-    "architectures": [
-      "x86_64"
-    ],
-    "license": "GPL-3.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "Meltytech, LLC",
-      "website": "https://shotcut.org",
-      "verified": false,
-      "github": "https://github.com/mltframework/shotcut"
-    },
-    "sha256": "56789abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f78901234",
-    "downloadUrl": "https://github.com/mltframework/shotcut/releases/download/v26.8.1/shotcut-linux-x86_64-26.8.1.AppImage",
-    "downloadMap": {
-      "x86_64": "https://github.com/mltframework/shotcut/releases/download/v26.8.1/shotcut-linux-x86_64-26.8.1.AppImage"
-    },
-    "iconSlug": "shotcut",
-    "icon": null,
-    "brandColor": "#059669",
-    "features": [
-      "Native timeline editing with zero file import step required",
-      "Comprehensive audio filters, 3-point color grading wheels, and scopes",
-      "Hardware accelerated encoding via NVENC, VA-API, and AMD AMF",
-      "Keyframed video effects including blur, chromatic aberration, and glitch"
-    ],
-    "homepageUrl": "https://shotcut.org",
-    "sourceUrl": "https://github.com/mltframework/shotcut",
-    "repositoryUrl": "https://github.com/mltframework/shotcut",
-    "releasesUrl": "https://github.com/mltframework/shotcut/releases",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "video",
-      "editing",
-      "non-linear",
-      "4k",
-      "mlt",
-      "color-grading"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "changelog": [
-      "Version 26.8.1 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop, 8GB RAM recommended for 4K"
-  },
-  {
-    "id": "signal",
-    "name": "Signal Desktop",
-    "tagline": "Private, end-to-end encrypted messaging, voice, and video calling",
-    "description": "Signal is a messaging app with privacy at its core. It is free and open-source, allowing anyone to verify its security by auditing the code. Signal messages and calls are always end-to-end encrypted and painstakingly engineered to keep your communication safe.",
-    "category": "Communication",
-    "version": "7.39.0",
-    "releaseDate": "2026-08-27",
-    "size": "140.0 MB",
-    "architectures": [
-      "x86_64"
+    "formats": [
+      "AppImage"
     ],
     "license": "AGPL-3.0",
     "licenseCategory": "Open Source",
     "publisher": {
-      "name": "Signal Messenger, LLC",
-      "website": "https://signal.org",
+      "name": "777genius",
+      "website": "https://github.com/777genius/agent-teams-ai",
       "verified": false,
-      "github": "https://github.com/signalapp/Signal-Desktop"
+      "github": "https://github.com/777genius/agent-teams-ai"
     },
-    "sha256": "789abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f7890123456",
-    "downloadUrl": "https://updates.signal.org/desktop/apt/pool/s/signal-desktop/Signal-7.39.0-x86_64.AppImage",
+    "sha256": "",
+    "downloadUrl": "https://github.com/777genius/agent-teams-ai/releases",
     "downloadMap": {
-      "x86_64": "https://updates.signal.org/desktop/apt/pool/s/signal-desktop/Signal-7.39.0-x86_64.AppImage"
+      "x86_64": "https://github.com/777genius/agent-teams-ai/releases"
     },
-    "iconSlug": "signal",
-    "icon": null,
-    "brandColor": "#3A76F0",
-    "features": [
-      "Industry standard Signal Protocol with zero server-side metadata logging",
-      "Encrypted 1:1 and group audio/video calling with screen sharing",
-      "Disappearing messages with customizable expiration timers",
-      "Direct secure syncing with Signal iOS and Android mobile clients"
-    ],
-    "homepageUrl": "https://signal.org",
-    "sourceUrl": "https://github.com/signalapp/Signal-Desktop",
-    "repositoryUrl": "https://github.com/signalapp/Signal-Desktop",
-    "releasesUrl": "https://github.com/signalapp/Signal-Desktop/releases",
+    "iconSlug": "agent_teams_ai",
+    "icon": "https://appimage.github.io/database/Agent_Teams_AI/icons/128x128/agent-teams-ai.png",
+    "homepageUrl": "https://github.com/777genius/agent-teams-ai",
+    "sourceUrl": "https://github.com/777genius/agent-teams-ai",
+    "repositoryUrl": "https://github.com/777genius/agent-teams-ai",
+    "releasesUrl": "https://github.com/777genius/agent-teams-ai/releases",
+    "githubRepo": "777genius/agent-teams-ai",
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
     "tags": [
-      "chat",
-      "signal",
-      "privacy",
-      "encrypted",
-      "secure",
-      "messaging"
+      "development"
     ],
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 7.39.0 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/Agent_Teams_AI/screenshot.png",
+        "alt": "Agent Teams AI screenshot 1"
+      }
+    ]
   },
   {
-    "id": "telegram",
-    "name": "Telegram Desktop",
-    "tagline": "Fast and secure desktop messaging app with synced cloud chats",
-    "description": "Telegram Desktop is a fast and secure desktop messaging app, perfectly synced with your mobile phone. It features instant cloud message delivery, supergroups with up to 200,000 members, unlimited file sharing up to 2GB per file, and custom sticker bots.",
-    "category": "Communication",
-    "version": "5.8.3",
-    "releaseDate": "2026-08-22",
-    "size": "62.0 MB",
+    "id": "agentflow",
+    "name": "AgentFlow",
+    "tagline": "AgentFlow desktop workspace for multi-agent workflows",
+    "description": "AgentFlow desktop workspace for multi-agent workflows",
+    "category": "Development",
+    "simplifiedCategory": "Development",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
     "architectures": [
       "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "AGPL-3.0",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "v1xerunt",
+      "website": "https://github.com/v1xerunt/AgentFlow",
+      "verified": false,
+      "github": "https://github.com/v1xerunt/AgentFlow"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/v1xerunt/AgentFlow/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/v1xerunt/AgentFlow/releases"
+    },
+    "iconSlug": "agentflow",
+    "icon": "https://appimage.github.io/database/AgentFlow/icons/512x512/agentflow.png",
+    "homepageUrl": "https://github.com/v1xerunt/AgentFlow",
+    "sourceUrl": "https://github.com/v1xerunt/AgentFlow",
+    "repositoryUrl": "https://github.com/v1xerunt/AgentFlow",
+    "releasesUrl": "https://github.com/v1xerunt/AgentFlow/releases",
+    "githubRepo": "v1xerunt/AgentFlow",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "development"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/AgentFlow/screenshot.png",
+        "alt": "AgentFlow screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "agentlauncher",
+    "name": "AgentLauncher",
+    "tagline": "Configure and run existing coding-agent CLIs from a desktop app.",
+    "description": "Configure and run existing coding-agent CLIs from a desktop app.",
+    "category": "Development",
+    "simplifiedCategory": "Development",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "MIT",
+    "licenseCategory": "Permissive",
+    "publisher": {
+      "name": "agent-launch",
+      "website": "https://github.com/agent-launch/agent-launcher",
+      "verified": false,
+      "github": "https://github.com/agent-launch/agent-launcher"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/agent-launch/agent-launcher/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/agent-launch/agent-launcher/releases"
+    },
+    "iconSlug": "agentlauncher",
+    "icon": "https://appimage.github.io/database/AgentLauncher/icons/1024x1024/agent-launcher.png",
+    "homepageUrl": "https://github.com/agent-launch/agent-launcher",
+    "sourceUrl": "https://github.com/agent-launch/agent-launcher",
+    "repositoryUrl": "https://github.com/agent-launch/agent-launcher",
+    "releasesUrl": "https://github.com/agent-launch/agent-launcher/releases",
+    "githubRepo": "agent-launch/agent-launcher",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "development"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/AgentLauncher/screenshot.png",
+        "alt": "AgentLauncher screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "agentrq",
+    "name": "AgentRQ",
+    "tagline": "AgentRQ desktop app — AI-powered task queue for autonomous agents",
+    "description": "AgentRQ desktop app — AI-powered task queue for autonomous agents",
+    "category": "Development",
+    "simplifiedCategory": "Development",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "AGPL-3.0",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "agentrq",
+      "website": "https://github.com/agentrq/agentrq",
+      "verified": false,
+      "github": "https://github.com/agentrq/agentrq"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/agentrq/agentrq/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/agentrq/agentrq/releases"
+    },
+    "iconSlug": "agentrq",
+    "icon": "https://appimage.github.io/database/AgentRQ/icons/128x128/agentrq-desktop.png",
+    "homepageUrl": "https://github.com/agentrq/agentrq",
+    "sourceUrl": "https://github.com/agentrq/agentrq",
+    "repositoryUrl": "https://github.com/agentrq/agentrq",
+    "releasesUrl": "https://github.com/agentrq/agentrq/releases",
+    "githubRepo": "agentrq/agentrq",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "development"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/AgentRQ/screenshot.png",
+        "alt": "AgentRQ screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "agents",
+    "name": "Agents",
+    "tagline": "Pilos Agents — turn AI conversations into automated workflows",
+    "description": "Pilos Agents — turn AI conversations into automated workflows",
+    "category": "Development",
+    "simplifiedCategory": "Development",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "MIT",
+    "licenseCategory": "Permissive",
+    "publisher": {
+      "name": "pilos-ai",
+      "website": "https://github.com/pilos-ai/agents",
+      "verified": false,
+      "github": "https://github.com/pilos-ai/agents"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/pilos-ai/agents/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/pilos-ai/agents/releases"
+    },
+    "iconSlug": "agents",
+    "icon": "https://appimage.github.io/database/Agents/icons/1024x1024/pilos-agents.png",
+    "homepageUrl": "https://github.com/pilos-ai/agents",
+    "sourceUrl": "https://github.com/pilos-ai/agents",
+    "repositoryUrl": "https://github.com/pilos-ai/agents",
+    "releasesUrl": "https://github.com/pilos-ai/agents/releases",
+    "githubRepo": "pilos-ai/agents",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "development"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/Agents/screenshot.png",
+        "alt": "Agents screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "agora",
+    "name": "Agora",
+    "tagline": "Simple File Conversion Application",
+    "description": "Simple File Conversion Application",
+    "category": "System/Utilities",
+    "simplifiedCategory": "System/Utilities",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "Agora",
+      "website": "https://appimage.github.io/Agora/",
+      "verified": false
+    },
+    "sha256": "",
+    "downloadUrl": "https://appimage.github.io/Agora/",
+    "downloadMap": {
+      "x86_64": "https://appimage.github.io/Agora/"
+    },
+    "iconSlug": "agora",
+    "icon": "https://appimage.github.io/database/Agora/icons/512x512/agora.png",
+    "homepageUrl": "https://appimage.github.io/Agora/",
+    "sourceUrl": "https://appimage.github.io/Agora/",
+    "releasesUrl": "https://appimage.github.io/Agora/",
+    "sourceType": "Community",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "utility"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/Agora/screenshot.png",
+        "alt": "Agora screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "agro",
+    "name": "Agro",
+    "tagline": "",
+    "description": "",
+    "category": "System/Utilities",
+    "simplifiedCategory": "System/Utilities",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
     ],
     "license": "GPL-3.0",
     "licenseCategory": "Open Source",
     "publisher": {
-      "name": "Telegram FZ-LLC",
-      "website": "https://desktop.telegram.org",
+      "name": "Onion99",
+      "website": "https://github.com/Onion99/Agro",
       "verified": false,
-      "github": "https://github.com/telegramdesktop/tdesktop"
+      "github": "https://github.com/Onion99/Agro"
     },
-    "sha256": "89abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f78901234567",
-    "downloadUrl": "https://updates.tdesktop.com/tlinux/tsetup.5.8.3.AppImage",
+    "sha256": "",
+    "downloadUrl": "https://github.com/Onion99/Agro/releases",
     "downloadMap": {
-      "x86_64": "https://updates.tdesktop.com/tlinux/tsetup.5.8.3.AppImage"
+      "x86_64": "https://github.com/Onion99/Agro/releases"
     },
-    "iconSlug": "telegram",
-    "icon": null,
-    "brandColor": "#229ED9",
-    "features": [
-      "Instant real-time sync across desktop, web, tablet, and mobile devices",
-      "Share media and documents of any format up to 2GB per item",
-      "Voice chats and live video streams with thousands of listeners",
-      "Powerful bot platform, animated stickers, and folder organization"
-    ],
-    "homepageUrl": "https://desktop.telegram.org",
-    "sourceUrl": "https://github.com/telegramdesktop/tdesktop",
-    "repositoryUrl": "https://github.com/telegramdesktop/tdesktop",
-    "releasesUrl": "https://github.com/telegramdesktop/tdesktop/releases",
+    "iconSlug": "agro",
+    "icon": "https://appimage.github.io/database/Agro/icons/512x512/Agro.png",
+    "homepageUrl": "https://github.com/Onion99/Agro",
+    "sourceUrl": "https://github.com/Onion99/Agro",
+    "repositoryUrl": "https://github.com/Onion99/Agro",
+    "releasesUrl": "https://github.com/Onion99/Agro/releases",
+    "githubRepo": "Onion99/Agro",
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
     "tags": [
-      "telegram",
-      "chat",
-      "messaging",
-      "channels",
-      "bot",
-      "cloud"
+      "utility"
     ],
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 5.8.3 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/Agro/screenshot.png",
+        "alt": "Agro screenshot 1"
+      }
+    ]
   },
   {
-    "id": "transmission",
-    "name": "Transmission",
-    "tagline": "Fast, easy, and free BitTorrent client with clean native design",
-    "description": "Transmission is designed for easy, powerful use. We’ve set the defaults to \"Just Work\" and it only takes a few clicks to configure advanced features like watch directories, bad peer blocklists, and the web interface. When Ubuntu chose Transmission as its default BitTorrent client, one of the most-cited reasons was its easy learning curve.",
-    "category": "Internet & Network",
-    "version": "4.0.6",
-    "releaseDate": "2026-07-10",
-    "size": "28.0 MB",
+    "id": "ai_canvas",
+    "name": "AI Canvas",
+    "tagline": "Local-first scene-first mockup editor desktop app.",
+    "description": "Local-first scene-first mockup editor desktop app.",
+    "category": "Graphics",
+    "simplifiedCategory": "Graphics",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
     "architectures": [
       "x86_64"
     ],
-    "license": "GPL-2.0",
+    "formats": [
+      "AppImage"
+    ],
+    "license": "AGPL-3.0",
     "licenseCategory": "Open Source",
     "publisher": {
-      "name": "Transmission Project",
-      "website": "https://transmissionbt.com",
+      "name": "chadnickbok",
+      "website": "https://github.com/chadnickbok/ai-canvas",
       "verified": false,
-      "github": "https://github.com/transmission/transmission"
+      "github": "https://github.com/chadnickbok/ai-canvas"
     },
-    "sha256": "abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f7890123456789",
-    "downloadUrl": "https://github.com/transmission/transmission/releases/download/4.0.6/Transmission-4.0.6-x86_64.AppImage",
+    "sha256": "",
+    "downloadUrl": "https://github.com/chadnickbok/ai-canvas/releases",
     "downloadMap": {
-      "x86_64": "https://github.com/transmission/transmission/releases/download/4.0.6/Transmission-4.0.6-x86_64.AppImage"
+      "x86_64": "https://github.com/chadnickbok/ai-canvas/releases"
     },
-    "iconSlug": "transmission",
-    "icon": null,
-    "brandColor": "#C0392B",
-    "features": [
-      "Minimalist resource footprint with low RAM and CPU consumption",
-      "Full encryption, DHT, µTP, PEX and Magnet URI support",
-      "Watch directory automated torrent adding and completion notifications",
-      "Built-in web client for headless or remote browser operation"
-    ],
-    "homepageUrl": "https://transmissionbt.com",
-    "sourceUrl": "https://github.com/transmission/transmission",
-    "repositoryUrl": "https://github.com/transmission/transmission",
-    "releasesUrl": "https://github.com/transmission/transmission/releases",
+    "iconSlug": "ai_canvas",
+    "icon": "https://appimage.github.io/database/AI_Canvas/icons/1024x1024/ai-canvas.png",
+    "homepageUrl": "https://github.com/chadnickbok/ai-canvas",
+    "sourceUrl": "https://github.com/chadnickbok/ai-canvas",
+    "repositoryUrl": "https://github.com/chadnickbok/ai-canvas",
+    "releasesUrl": "https://github.com/chadnickbok/ai-canvas/releases",
+    "githubRepo": "chadnickbok/ai-canvas",
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
     "tags": [
-      "torrent",
-      "p2p",
-      "transmission",
-      "bittorrent",
-      "download"
+      "graphics"
     ],
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 4.0.6 AppImage release build"
-    ],
-    "requirements": "Linux 64-bit desktop"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/AI_Canvas/screenshot.png",
+        "alt": "AI Canvas screenshot 1"
+      }
+    ]
   },
   {
-    "id": "vlc",
-    "name": "VLC media player",
-    "tagline": "Free and open-source cross-platform multimedia player and framework",
-    "description": "VLC is a free and open source cross-platform multimedia player and framework that plays most multimedia files, and various streaming protocols. It plays everything: files, discs, webcams, devices, and streams with no external codec packs required.",
-    "category": "Audio & Video",
-    "version": "3.0.21",
-    "releaseDate": "2026-07-20",
-    "size": "95.0 MB",
+    "id": "ai_gist",
+    "name": "AI Gist",
+    "tagline": "本地优先的 AI 提示词管理工具，能够管理 AI 提示词 + 变量填充 + 分类标签。",
+    "description": "本地优先的 AI 提示词管理工具，能够管理 AI 提示词 + 变量填充 + 分类标签。",
+    "category": "System/Utilities",
+    "simplifiedCategory": "System/Utilities",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
     "architectures": [
       "x86_64"
     ],
-    "license": "GPL-2.0",
+    "formats": [
+      "AppImage"
+    ],
+    "license": "AGPL-3.0",
     "licenseCategory": "Open Source",
     "publisher": {
-      "name": "VideoLAN",
-      "website": "https://www.videolan.org",
+      "name": "yarin-zhang",
+      "website": "https://github.com/yarin-zhang/AI-Gist",
       "verified": false,
-      "github": "https://github.com/videolan/vlc"
+      "github": "https://github.com/yarin-zhang/AI-Gist"
     },
-    "sha256": "c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef01a2b",
-    "downloadUrl": "https://get.videolan.org/vlc/3.0.21/vlc-3.0.21-x86_64.AppImage",
+    "sha256": "",
+    "downloadUrl": "https://github.com/yarin-zhang/AI-Gist/releases",
     "downloadMap": {
-      "x86_64": "https://get.videolan.org/vlc/3.0.21/vlc-3.0.21-x86_64.AppImage"
+      "x86_64": "https://github.com/yarin-zhang/AI-Gist/releases"
     },
-    "iconSlug": "vlc",
-    "icon": null,
-    "brandColor": "#EA580C",
-    "features": [
-      "Plays everything: MKV, MP4, AVI, MOV, Ogg, FLAC, TS, M2TS, AAC",
-      "Hardware decoding on modern GPUs for 4K and 8K playback",
-      "Subtitle synchronization, audio equalizer, and video filters",
-      "Network stream playback with Chromecast and DLNA support"
-    ],
-    "homepageUrl": "https://www.videolan.org",
-    "sourceUrl": "https://github.com/videolan/vlc",
-    "repositoryUrl": "https://github.com/videolan/vlc",
-    "releasesUrl": "https://github.com/videolan/vlc/releases",
+    "iconSlug": "ai_gist",
+    "icon": "https://appimage.github.io/database/AI_Gist/icons/512x512/ai-gist.png",
+    "homepageUrl": "https://github.com/yarin-zhang/AI-Gist",
+    "sourceUrl": "https://github.com/yarin-zhang/AI-Gist",
+    "repositoryUrl": "https://github.com/yarin-zhang/AI-Gist",
+    "releasesUrl": "https://github.com/yarin-zhang/AI-Gist/releases",
+    "githubRepo": "yarin-zhang/AI-Gist",
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
     "tags": [
-      "player",
-      "video",
-      "music",
-      "streaming",
-      "codecs",
-      "subtitles"
+      "utility"
     ],
     "featured": false,
     "downloadsCount": 0,
     "rating": 0,
-    "changelog": [
-      "Version 3.0.21 AppImage release build"
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/AI_Gist/screenshot.png",
+        "alt": "AI Gist screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "ai-bot-workspace",
+    "name": "ai-bot-workspace",
+    "tagline": "An Electron application which includes testing workspaces for some Riddles.io competitions.",
+    "description": "An Electron application which includes testing workspaces for some Riddles.io competitions.",
+    "category": "Development",
+    "simplifiedCategory": "Development",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
     ],
-    "requirements": "Linux 64-bit desktop"
+    "formats": [
+      "AppImage"
+    ],
+    "license": "MIT",
+    "licenseCategory": "Permissive",
+    "publisher": {
+      "name": "jmerle",
+      "website": "https://github.com/jmerle/ai-bot-workspace",
+      "verified": false,
+      "github": "https://github.com/jmerle/ai-bot-workspace"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/jmerle/ai-bot-workspace/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/jmerle/ai-bot-workspace/releases"
+    },
+    "iconSlug": "ai-bot-workspace",
+    "homepageUrl": "https://github.com/jmerle/ai-bot-workspace",
+    "sourceUrl": "https://github.com/jmerle/ai-bot-workspace",
+    "repositoryUrl": "https://github.com/jmerle/ai-bot-workspace",
+    "releasesUrl": "https://github.com/jmerle/ai-bot-workspace/releases",
+    "githubRepo": "jmerle/ai-bot-workspace",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "development"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/ai-bot-workspace/screenshot.png",
+        "alt": "ai-bot-workspace screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "ai-browser",
+    "name": "AI-Browser",
+    "tagline": "AI Browser",
+    "description": "AI Browser",
+    "category": "System/Utilities",
+    "simplifiedCategory": "System/Utilities",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "MIT",
+    "licenseCategory": "Permissive",
+    "publisher": {
+      "name": "Jun-Murakami",
+      "website": "https://github.com/Jun-Murakami/AI-Browser",
+      "verified": false,
+      "github": "https://github.com/Jun-Murakami/AI-Browser"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/Jun-Murakami/AI-Browser/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/Jun-Murakami/AI-Browser/releases"
+    },
+    "iconSlug": "ai-browser",
+    "icon": "https://appimage.github.io/database/AI-Browser/icons/128x128/ai-browser.png",
+    "homepageUrl": "https://github.com/Jun-Murakami/AI-Browser",
+    "sourceUrl": "https://github.com/Jun-Murakami/AI-Browser",
+    "repositoryUrl": "https://github.com/Jun-Murakami/AI-Browser",
+    "releasesUrl": "https://github.com/Jun-Murakami/AI-Browser/releases",
+    "githubRepo": "Jun-Murakami/AI-Browser",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "utility"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/AI-Browser/screenshot.png",
+        "alt": "AI-Browser screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "ai-code-fusion",
+    "name": "ai-code-fusion",
+    "tagline": "AI Code Fusion",
+    "description": "AI Code Fusion",
+    "category": "System/Utilities",
+    "simplifiedCategory": "System/Utilities",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "GPL-3.0",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "codingworkflow",
+      "website": "https://github.com/codingworkflow/ai-code-fusion",
+      "verified": false,
+      "github": "https://github.com/codingworkflow/ai-code-fusion"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/codingworkflow/ai-code-fusion/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/codingworkflow/ai-code-fusion/releases"
+    },
+    "iconSlug": "ai-code-fusion",
+    "icon": "https://appimage.github.io/database/ai-code-fusion/icons/128x128/ai-code-fusion.png",
+    "homepageUrl": "https://github.com/codingworkflow/ai-code-fusion",
+    "sourceUrl": "https://github.com/codingworkflow/ai-code-fusion",
+    "repositoryUrl": "https://github.com/codingworkflow/ai-code-fusion",
+    "releasesUrl": "https://github.com/codingworkflow/ai-code-fusion/releases",
+    "githubRepo": "codingworkflow/ai-code-fusion",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "utility"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/ai-code-fusion/screenshot.png",
+        "alt": "ai-code-fusion screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "ai-opensubtitles-desktop-client",
+    "name": "ai-opensubtitles-desktop-client",
+    "tagline": "Cross-platform desktop client for AI.Opensubtitles.com",
+    "description": "Cross-platform desktop client for AI.Opensubtitles.com",
+    "category": "Audio/Video",
+    "simplifiedCategory": "Audio/Video",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "MIT",
+    "licenseCategory": "Permissive",
+    "publisher": {
+      "name": "iceman1010",
+      "website": "https://github.com/iceman1010/ai-opensubtitles-desktop-client",
+      "verified": false,
+      "github": "https://github.com/iceman1010/ai-opensubtitles-desktop-client"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/iceman1010/ai-opensubtitles-desktop-client/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/iceman1010/ai-opensubtitles-desktop-client/releases"
+    },
+    "iconSlug": "ai-opensubtitles-desktop-client",
+    "icon": "https://appimage.github.io/database/ai-opensubtitles-desktop-client/icons/1024x1024/ai-opensubtitles-client.png",
+    "homepageUrl": "https://github.com/iceman1010/ai-opensubtitles-desktop-client",
+    "sourceUrl": "https://github.com/iceman1010/ai-opensubtitles-desktop-client",
+    "repositoryUrl": "https://github.com/iceman1010/ai-opensubtitles-desktop-client",
+    "releasesUrl": "https://github.com/iceman1010/ai-opensubtitles-desktop-client/releases",
+    "githubRepo": "iceman1010/ai-opensubtitles-desktop-client",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "audiovideo"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/ai-opensubtitles-desktop-client/screenshot.png",
+        "alt": "ai-opensubtitles-desktop-client screenshot 1"
+      }
+    ]
+  },
+  {
+    "id": "aiden_agent",
+    "name": "Aiden Agent",
+    "tagline": "A desktop AI workspace agent for local and hosted models",
+    "description": "A desktop AI workspace agent for local and hosted models",
+    "category": "Development",
+    "simplifiedCategory": "Development",
+    "version": "latest",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "MIT",
+    "licenseCategory": "Permissive",
+    "publisher": {
+      "name": "sambitcreate",
+      "website": "https://github.com/sambitcreate/aiden-agent",
+      "verified": false,
+      "github": "https://github.com/sambitcreate/aiden-agent"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/sambitcreate/aiden-agent/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/sambitcreate/aiden-agent/releases"
+    },
+    "iconSlug": "aiden_agent",
+    "icon": "https://appimage.github.io/database/Aiden_Agent/icons/512x512/aiden-agent.png",
+    "homepageUrl": "https://github.com/sambitcreate/aiden-agent",
+    "sourceUrl": "https://github.com/sambitcreate/aiden-agent",
+    "repositoryUrl": "https://github.com/sambitcreate/aiden-agent",
+    "releasesUrl": "https://github.com/sambitcreate/aiden-agent/releases",
+    "githubRepo": "sambitcreate/aiden-agent",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "tags": [
+      "development"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/Aiden_Agent/screenshot.png",
+        "alt": "Aiden Agent screenshot 1"
+      }
+    ]
   }
 ]

@@ -1,844 +1,908 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { Navbar, NavView } from './components/Navbar';
-import { FilterBar } from './components/FilterBar';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { APPS_CATALOG, TOTAL_CATALOG_COUNT } from './data/apps';
+import { AppMetadata } from './types';
+import { mapToSimplifiedCategory } from './utils/appimagehub';
+import { isGenuineSha256, validateCatalogAtRuntime } from './utils/catalogSchema';
+import { Navbar, NavTab } from './components/Navbar';
+import { FilterBar, SortOption, SIMPLIFIED_CATEGORIES } from './components/FilterBar';
 import { AppCard } from './components/AppCard';
 import { AppDetailModal } from './components/AppDetailModal';
 import { InstallModal } from './components/InstallModal';
 import { IntegrityVerifierView } from './components/IntegrityVerifierView';
 import { MyLibraryView } from './components/MyLibraryView';
 import { SubmitAppView } from './components/SubmitAppView';
-import { NiruviInfoModal } from './components/NiruviInfoModal';
-import { JsonExportModal } from './components/JsonExportModal';
 import { AuthModal } from './components/AuthModal';
 import { AccountManagementModal } from './components/AccountManagementModal';
-import { AdminDashboard } from './components/AdminDashboard';
-import { SecurityPlatformView } from './components/SecurityPlatformView';
-import { NiruviBridgeModal } from './components/NiruviBridgeModal';
-import { SponsorModal } from './components/SponsorModal';
-import { PaymentModal } from './components/PaymentModal';
-import { PricingModal } from './components/PricingModal';
 import { Footer, LegalRoute } from './components/Footer';
 import { CookieConsent } from './components/CookieConsent';
 import { Privacy } from './pages/Privacy';
 import { Terms } from './pages/Terms';
 import { Cookies } from './pages/Cookies';
 import { Refunds } from './pages/Refunds';
-import { APPS_CATALOG } from './data/apps';
-import {
-  AppMetadata,
-  Architecture,
-  Category,
-  FilterState,
-  InstalledAppRecord,
-  LicenseType,
-  TrustTier,
-} from './types';
-import { AppIcon } from './components/AppIcon';
-import { useAuth } from './context/AuthContext';
-import {
-  getInstalledApps,
-  getBookmarkedAppIds,
-  toggleBookmark,
-  getCustomApps,
-} from './utils/storage';
-import { validateCatalogAtRuntime, isGenuineSha256 } from './utils/catalogSchema';
-import { mapToSimplifiedCategory } from './utils/appimagehub';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { updatePageSeo } from './utils/seo';
 import {
-  ShieldCheck,
-  SearchX,
-  Download,
-  AlertTriangle,
+  PackageOpen,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  AlertCircle,
   RefreshCw,
-  Sparkles,
-  Clock,
-  Flame,
-  PlusCircle,
-  ChevronDown,
 } from 'lucide-react';
 
-const PAGE_SIZE = 24;
+const PAGE_SIZE = 48;
 
-function parseInitialFiltersFromUrl(): FilterState {
-  if (typeof window === 'undefined') {
-    return {
-      searchQuery: '',
-      category: 'All',
-      architecture: 'All',
-      licenseCategory: 'All',
-      trustTier: 'All',
-      verifiedOnly: false,
-      recentlyUpdated: false,
-      sortBy: 'featured',
-    };
-  }
-  const params = new URLSearchParams(window.location.search);
-  return {
-    searchQuery: params.get('q') || '',
-    category: (params.get('category') as Category) || 'All',
-    architecture: (params.get('arch') as Architecture | 'All') || 'All',
-    licenseCategory: (params.get('license') as LicenseType) || 'All',
-    trustTier: (params.get('trust') as TrustTier | 'All') || 'All',
-    verifiedOnly: params.get('verified') === '1' || params.get('verified') === 'true',
-    recentlyUpdated: params.get('updated') === '1' || params.get('updated') === 'true',
-    sortBy: (params.get('sort') as FilterState['sortBy']) || 'featured',
-  };
+interface RouteState {
+  legalRoute: LegalRoute;
+  activeTab: NavTab;
+  appId: string | null;
 }
 
-function parseRouteFromLocation(): { view: NavView; appId: string | null } {
+function parseCurrentLocation(): RouteState {
   if (typeof window === 'undefined') {
-    return { view: 'store', appId: null };
+    return { legalRoute: 'store', activeTab: 'browse', appId: null };
   }
 
-  // Check ?p= from GitHub Pages 404.html redirect or hash or pathname
-  const searchParams = new URLSearchParams(window.location.search);
-  const redirectedPath = (searchParams.get('p') || '').replace(/^\/+/, '').replace(/\/+$/, '');
-  const rawHash = window.location.hash.replace(/^#\/?/, '').replace(/\/+$/, '');
-  const rawPathname = window.location.pathname
-    .replace(/^\/niruvi-store\/?/, '')
-    .replace(/^\/+/, '')
-    .replace(/\/+$/, '');
+  const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase();
+  if (hash === 'privacy') return { legalRoute: 'privacy', activeTab: 'browse', appId: null };
+  if (hash === 'terms') return { legalRoute: 'terms', activeTab: 'browse', appId: null };
+  if (hash === 'cookies') return { legalRoute: 'cookies', activeTab: 'browse', appId: null };
+  if (hash === 'refunds') return { legalRoute: 'refunds', activeTab: 'browse', appId: null };
 
-  const candidate = (redirectedPath || rawHash || rawPathname).split('?')[0].replace(/\/+$/, '');
+  const pathname = window.location.pathname.replace(/\/+$/, '') || '/';
+  const lowerPath = pathname.toLowerCase();
 
-  if (candidate.startsWith('app/')) {
-    const appId = decodeURIComponent(candidate.slice('app/'.length).replace(/\/+$/, '').trim());
-    return { view: 'store', appId: appId || null };
+  if (lowerPath === '/privacy') return { legalRoute: 'privacy', activeTab: 'browse', appId: null };
+  if (lowerPath === '/terms') return { legalRoute: 'terms', activeTab: 'browse', appId: null };
+  if (lowerPath === '/cookies') return { legalRoute: 'cookies', activeTab: 'browse', appId: null };
+  if (lowerPath === '/refunds') return { legalRoute: 'refunds', activeTab: 'browse', appId: null };
+
+  if (lowerPath === '/verifier') return { legalRoute: 'store', activeTab: 'verifier', appId: null };
+  if (lowerPath === '/library') return { legalRoute: 'store', activeTab: 'library', appId: null };
+  if (lowerPath === '/submit') return { legalRoute: 'store', activeTab: 'submit', appId: null };
+
+  if (lowerPath.startsWith('/app/')) {
+    const slug = decodeURIComponent(pathname.slice(5)).trim();
+    if (slug) {
+      return { legalRoute: 'store', activeTab: 'browse', appId: slug };
+    }
   }
 
-  const validViews: NavView[] = [
-    'store',
-    'library',
-    'verifier',
-    'submit',
-    'admin',
-    'security',
-    'privacy',
-    'terms',
-    'cookies',
-    'refunds',
-  ];
-  if (validViews.includes(candidate as NavView)) {
-    return { view: candidate as NavView, appId: null };
+  const params = new URLSearchParams(window.location.search);
+  const queryAppId = params.get('app');
+  if (queryAppId) {
+    return { legalRoute: 'store', activeTab: 'browse', appId: queryAppId };
   }
 
-  return { view: 'store', appId: null };
+  return { legalRoute: 'store', activeTab: 'browse', appId: null };
+}
+
+function filterAndSortCatalog(
+  apps: AppMetadata[],
+  options: {
+    q: string;
+    category: string;
+    arch: string;
+    onlyVerified: boolean;
+    sortBy: SortOption;
+  }
+): AppMetadata[] {
+  const qLower = options.q.trim().toLowerCase();
+  return apps
+    .filter((app) => {
+      if (qLower) {
+        const hay = `${app.name} ${app.tagline || ''} ${app.description || ''} ${app.category} ${app.simplifiedCategory || ''} ${app.publisher.name} ${(app.tags || []).join(' ')}`.toLowerCase();
+        if (!hay.includes(qLower)) return false;
+      }
+      if (options.category !== 'All') {
+        const simplified = app.simplifiedCategory || mapToSimplifiedCategory(app.category);
+        if (app.category !== options.category && simplified !== options.category) return false;
+      }
+      if (options.arch !== 'All' && !app.architectures.includes(options.arch as any)) {
+        return false;
+      }
+      if (options.onlyVerified && (!app.publisher.verified || !isGenuineSha256(app.sha256))) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      if (options.sortBy === 'name') {
+        return a.name.localeCompare(b.name);
+      }
+      if (options.sortBy === 'recent') {
+        const tsB = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
+        const tsA = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
+        if (tsB !== tsA) return (Number.isFinite(tsB) ? tsB : 0) - (Number.isFinite(tsA) ? tsA : 0);
+        return a.name.localeCompare(b.name);
+      }
+      if (a.publisher.verified && !b.publisher.verified) return -1;
+      if (!a.publisher.verified && b.publisher.verified) return 1;
+      if (a.featured && !b.featured) return -1;
+      if (!a.featured && b.featured) return 1;
+      return a.name.localeCompare(b.name);
+    });
 }
 
 export interface AppProps {
-  initialCatalogOverride?: unknown;
-  initialLoading?: boolean;
+  initialCatalogOverride?: unknown[];
 }
 
-export const App: React.FC<AppProps> = ({
-  initialCatalogOverride,
-  initialLoading = false,
-}) => {
-  const { user, openAuthModal } = useAuth();
+export function App({ initialCatalogOverride }: AppProps = {}) {
+  const initialRoute = useMemo(() => parseCurrentLocation(), []);
 
-  const initialRoute = useMemo(() => parseRouteFromLocation(), []);
-  const [currentView, setCurrentView] = useState<NavView>(initialRoute.view);
-  const [filters, setFilters] = useState<FilterState>(() => parseInitialFiltersFromUrl());
-  const [searchInput, setSearchInput] = useState<string>(() => filters.searchQuery);
-
-  // Runtime catalog schema validation state (STEP 1)
-  const [isLoadingCatalog, setIsLoadingCatalog] = useState<boolean>(initialLoading);
-  const catalogValidation = useMemo(() => {
-    const rawSource = initialCatalogOverride !== undefined ? initialCatalogOverride : APPS_CATALOG;
-    return validateCatalogAtRuntime(rawSource);
+  const overrideValidation = useMemo(() => {
+    if (!initialCatalogOverride) return null;
+    return validateCatalogAtRuntime(initialCatalogOverride);
   }, [initialCatalogOverride]);
 
-  // Persistent user records & remote D1 synced catalog items
-  const [installedRecords, setInstalledRecords] = useState<InstalledAppRecord[]>([]);
-  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
-  const [customApps, setCustomApps] = useState<AppMetadata[]>([]);
-  const [remoteApps, setRemoteApps] = useState<AppMetadata[]>([]);
-  const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
-
-  // Modals state
-  const [selectedApp, setSelectedApp] = useState<AppMetadata | null>(null);
-  const [installingApp, setInstallingApp] = useState<AppMetadata | null>(null);
-  const [payingApp, setPayingApp] = useState<AppMetadata | null>(null);
-  const [isPricingOpen, setIsPricingOpen] = useState(false);
-  const [isInfoOpen, setIsInfoOpen] = useState(false);
-  const [isExportOpen, setIsExportOpen] = useState(false);
-  const [isBridgeOpen, setIsBridgeOpen] = useState(false);
-  const [isSponsorOpen, setIsSponsorOpen] = useState(false);
-  const [sponsorApp, setSponsorApp] = useState<AppMetadata | null>(null);
-  const [isCookieSettingsOpen, setIsCookieSettingsOpen] = useState(false);
-
-  useEffect(() => {
-    setInstalledRecords(getInstalledApps());
-    setBookmarkedIds(getBookmarkedAppIds());
-    setCustomApps(getCustomApps());
-
-    // Fetch live D1/AppImageHub catalog items from Worker when available (skip when initialCatalogOverride is passed in tests)
-    if (initialCatalogOverride === undefined && typeof window !== 'undefined' && typeof fetch === 'function') {
-      fetch('/api/catalog?limit=200')
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          if (data && Array.isArray(data.items) && data.items.length > 0) {
-            setRemoteApps(data.items as AppMetadata[]);
-          }
-        })
-        .catch(() => {
-          // Static hosting mode fallback uses built-in catalog
-        });
+  const baseSeedCatalog = useMemo(() => {
+    if (overrideValidation && overrideValidation.errors.length === 0) {
+      return overrideValidation.validApps as unknown as AppMetadata[];
     }
-  }, [initialCatalogOverride]);
+    return APPS_CATALOG;
+  }, [overrideValidation]);
 
-  // Debounce searchInput -> filters.searchQuery (STEP 1)
+  const [legalRoute, setLegalRoute] = useState<LegalRoute>(initialRoute.legalRoute);
+  const [activeTab, setActiveTab] = useState<NavTab>(initialRoute.activeTab);
+  const [cookieSettingsOpen, setCookieSettingsOpen] = useState(false);
+
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    try {
+      const saved = localStorage.getItem('niruvi_theme');
+      if (saved === 'light' || saved === 'dark') return saved;
+    } catch {}
+    return 'dark';
+  });
+
   useEffect(() => {
-    if (searchInput === filters.searchQuery) return;
-    if (searchInput === '') {
-      setFilters((prev) => ({ ...prev, searchQuery: '' }));
-      return;
-    }
-    const timer = setTimeout(() => {
-      setFilters((prev) => ({ ...prev, searchQuery: searchInput }));
-    }, 180);
-    return () => clearTimeout(timer);
-  }, [searchInput, filters.searchQuery]);
+    document.documentElement.setAttribute('data-theme', theme);
+    try {
+      localStorage.setItem('niruvi_theme', theme);
+    } catch {}
+  }, [theme]);
 
-  // Keep filters synchronized in the URL query string so links are shareable (STEP 1)
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams();
-    if (filters.searchQuery.trim()) params.set('q', filters.searchQuery.trim());
-    if (filters.category !== 'All') params.set('category', filters.category);
-    if (filters.architecture !== 'All') params.set('arch', filters.architecture);
-    if (filters.licenseCategory !== 'All') params.set('license', filters.licenseCategory);
-    if (filters.trustTier !== 'All') params.set('trust', filters.trustTier);
-    if (filters.verifiedOnly) params.set('verified', '1');
-    if (filters.recentlyUpdated) params.set('updated', '1');
-    if (filters.sortBy !== 'featured') params.set('sort', filters.sortBy);
-
-    const queryString = params.toString();
-    const hash = selectedApp
-      ? `#/app/${encodeURIComponent(selectedApp.id)}`
-      : currentView === 'store'
-        ? ''
-        : `#/${currentView}`;
-    const nextUrl = `${window.location.pathname}${queryString ? `?${queryString}` : ''}${hash}`;
-    window.history.replaceState(null, '', nextUrl);
-  }, [filters, currentView, selectedApp]);
-
-  const refreshUserData = useCallback(() => {
-    setInstalledRecords(getInstalledApps());
-    setBookmarkedIds(getBookmarkedAppIds());
-    setCustomApps(getCustomApps());
+  const initialUrlParams = useMemo(() => {
+    if (typeof window === 'undefined') return new URLSearchParams();
+    return new URLSearchParams(window.location.search);
   }, []);
 
-  // Full unified catalog (validated built-in + D1 synced AppImageHub + user added)
-  const fullCatalog = useMemo(() => {
-    const map = new Map<string, AppMetadata>();
-    catalogValidation.validApps.forEach((app) => map.set(app.id, app));
-    remoteApps.forEach((app) => {
-      if (app && app.id && !map.has(app.id)) {
-        map.set(app.id, app);
-      }
+  const [searchQuery, setSearchQuery] = useState(() => initialUrlParams.get('q') || '');
+  const [selectedCategory, setSelectedCategory] = useState<string>(() => {
+    const cat = initialUrlParams.get('category');
+    return cat && SIMPLIFIED_CATEGORIES.includes(cat as any) ? cat : 'All';
+  });
+  const [selectedArch, setSelectedArch] = useState<'All' | 'x86_64' | 'aarch64' | 'armhf'>(() => {
+    const arch = initialUrlParams.get('arch');
+    return arch === 'x86_64' || arch === 'aarch64' || arch === 'armhf' ? arch : 'All';
+  });
+  const [onlyVerified, setOnlyVerified] = useState(() => initialUrlParams.get('verified') === '1');
+  const [sortBy, setSortBy] = useState<SortOption>(() => {
+    const s = initialUrlParams.get('sort');
+    return s === 'name' || s === 'recent' || s === 'featured' ? s : 'featured';
+  });
+  const [currentPage, setCurrentPage] = useState<number>(() => {
+    const p = parseInt(initialUrlParams.get('page') || '1', 10);
+    return Number.isFinite(p) && p >= 1 ? p : 1;
+  });
+
+  // Server-paginated state + fallback full catalog cache for static preview
+  const fullCatalogCacheRef = useRef<AppMetadata[] | null>(null);
+  const [serverPage, setServerPage] = useState<{
+    key: string;
+    items: AppMetadata[];
+    total: number;
+  } | null>(null);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
+
+  const queryKey = `${currentPage}|${searchQuery.trim()}|${selectedCategory}|${selectedArch}|${onlyVerified}|${sortBy}`;
+  const isDefaultFirstPage =
+    currentPage === 1 &&
+    !searchQuery.trim() &&
+    selectedCategory === 'All' &&
+    selectedArch === 'All' &&
+    !onlyVerified &&
+    sortBy === 'featured';
+
+  const loadPaginatedPage = useCallback(async () => {
+    setCatalogError(null);
+    const params = new URLSearchParams({
+      page: String(currentPage),
+      limit: String(PAGE_SIZE),
+      q: searchQuery.trim(),
+      category: selectedCategory,
+      arch: selectedArch,
+      verified: onlyVerified ? '1' : '0',
+      sort: sortBy,
     });
-    customApps.forEach((app) => map.set(app.id, app));
-    return Array.from(map.values());
-  }, [catalogValidation.validApps, remoteApps, customApps]);
 
-  // Open deep-linked app (`/app/<id>` or `#/app/<id>`) when catalog is ready
-  useEffect(() => {
-    if (initialRoute.appId && fullCatalog.length > 0) {
-      const found = fullCatalog.find((a) => a.id === initialRoute.appId);
-      if (found) {
-        setSelectedApp(found);
+    setCatalogLoading(true);
+    try {
+      const res = await fetch(`/api/catalog?${params.toString()}`);
+      const contentType = res.headers?.get?.('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
+        const data = await res.json();
+        if (Array.isArray(data?.items) && typeof data?.total === 'number') {
+          setServerPage({
+            key: queryKey,
+            items: data.items,
+            total: data.total,
+          });
+          setCatalogLoading(false);
+          return;
+        }
       }
-    }
-  }, [initialRoute.appId, fullCatalog]);
 
-  // Listen for hashchange events (browser back/forward button support)
+      // Static preview fallback: load /catalog.json once and paginate 48 per page
+      if (!fullCatalogCacheRef.current) {
+        const staticRes = await fetch('/catalog.json');
+        const staticType = staticRes.headers?.get?.('content-type') || '';
+        if (staticRes.ok && staticType.includes('application/json')) {
+          const allItems = await staticRes.json();
+          if (Array.isArray(allItems) && allItems.length > 0) {
+            fullCatalogCacheRef.current = allItems;
+          }
+        }
+      }
+
+      if (fullCatalogCacheRef.current) {
+        const filtered = filterAndSortCatalog(fullCatalogCacheRef.current, {
+          q: searchQuery,
+          category: selectedCategory,
+          arch: selectedArch,
+          onlyVerified,
+          sortBy,
+        });
+        const start = (currentPage - 1) * PAGE_SIZE;
+        setServerPage({
+          key: queryKey,
+          items: filtered.slice(start, start + PAGE_SIZE),
+          total: filtered.length,
+        });
+      }
+    } catch {
+      // Offline or test environment without network mock: rely on synchronous seed filter
+    } finally {
+      setCatalogLoading(false);
+    }
+  }, [currentPage, searchQuery, selectedCategory, selectedArch, onlyVerified, sortBy, queryKey]);
+
   useEffect(() => {
-    const handleHashChange = () => {
-      const parsed = parseRouteFromLocation();
-      setCurrentView(parsed.view);
+    loadPaginatedPage();
+  }, [loadPaginatedPage]);
+
+  // Selected app modal
+  const [selectedApp, setSelectedApp] = useState<AppMetadata | null>(() => {
+    if (initialRoute.appId) {
+      return (
+        baseSeedCatalog.find(
+          (a: AppMetadata) => a.id.toLowerCase() === initialRoute.appId!.toLowerCase()
+        ) || null
+      );
+    }
+    return null;
+  });
+
+  // Sync active filters to URL query string
+  useEffect(() => {
+    if (
+      typeof window === 'undefined' ||
+      legalRoute !== 'store' ||
+      activeTab !== 'browse' ||
+      selectedApp
+    ) {
+      return;
+    }
+    const params = new URLSearchParams();
+    if (searchQuery.trim()) params.set('q', searchQuery.trim());
+    if (selectedCategory !== 'All') params.set('category', selectedCategory);
+    if (selectedArch !== 'All') params.set('arch', selectedArch);
+    if (onlyVerified) params.set('verified', '1');
+    if (sortBy !== 'featured') params.set('sort', sortBy);
+    if (currentPage > 1) params.set('page', String(currentPage));
+    const qs = params.toString();
+    const nextUrl = qs ? `/?${qs}` : '/';
+    try {
+      window.history.replaceState(null, '', nextUrl);
+    } catch {}
+  }, [
+    searchQuery,
+    selectedCategory,
+    selectedArch,
+    onlyVerified,
+    sortBy,
+    currentPage,
+    legalRoute,
+    activeTab,
+    selectedApp,
+  ]);
+
+  // Synchronous fallback calculation so immediate filter changes work without waiting a tick
+  const syncFiltered = useMemo(() => {
+    const source = initialCatalogOverride
+      ? baseSeedCatalog
+      : fullCatalogCacheRef.current || baseSeedCatalog;
+    return filterAndSortCatalog(source, {
+      q: searchQuery,
+      category: selectedCategory,
+      arch: selectedArch,
+      onlyVerified,
+      sortBy,
+    });
+  }, [
+    initialCatalogOverride,
+    baseSeedCatalog,
+    searchQuery,
+    selectedCategory,
+    selectedArch,
+    onlyVerified,
+    sortBy,
+  ]);
+
+  const activePageItems = useMemo(() => {
+    if (!initialCatalogOverride && serverPage && serverPage.key === queryKey) {
+      return serverPage.items;
+    }
+    if (!initialCatalogOverride && isDefaultFirstPage) {
+      return baseSeedCatalog.slice(0, PAGE_SIZE);
+    }
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return syncFiltered.slice(start, start + PAGE_SIZE);
+  }, [
+    initialCatalogOverride,
+    serverPage,
+    queryKey,
+    isDefaultFirstPage,
+    baseSeedCatalog,
+    currentPage,
+    syncFiltered,
+  ]);
+
+  const totalMatchingApps = useMemo(() => {
+    if (!initialCatalogOverride && serverPage && serverPage.key === queryKey) {
+      return serverPage.total;
+    }
+    if (!initialCatalogOverride && isDefaultFirstPage) {
+      return TOTAL_CATALOG_COUNT;
+    }
+    return syncFiltered.length;
+  }, [initialCatalogOverride, serverPage, queryKey, isDefaultFirstPage, syncFiltered]);
+
+  const totalPages = Math.max(1, Math.ceil(totalMatchingApps / PAGE_SIZE));
+  const pageStart = totalMatchingApps === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+  const pageEnd =
+    totalMatchingApps === 0
+      ? 0
+      : Math.min(totalMatchingApps, (currentPage - 1) * PAGE_SIZE + activePageItems.length);
+
+  // If deep-linked to an app ID not in Page 1 seed, fetch it from /api/catalog/:id
+  useEffect(() => {
+    if (initialRoute.appId && !selectedApp) {
+      fetch(`/api/catalog/${encodeURIComponent(initialRoute.appId)}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.app) setSelectedApp(data.app);
+        })
+        .catch(() => {});
+    }
+  }, [initialRoute.appId, selectedApp]);
+
+  const [installApp, setInstallApp] = useState<AppMetadata | null>(null);
+  const [installArch, setInstallArch] = useState<string>('x86_64');
+  const [verifierInitialHash, setVerifierInitialHash] = useState<string>('');
+
+  // Saved / Starred apps in localStorage
+  const [starredIds, setStarredIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('niruvi_starred_apps');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  });
+
+  // Download History in localStorage
+  const [downloadHistory, setDownloadHistory] = useState<
+    { appId: string; timestamp: string; arch: string }[]
+  >(() => {
+    try {
+      const saved = localStorage.getItem('niruvi_download_history');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  });
+
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
+
+  const showToast = useCallback((message: string, type: 'success' | 'info' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast((prev) => (prev?.message === message ? null : prev));
+    }, 3000);
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const parsed = parseCurrentLocation();
+      setLegalRoute(parsed.legalRoute);
+      setActiveTab(parsed.activeTab);
       if (parsed.appId) {
-        const found = fullCatalog.find((a) => a.id === parsed.appId);
-        if (found) setSelectedApp(found);
+        const found =
+          activePageItems.find((a) => a.id.toLowerCase() === parsed.appId!.toLowerCase()) ||
+          APPS_CATALOG.find((a) => a.id.toLowerCase() === parsed.appId!.toLowerCase()) ||
+          null;
+        setSelectedApp(found);
       } else {
         setSelectedApp(null);
       }
     };
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [fullCatalog]);
+    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('hashchange', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('hashchange', handlePopState);
+    };
+  }, [activePageItems]);
 
-  // Descriptive <title>, <link rel="canonical">, meta description, OpenGraph, and SoftwareApplication JSON-LD per route
+  // Dynamic SEO, Canonical URL, Open Graph tags, and SoftwareApplication JSON-LD
   useEffect(() => {
-    if (selectedApp) {
-      updatePageSeo({ app: selectedApp });
+    if (legalRoute === 'privacy') {
+      updatePageSeo({
+        title: 'Privacy Policy — Niruvi Store',
+        description: 'Privacy Policy and data handling details for Niruvi Store.',
+        path: '/privacy',
+      });
       return;
     }
-    const routeTitles: Record<NavView, string> = {
-      store: 'Niruvi Store — Verified Linux AppImage Marketplace',
-      library: 'My Installed & Bookmarked Apps — Niruvi Store',
-      verifier: 'SHA-256 Checksum Verifier — Niruvi Store',
-      submit: 'Submit or Test an AppImage — Niruvi Store',
-      admin: 'Admin Governance — Niruvi Store',
-      security: 'Security Platform — Niruvi Store',
-      privacy: 'Privacy Policy — Niruvi Store',
-      terms: 'Terms & Conditions — Niruvi Store',
-      cookies: 'Cookie & Local Storage Policy — Niruvi Store',
-      refunds: 'Refund Policy — Niruvi Store',
-    };
-    const routePath = currentView === 'store' ? '/' : `/${currentView}`;
-    updatePageSeo({
-      title: routeTitles[currentView] || 'Niruvi Store — Verified Linux AppImage Marketplace',
-      path: routePath,
-    });
-  }, [currentView, selectedApp]);
-
-  const handleFilterChange = (newFilters: Partial<FilterState>) => {
-    if (newFilters.searchQuery !== undefined) {
-      setSearchInput(newFilters.searchQuery);
-    }
-    setVisibleCount(PAGE_SIZE);
-    setFilters((prev) => ({ ...prev, ...newFilters }));
-  };
-
-  const handleToggleBookmark = (appId: string) => {
-    const updated = toggleBookmark(appId);
-    setBookmarkedIds(updated);
-  };
-
-  const handleCustomAppAdded = (newApp: AppMetadata) => {
-    setCustomApps((prev) => [newApp, ...prev.filter((a) => a.id !== newApp.id)]);
-  };
-
-  // Filter & Sort Logic
-  const filteredApps = useMemo(() => {
-    const activeSearch = filters.searchQuery.trim().toLowerCase();
-    return fullCatalog
-      .filter((app) => {
-        if (activeSearch) {
-          const matchesName = app.name.toLowerCase().includes(activeSearch);
-          const matchesTagline = app.tagline.toLowerCase().includes(activeSearch);
-          const matchesDesc = app.description.toLowerCase().includes(activeSearch);
-          const matchesTags = app.tags.some((t) => t.toLowerCase().includes(activeSearch));
-          const matchesPublisher = app.publisher.name.toLowerCase().includes(activeSearch);
-          if (
-            !matchesName &&
-            !matchesTagline &&
-            !matchesDesc &&
-            !matchesTags &&
-            !matchesPublisher
-          ) {
-            return false;
-          }
-        }
-
-        if (filters.category !== 'All') {
-          const simplified = app.simplifiedCategory || mapToSimplifiedCategory(app.category);
-          if (app.category !== filters.category && simplified !== filters.category) {
-            return false;
-          }
-        }
-
-        if (
-          filters.architecture !== 'All' &&
-          !app.architectures.includes(filters.architecture)
-        ) {
-          return false;
-        }
-
-        if (
-          filters.licenseCategory !== 'All' &&
-          app.licenseCategory !== filters.licenseCategory
-        ) {
-          return false;
-        }
-
-        if (filters.verifiedOnly && (!app.publisher.verified || !isGenuineSha256(app.sha256))) {
-          return false;
-        }
-
-        if (filters.recentlyUpdated) {
-          const ts = new Date(app.releaseDate).getTime();
-          const sixMonthsAgo = Date.now() - 180 * 24 * 60 * 60 * 1000;
-          if (!Number.isFinite(ts) || ts < sixMonthsAgo) {
-            return false;
-          }
-        }
-
-        if (filters.trustTier !== 'All') {
-          const tier =
-            app.trustTier ||
-            (app.sourceType === 'Official' ? 'Official Developer' : 'Verified Community');
-          if (tier !== filters.trustTier) {
-            return false;
-          }
-        }
-
-        return true;
-      })
-      .sort((a, b) => {
-        switch (filters.sortBy) {
-          case 'featured':
-            if (a.featured && !b.featured) return -1;
-            if (!a.featured && b.featured) return 1;
-            return b.downloadsCount - a.downloadsCount;
-          case 'popular':
-            return b.downloadsCount - a.downloadsCount;
-          case 'rating':
-            return b.rating - a.rating;
-          case 'recent':
-            return new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime();
-          case 'name':
-            return a.name.localeCompare(b.name);
-          default:
-            return 0;
-        }
+    if (legalRoute === 'terms') {
+      updatePageSeo({
+        title: 'Terms & Conditions — Niruvi Store',
+        description: 'Terms and Conditions for using the Niruvi Store Linux AppImage catalog.',
+        path: '/terms',
       });
-  }, [fullCatalog, filters]);
+      return;
+    }
+    if (legalRoute === 'cookies') {
+      updatePageSeo({
+        title: 'Cookie Policy — Niruvi Store',
+        description: 'Cookie and localStorage usage details for Niruvi Store.',
+        path: '/cookies',
+      });
+      return;
+    }
+    if (legalRoute === 'refunds') {
+      updatePageSeo({
+        title: 'Refund Policy — Niruvi Store',
+        description: 'Open-source software catalog notice for Niruvi Store.',
+        path: '/refunds',
+      });
+      return;
+    }
 
-  const resetFilters = () => {
-    setSearchInput('');
-    setVisibleCount(PAGE_SIZE);
-    setFilters({
-      searchQuery: '',
-      category: 'All',
-      architecture: 'All',
-      licenseCategory: 'All',
-      trustTier: 'All',
-      verifiedOnly: false,
-      recentlyUpdated: false,
-      sortBy: 'featured',
+    if (selectedApp) {
+      updatePageSeo({
+        app: selectedApp,
+      });
+      return;
+    }
+
+    if (activeTab === 'verifier') {
+      updatePageSeo({
+        title: 'Client-Side SHA-256 AppImage Verifier — Niruvi Store',
+        description:
+          'Verify downloaded Linux .AppImage files locally in your browser using Web Crypto SHA-256.',
+        path: '/verifier',
+      });
+      return;
+    }
+
+    if (activeTab === 'submit') {
+      updatePageSeo({
+        title: 'Submit a Linux AppImage — Niruvi Store',
+        description: 'Submit an open-source Linux AppImage package to the Niruvi Store catalog.',
+        path: '/submit',
+      });
+      return;
+    }
+
+    if (activeTab === 'library') {
+      updatePageSeo({
+        title: 'Saved Applications — Niruvi Store',
+        description: 'Manage your bookmarked Linux AppImage packages.',
+        path: '/library',
+      });
+      return;
+    }
+
+    updatePageSeo({
+      title: `Niruvi Store — ${TOTAL_CATALOG_COUNT.toLocaleString()} Linux AppImage Applications`,
+      description: `Browse ${TOTAL_CATALOG_COUNT.toLocaleString()} Linux AppImage packages from AppImageHub and GitHub Releases with direct upstream downloads and SHA-256 verification.`,
+      path: '/',
     });
+  }, [legalRoute, activeTab, selectedApp]);
+
+  const navigateLegal = useCallback((route: LegalRoute) => {
+    setLegalRoute(route);
+    setSelectedApp(null);
+    try {
+      const targetPath = route === 'store' ? '/' : `/${route}`;
+      window.history.pushState({}, '', targetPath);
+    } catch {}
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const handleTabChange = useCallback((tab: NavTab) => {
+    setLegalRoute('store');
+    setActiveTab(tab);
+    setSelectedApp(null);
+    try {
+      const targetPath = tab === 'browse' ? '/' : `/${tab}`;
+      window.history.pushState({}, '', targetPath);
+    } catch {}
+  }, []);
+
+  const handleSelectApp = useCallback((app: AppMetadata | null) => {
+    setSelectedApp(app);
+    try {
+      if (app) {
+        window.history.pushState({}, '', `/app/${encodeURIComponent(app.id)}`);
+      } else {
+        window.history.pushState({}, '', '/');
+      }
+    } catch {}
+  }, []);
+
+  const handleToggleStar = useCallback(
+    (appId: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      setStarredIds((prev) => {
+        const exists = prev.includes(appId);
+        const next = exists ? prev.filter((id) => id !== appId) : [...prev, appId];
+        try {
+          localStorage.setItem('niruvi_starred_apps', JSON.stringify(next));
+        } catch {}
+        showToast(exists ? 'Removed from Saved' : 'Saved to Library', 'info');
+        return next;
+      });
+    },
+    [showToast]
+  );
+
+  const recordDownload = useCallback((appId: string, arch: string) => {
+    setDownloadHistory((prev) => {
+      const filtered = prev.filter((item) => item.appId !== appId);
+      const next = [{ appId, timestamp: new Date().toISOString(), arch }, ...filtered].slice(0, 25);
+      try {
+        localStorage.setItem('niruvi_download_history', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }, []);
+
+  const clearHistory = useCallback(() => {
+    setDownloadHistory([]);
+    try {
+      localStorage.removeItem('niruvi_download_history');
+    } catch {}
+    showToast('Download history cleared', 'info');
+  }, [showToast]);
+
+  const handleInstallClick = (app: AppMetadata, e: React.MouseEvent, arch?: string) => {
+    e.stopPropagation();
+    const chosenArch = arch || (selectedArch !== 'All' ? selectedArch : app.architectures[0]);
+    setInstallArch(chosenArch);
+    setInstallApp(app);
+    recordDownload(app.id, chosenArch);
   };
 
-  // Curated Home Page discovery shelves (Featured, Recently Updated, New Apps, Popular)
-  const isDefaultStoreBrowse =
-    !filters.searchQuery.trim() &&
-    filters.category === 'All' &&
-    filters.architecture === 'All' &&
-    filters.licenseCategory === 'All' &&
-    !filters.verifiedOnly &&
-    !filters.recentlyUpdated &&
-    filters.sortBy === 'featured';
-
-  const homeFeaturedApps = useMemo(
-    () => fullCatalog.filter((a) => a.featured && a.publisher.verified).slice(0, 3),
-    [fullCatalog]
-  );
-
-  const homeRecentlyUpdatedApps = useMemo(
-    () =>
-      [...fullCatalog]
-        .sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime())
-        .slice(0, 3),
-    [fullCatalog]
-  );
-
-  const homeNewApps = useMemo(
-    () => [...fullCatalog].reverse().slice(0, 3),
-    [fullCatalog]
-  );
-
-  const homePopularApps = useMemo(
-    () =>
-      [...fullCatalog]
-        .sort((a, b) => (b.downloadsCount || 0) - (a.downloadsCount || 0))
-        .slice(0, 3),
-    [fullCatalog]
-  );
-
-  const paginatedApps = useMemo(
-    () => filteredApps.slice(0, visibleCount),
-    [filteredApps, visibleCount]
-  );
-
-  const handleNavigateLegal = (route: LegalRoute) => {
+  const handleOpenVerifierWithHash = (hash: string) => {
+    setVerifierInitialHash(hash);
     setSelectedApp(null);
-    setCurrentView(route);
+    handleTabChange('verifier');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Spotlight app (featured)
-  const spotlightApp = fullCatalog.find((a) => a.id === 'vscodium') || fullCatalog[0];
+  const resetAllFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('All');
+    setSelectedArch('All');
+    setOnlyVerified(false);
+    setSortBy('featured');
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    const clamped = Math.max(1, Math.min(totalPages, newPage));
+    setCurrentPage(clamped);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-neutral-100 flex flex-col font-sans selection:bg-white selection:text-black">
-      {/* STEP 7: Skip to main content link for keyboard navigation */}
-      <a href="#main-content" className="skip-link">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#0a0a0c] text-neutral-100 font-sans selection:bg-sky-500/30 selection:text-sky-200 flex flex-col">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2.5 focus:rounded-lg focus:bg-sky-500 focus:text-black focus:font-semibold focus:text-xs"
+      >
         Skip to main content
       </a>
 
-      {/* Top Navigation Landmark */}
+      {/* Toast Notification */}
+      {toast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-lg bg-neutral-900 border border-neutral-700 shadow-xl text-xs font-medium text-white"
+        >
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" aria-hidden="true" />
+          <span>{toast.message}</span>
+        </div>
+      )}
+
+      {/* Top Navigation Bar */}
       <Navbar
-        currentView={currentView}
-        onViewChange={(view) => {
-          setSelectedApp(null);
-          setCurrentView(view);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-        searchQuery={searchInput}
+        searchQuery={searchQuery}
         onSearchChange={(q) => {
-          setSearchInput(q);
-          handleFilterChange({ searchQuery: q });
-          if (currentView !== 'store') {
-            setCurrentView('store');
-          }
+          setSearchQuery(q);
+          setCurrentPage(1);
+          if (legalRoute !== 'store') navigateLegal('store');
         }}
-        installedCount={installedRecords.length}
-        onOpenInfo={() => setIsInfoOpen(true)}
-        onOpenExport={() => setIsExportOpen(true)}
-        onOpenBridge={() => setIsBridgeOpen(true)}
-        onOpenPricing={() => {
-          setSponsorApp(null);
-          setIsSponsorOpen(true);
-        }}
-        onOpenSponsor={() => {
-          setSponsorApp(null);
-          setIsSponsorOpen(true);
-        }}
+        totalApps={TOTAL_CATALOG_COUNT}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        starredCount={starredIds.length}
+        theme={theme}
+        onToggleTheme={() => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))}
+        showSearch={legalRoute === 'store' && activeTab === 'browse'}
       />
 
-      {/* Main Content Landmark */}
-      <main
-        id="main-content"
-        tabIndex={-1}
-        className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 focus:outline-none"
-      >
-        {/* VIEW 1: STORE BROWSE */}
-        {currentView === 'store' && (
-          <div className="space-y-8 animate-in fade-in duration-150">
-            {/* Primary Store Heading (One h1 per page — STEP 7) */}
-            <div className="text-center max-w-3xl mx-auto space-y-2">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-                Linux AppImage Software Directory
-              </h1>
-              <p className="text-xs sm:text-sm text-neutral-300">
-                Portable Linux desktop packages verified with SHA-256 checksums and one-click{' '}
-                <code className="font-mono text-sky-400">niruvi://</code> desktop installation.
-              </p>
-            </div>
+      {/* Main Content */}
+      <ErrorBoundary>
+        {legalRoute === 'privacy' ? (
+          <main id="main-content" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <Privacy
+              onBackToStore={() => navigateLegal('store')}
+              onOpenCookieSettings={() => setCookieSettingsOpen(true)}
+            />
+          </main>
+        ) : legalRoute === 'terms' ? (
+          <main id="main-content" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <Terms onBackToStore={() => navigateLegal('store')} />
+          </main>
+        ) : legalRoute === 'cookies' ? (
+          <main id="main-content" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <Cookies
+              onBackToStore={() => navigateLegal('store')}
+              onOpenCookieSettings={() => setCookieSettingsOpen(true)}
+            />
+          </main>
+        ) : legalRoute === 'refunds' ? (
+          <main id="main-content" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <Refunds onBackToStore={() => navigateLegal('store')} />
+          </main>
+        ) : (
+          <main
+            id="main-content"
+            tabIndex={-1}
+            className="flex-1 max-w-7xl w-full min-w-0 mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-6 focus:outline-none"
+          >
+            {activeTab === 'verifier' && (
+              <IntegrityVerifierView
+                catalog={APPS_CATALOG}
+                onSelectApp={(app) => handleSelectApp(app)}
+              />
+            )}
 
-            {/* Catalog Loading State (STEP 1) */}
-            {isLoadingCatalog ? (
-              <div
-                role="status"
-                aria-live="polite"
-                className="py-16 text-center rounded-2xl bg-neutral-900/50 border border-neutral-800 p-8 space-y-3"
-              >
-                <RefreshCw
-                  className="w-8 h-8 text-sky-400 animate-spin mx-auto"
-                  aria-hidden="true"
-                />
-                <h2 className="text-base font-semibold text-white">Loading application catalog…</h2>
-                <p className="text-xs text-neutral-300">
-                  Validating package schemas and cryptographic SHA-256 metadata.
-                </p>
-              </div>
-            ) : catalogValidation.validApps.length === 0 && catalogValidation.errors.length > 0 ? (
-              /* Catalog Schema Validation Error State (STEP 1) */
+            {activeTab === 'library' && (
+              <MyLibraryView
+                catalog={fullCatalogCacheRef.current || APPS_CATALOG}
+                installedRecords={downloadHistory.map((d) => ({
+                  appId: d.appId,
+                  installedVersion: 'latest',
+                  installedAt: d.timestamp,
+                  installMethod: 'direct',
+                  installDirectory: '~/Applications',
+                }))}
+                bookmarkedIds={starredIds}
+                onSelectApp={(app) => handleSelectApp(app)}
+                onOpenInstall={(app) => setInstallApp(app)}
+                onRefreshLibrary={clearHistory}
+              />
+            )}
+
+            {activeTab === 'submit' && (
+              <SubmitAppView
+                onAppAdded={() => showToast('Application submitted for review.', 'success')}
+                onNavigateToStore={() => handleTabChange('browse')}
+              />
+            )}
+
+            {overrideValidation && overrideValidation.errors.length > 0 && (
               <div
                 role="alert"
-                className="py-12 rounded-2xl bg-rose-950/30 border border-rose-500/40 p-6 sm:p-8 max-w-2xl mx-auto space-y-4 text-center"
+                className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300"
               >
-                <AlertTriangle className="w-10 h-10 text-rose-400 mx-auto" aria-hidden="true" />
-                <h2 className="text-lg font-bold text-white">
-                  Catalog Schema Validation Failed
-                </h2>
-                <p className="text-xs sm:text-sm text-neutral-200 leading-relaxed">
-                  We encountered a schema error while validating the static catalog JSON. For your
-                  security, unverified catalog entries are blocked from rendering.
-                </p>
-                <ul className="text-left text-xs font-mono bg-neutral-950 border border-rose-500/30 rounded-xl p-4 space-y-1 text-rose-300">
-                  {catalogValidation.errors.slice(0, 5).map((err, idx) => (
-                    <li key={idx}>
-                      [{err.id}] {err.message}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  type="button"
-                  onClick={() => setIsLoadingCatalog(false)}
-                  className="min-h-[44px] px-5 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black text-xs font-semibold transition-colors cursor-pointer"
-                >
-                  Retry Catalog Validation
-                </button>
+                <p className="font-semibold text-white mb-1">Catalog Schema Validation Failed</p>
+                <p>{overrideValidation.errors[0].message}</p>
               </div>
-            ) : (
+            )}
+
+            {activeTab === 'browse' && (
               <>
-                {/* Spotlight Editor's Choice Header */}
-                {spotlightApp && !filters.searchQuery && filters.category === 'All' && (
-                  <section
-                    aria-label="Featured application spotlight"
-                    className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
-                  >
-                    <div className="flex items-start gap-4 sm:gap-5 max-w-2xl">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center bg-neutral-800/80 border border-neutral-700 p-2 sm:p-2.5 shadow-xl flex-shrink-0 overflow-hidden">
-                        <AppIcon
-                          slug={spotlightApp.iconSlug}
-                          iconUrl={spotlightApp.icon}
-                          name={spotlightApp.name}
-                          brandColor={spotlightApp.brandColor}
-                          className="w-12 h-12 sm:w-14 sm:h-14"
-                        />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <span className="text-[11px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-neutral-800 text-neutral-200 border border-neutral-700">
-                            Editor&apos;s Choice
-                          </span>
-                          <span className="text-xs font-mono text-neutral-300">
-                            v{spotlightApp.version}
-                          </span>
-                        </div>
-                        <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                          {spotlightApp.name}
-                        </h2>
-                        <p className="text-xs sm:text-sm text-neutral-300 mt-1 leading-relaxed line-clamp-2">
-                          {spotlightApp.tagline}
-                        </p>
-                        <div className="flex items-center gap-3 text-xs text-neutral-300 mt-3 flex-wrap">
-                          <span>
-                            Publisher:{' '}
-                            <strong className="text-white">{spotlightApp.publisher.name}</strong>
-                          </span>
-                          <span aria-hidden="true">•</span>
-                          <span>{spotlightApp.size}</span>
-                          <span aria-hidden="true">•</span>
-                          <span>Verified SHA-256</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                      <button
-                        id="spotlight-install-btn"
-                        type="button"
-                        onClick={() => setInstallingApp(spotlightApp)}
-                        className="min-h-[44px] flex-1 md:flex-initial flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-xs shadow-md transition-all cursor-pointer"
+                {/* Clean, Concise Software Catalog Header */}
+                <div className="mb-6 pb-5 border-b border-neutral-800 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                  <div>
+                    <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                      Linux AppImage Software Directory
+                    </h1>
+                    <p className="text-xs sm:text-sm text-neutral-400 mt-1">
+                      Indexing all {TOTAL_CATALOG_COUNT.toLocaleString()} applications from{' '}
+                      <a
+                        href="https://appimage.github.io/feed.json"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline text-neutral-300 hover:text-white"
                       >
-                        <Download className="w-4 h-4" aria-hidden="true" />
-                        <span>Install {spotlightApp.name} with Niruvi</span>
-                      </button>
+                        AppImageHub
+                      </a>{' '}
+                      and upstream GitHub Releases. Direct downloads from original authors.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono shrink-0">
+                    <span>Page {currentPage} of {totalPages}</span>
+                    <span>•</span>
+                    <span>{PAGE_SIZE} per page</span>
+                  </div>
+                </div>
 
-                      <button
-                        id="spotlight-details-btn"
-                        type="button"
-                        onClick={() => setSelectedApp(spotlightApp)}
-                        className="min-h-[44px] px-4 py-3 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-700 text-xs font-semibold transition-colors cursor-pointer"
-                      >
-                        View {spotlightApp.name} Details
-                      </button>
-                    </div>
-                  </section>
-                )}
-
-                {/* Filter Bar (Categories, Architectures, Licenses, Sort) */}
+                {/* Filter Bar with Category, Arch, Verified SHA-256, Sort & Visible Count */}
                 <FilterBar
-                  filters={filters}
-                  onFilterChange={handleFilterChange}
-                  totalResults={filteredApps.length}
+                  selectedCategory={selectedCategory}
+                  onSelectCategory={(cat) => {
+                    setSelectedCategory(cat);
+                    setCurrentPage(1);
+                  }}
+                  selectedArch={selectedArch}
+                  onSelectArch={(arch) => {
+                    setSelectedArch(arch);
+                    setCurrentPage(1);
+                  }}
+                  onlyVerified={onlyVerified}
+                  onToggleVerified={() => {
+                    setOnlyVerified((v) => !v);
+                    setCurrentPage(1);
+                  }}
+                  sortBy={sortBy}
+                  onSortChange={(s) => {
+                    setSortBy(s);
+                    setCurrentPage(1);
+                  }}
+                  resultCount={totalMatchingApps}
+                  pageStart={pageStart}
+                  pageEnd={pageEnd}
+                  onResetFilters={resetAllFilters}
                 />
 
-                {/* Home Discovery Shelves: Featured, Recently Updated, New Apps, Popular */}
-                {isDefaultStoreBrowse && fullCatalog.length >= 6 && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
-                    <div className="p-4 rounded-2xl bg-neutral-900/50 border border-neutral-800 space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
-                          <span>Featured</span>
-                        </h2>
-                        <button
-                          type="button"
-                          onClick={() => handleFilterChange({ verifiedOnly: true })}
-                          className="text-[11px] text-neutral-300 hover:text-white cursor-pointer"
-                        >
-                          Verified →
-                        </button>
-                      </div>
-                      <div className="space-y-1.5">
-                        {homeFeaturedApps.map((app) => (
-                          <button
-                            key={`feat-${app.id}`}
-                            type="button"
-                            onClick={() => setSelectedApp(app)}
-                            className="w-full flex items-center justify-between gap-2 p-2 rounded-xl bg-neutral-950/80 hover:bg-neutral-800/80 border border-neutral-800/80 text-left transition-colors cursor-pointer"
-                          >
-                            <span className="text-xs font-semibold text-white truncate">
-                              {app.name}
-                            </span>
-                            <span className="text-[10px] font-mono text-emerald-400 flex-shrink-0">
-                              v{app.version}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
+                {/* Error State */}
+                {catalogError && (
+                  <div
+                    role="alert"
+                    className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-between gap-4 text-xs text-rose-300"
+                  >
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
+                      <span>{catalogError}</span>
                     </div>
-
-                    <div className="p-4 rounded-2xl bg-neutral-900/50 border border-neutral-800 space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-sky-300 flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5" aria-hidden="true" />
-                          <span>Recently Updated</span>
-                        </h2>
-                        <button
-                          type="button"
-                          onClick={() => handleFilterChange({ sortBy: 'recent' })}
-                          className="text-[11px] text-neutral-300 hover:text-white cursor-pointer"
-                        >
-                          Sort recent →
-                        </button>
-                      </div>
-                      <div className="space-y-1.5">
-                        {homeRecentlyUpdatedApps.map((app) => (
-                          <button
-                            key={`rec-${app.id}`}
-                            type="button"
-                            onClick={() => setSelectedApp(app)}
-                            className="w-full flex items-center justify-between gap-2 p-2 rounded-xl bg-neutral-950/80 hover:bg-neutral-800/80 border border-neutral-800/80 text-left transition-colors cursor-pointer"
-                          >
-                            <span className="text-xs font-semibold text-white truncate">
-                              {app.name}
-                            </span>
-                            <span className="text-[10px] font-mono text-neutral-300 flex-shrink-0">
-                              {app.releaseDate}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="p-4 rounded-2xl bg-neutral-900/50 border border-neutral-800 space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
-                          <PlusCircle className="w-3.5 h-3.5" aria-hidden="true" />
-                          <span>New Apps</span>
-                        </h2>
-                        <button
-                          type="button"
-                          onClick={() => setCurrentView('submit')}
-                          className="text-[11px] text-neutral-300 hover:text-white cursor-pointer"
-                        >
-                          Submit app →
-                        </button>
-                      </div>
-                      <div className="space-y-1.5">
-                        {homeNewApps.map((app) => (
-                          <button
-                            key={`new-${app.id}`}
-                            type="button"
-                            onClick={() => setSelectedApp(app)}
-                            className="w-full flex items-center justify-between gap-2 p-2 rounded-xl bg-neutral-950/80 hover:bg-neutral-800/80 border border-neutral-800/80 text-left transition-colors cursor-pointer"
-                          >
-                            <span className="text-xs font-semibold text-white truncate">
-                              {app.name}
-                            </span>
-                            <span className="text-[10px] font-mono text-neutral-300 flex-shrink-0">
-                              {app.simplifiedCategory || app.category}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="p-4 rounded-2xl bg-neutral-900/50 border border-neutral-800 space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-rose-300 flex items-center gap-1.5">
-                          <Flame className="w-3.5 h-3.5" aria-hidden="true" />
-                          <span>Popular</span>
-                        </h2>
-                        <button
-                          type="button"
-                          onClick={() => handleFilterChange({ sortBy: 'popular' })}
-                          className="text-[11px] text-neutral-300 hover:text-white cursor-pointer"
-                        >
-                          Top downloads →
-                        </button>
-                      </div>
-                      <div className="space-y-1.5">
-                        {homePopularApps.map((app) => (
-                          <button
-                            key={`pop-${app.id}`}
-                            type="button"
-                            onClick={() => setSelectedApp(app)}
-                            className="w-full flex items-center justify-between gap-2 p-2 rounded-xl bg-neutral-950/80 hover:bg-neutral-800/80 border border-neutral-800/80 text-left transition-colors cursor-pointer"
-                          >
-                            <span className="text-xs font-semibold text-white truncate">
-                              {app.name}
-                            </span>
-                            <span className="text-[10px] font-mono text-neutral-300 flex-shrink-0">
-                              {app.downloadsCount.toLocaleString()} dl
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={loadPaginatedPage}
+                      className="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-white font-medium inline-flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
+                      <span>Retry</span>
+                    </button>
                   </div>
                 )}
 
-                {/* Apps Grid or Empty State */}
-                {filteredApps.length > 0 ? (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                      {paginatedApps.map((app) => {
-                        const isInstalled = installedRecords.some((r) => r.appId === app.id);
-                        const isBookmarked = bookmarkedIds.includes(app.id);
-
-                        return (
-                          <AppCard
-                            key={app.id}
-                            app={app}
-                            isInstalled={isInstalled}
-                            isBookmarked={isBookmarked}
-                            onSelect={(selected) => setSelectedApp(selected)}
-                            onInstall={(selected) => setInstallingApp(selected)}
-                            onToggleBookmark={handleToggleBookmark}
-                          />
-                        );
-                      })}
+                {/* Application Grid (48 per page) or Empty State */}
+                {activePageItems.length > 0 ? (
+                  <>
+                    <div
+                      className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 items-stretch w-full min-w-0 transition-opacity ${
+                        catalogLoading ? 'opacity-75' : 'opacity-100'
+                      }`}
+                    >
+                      {activePageItems.map((app: AppMetadata) => (
+                        <AppCard
+                          key={app.id}
+                          app={app}
+                          onSelect={(a: AppMetadata) => handleSelectApp(a)}
+                          onInstall={handleInstallClick}
+                          isStarred={starredIds.includes(app.id)}
+                          onToggleStar={handleToggleStar}
+                        />
+                      ))}
                     </div>
 
-                    {/* Pagination / Load More Controls */}
-                    {filteredApps.length > visibleCount && (
-                      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-2xl bg-neutral-900/50 border border-neutral-800">
-                        <span className="text-xs text-neutral-300 font-mono">
-                          Showing <strong className="text-white">{paginatedApps.length}</strong> of{' '}
-                          <strong className="text-white">{filteredApps.length}</strong> Linux AppImage packages
-                        </span>
-                        <button
-                          id="load-more-apps-btn"
-                          type="button"
-                          onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
-                          className="min-h-[44px] px-5 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-xs inline-flex items-center gap-2 transition-colors cursor-pointer"
-                        >
-                          <span>Load More Applications ({filteredApps.length - visibleCount} remaining)</span>
-                          <ChevronDown className="w-4 h-4" aria-hidden="true" />
-                        </button>
-                      </div>
+                    {/* Server-Side Pagination Controls */}
+                    {totalPages > 1 && (
+                      <nav
+                        aria-label="Catalog pagination"
+                        className="mt-8 pt-6 border-t border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-4"
+                      >
+                        <p className="text-xs text-neutral-400 font-mono">
+                          Showing {pageStart.toLocaleString()}-{pageEnd.toLocaleString()} of{' '}
+                          {totalMatchingApps.toLocaleString()} apps (Page {currentPage} of{' '}
+                          {totalPages})
+                        </p>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage <= 1}
+                            aria-label="Previous page"
+                            className="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 disabled:opacity-40 disabled:pointer-events-none text-neutral-200 border border-neutral-800 text-xs font-medium inline-flex items-center gap-1 cursor-pointer"
+                          >
+                            <ChevronLeft className="w-3.5 h-3.5" aria-hidden="true" />
+                            <span>Previous</span>
+                          </button>
+
+                          {/* Page number buttons */}
+                          {Array.from({ length: Math.min(5, totalPages) }, (_, idx) => {
+                            let pageNum = idx + 1;
+                            if (totalPages > 5) {
+                              const startPage = Math.max(
+                                1,
+                                Math.min(currentPage - 2, totalPages - 4)
+                              );
+                              pageNum = startPage + idx;
+                            }
+                            return (
+                              <button
+                                type="button"
+                                key={pageNum}
+                                onClick={() => handlePageChange(pageNum)}
+                                aria-current={currentPage === pageNum ? 'page' : undefined}
+                                className={`min-w-[34px] px-2.5 py-1.5 rounded-lg border text-xs font-mono font-medium transition-colors cursor-pointer ${
+                                  currentPage === pageNum
+                                    ? 'bg-sky-600 text-white border-sky-500'
+                                    : 'bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border-neutral-800'
+                                }`}
+                              >
+                                {pageNum}
+                              </button>
+                            );
+                          })}
+
+                          <button
+                            type="button"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage >= totalPages}
+                            aria-label="Next page"
+                            className="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 disabled:opacity-40 disabled:pointer-events-none text-neutral-200 border border-neutral-800 text-xs font-medium inline-flex items-center gap-1 cursor-pointer"
+                          >
+                            <span>Next</span>
+                            <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
+                          </button>
+                        </div>
+                      </nav>
                     )}
-                  </div>
+                  </>
                 ) : (
-                  /* STEP 1: Empty State ("No apps match your filters") */
-                  <div
-                    role="status"
-                    aria-live="polite"
-                    className="py-16 text-center rounded-2xl bg-neutral-900/40 border border-neutral-800 flex flex-col items-center justify-center p-6"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-neutral-900 flex items-center justify-center text-neutral-300 mb-3 border border-neutral-700">
-                      <SearchX className="w-6 h-6" aria-hidden="true" />
+                  <div className="text-center py-16 bg-neutral-900/40 border border-neutral-800 rounded-xl my-4">
+                    <div className="w-12 h-12 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-center mx-auto mb-3 text-neutral-400">
+                      <PackageOpen className="w-6 h-6" aria-hidden="true" />
                     </div>
-                    <h2 className="text-base font-semibold text-white">
+                    <h2 className="text-base font-semibold text-white mb-1">
                       No apps match your filters
                     </h2>
-                    <p className="text-xs text-neutral-300 mt-1 max-w-sm">
-                      We couldn&apos;t find any applications matching your current search query or
-                      active category, license, and architecture filters.
+                    <p className="text-xs text-neutral-400 max-w-md mx-auto mb-5">
+                      No applications matched your current search or filter criteria.
                     </p>
                     <button
-                      id="reset-all-filters-btn"
                       type="button"
-                      onClick={resetFilters}
-                      className="min-h-[44px] mt-4 px-5 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black text-xs font-semibold shadow transition-colors cursor-pointer"
+                      onClick={resetAllFilters}
+                      className="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs transition-colors cursor-pointer"
                     >
                       Reset All Filters
                     </button>
@@ -846,147 +910,41 @@ export const App: React.FC<AppProps> = ({
                 )}
               </>
             )}
-          </div>
+          </main>
         )}
+      </ErrorBoundary>
 
-        {/* VIEW 2: MY LIBRARY */}
-        {currentView === 'library' && (
-          <MyLibraryView
-            catalog={fullCatalog}
-            installedRecords={installedRecords}
-            bookmarkedIds={bookmarkedIds}
-            onSelectApp={(app) => setSelectedApp(app)}
-            onOpenInstall={(app) => setInstallingApp(app)}
-            onRefreshLibrary={refreshUserData}
-          />
-        )}
-
-        {/* VIEW 3: SHA-256 INTEGRITY VERIFIER */}
-        {currentView === 'verifier' && (
-          <IntegrityVerifierView
-            catalog={fullCatalog}
-            onSelectApp={(app) => setSelectedApp(app)}
-          />
-        )}
-
-        {/* VIEW 4: SUBMIT OR TEST APP */}
-        {currentView === 'submit' && (
-          <SubmitAppView
-            onAppAdded={(app) => {
-              handleCustomAppAdded(app);
-              refreshUserData();
-            }}
-            onNavigateToStore={() => setCurrentView('store')}
-          />
-        )}
-
-        {/* VIEW 5: ADMIN MONITORING & DASHBOARD */}
-        {currentView === 'admin' &&
-          (user && user.role?.toUpperCase() === 'ADMIN' ? (
-            <AdminDashboard
-              onOpenAppDetail={(app) => setSelectedApp(app)}
-              onOpenBridgeModal={() => setIsBridgeOpen(true)}
-              onRefreshCatalog={refreshUserData}
-            />
-          ) : (
-            <div className="py-20 text-center rounded-2xl bg-neutral-900/40 border border-neutral-800 p-8 max-w-lg mx-auto space-y-4">
-              <ShieldCheck className="w-12 h-12 text-neutral-300 mx-auto" aria-hidden="true" />
-              <h1 className="text-lg font-bold text-white">Administrator Access Required</h1>
-              <p className="text-xs text-neutral-300 leading-relaxed">
-                This monitoring dashboard and platform governance console is strictly restricted to
-                administrator accounts.
-              </p>
-              <button
-                type="button"
-                onClick={openAuthModal}
-                className="min-h-[44px] px-5 py-2.5 rounded-xl bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition shadow-sm cursor-pointer"
-              >
-                Sign In as Administrator
-              </button>
-            </div>
-          ))}
-
-        {/* VIEW 6: SECURITY PLATFORM */}
-        {currentView === 'security' && <SecurityPlatformView />}
-
-        {/* STEP 2: LEGAL ROUTES */}
-        {currentView === 'privacy' && (
-          <Privacy
-            onBackToStore={() => setCurrentView('store')}
-            onOpenCookieSettings={() => setIsCookieSettingsOpen(true)}
-          />
-        )}
-        {currentView === 'terms' && <Terms onBackToStore={() => setCurrentView('store')} />}
-        {currentView === 'cookies' && (
-          <Cookies
-            onBackToStore={() => setCurrentView('store')}
-            onOpenCookieSettings={() => setIsCookieSettingsOpen(true)}
-          />
-        )}
-        {currentView === 'refunds' && <Refunds onBackToStore={() => setCurrentView('store')} />}
-      </main>
-
-      {/* Site-Wide Footer with Legal Routes & Data Summary Table (STEP 2 & STEP 4) */}
       <Footer
-        currentRoute={currentView}
-        onNavigate={handleNavigateLegal}
-        onOpenCookieSettings={() => setIsCookieSettingsOpen(true)}
+        currentRoute={legalRoute}
+        onNavigate={navigateLegal}
+        onOpenCookieSettings={() => setCookieSettingsOpen(true)}
       />
 
-      {/* Accessible Cookie & Storage Consent Banner (STEP 3) */}
       <CookieConsent
-        isOpen={isCookieSettingsOpen}
-        onCloseManage={() => setIsCookieSettingsOpen(false)}
-        onNavigateLegal={(route) => handleNavigateLegal(route)}
+        isOpen={cookieSettingsOpen}
+        onCloseManage={() => setCookieSettingsOpen(false)}
+        onNavigateLegal={navigateLegal}
       />
 
-      {/* Interactive Modals */}
       <AppDetailModal
         app={selectedApp}
-        onClose={() => setSelectedApp(null)}
-        onOpenInstall={(app) => setInstallingApp(app)}
-        isInstalled={selectedApp ? installedRecords.some((r) => r.appId === selectedApp.id) : false}
-        onOpenSponsor={(app) => {
-          setSponsorApp(app);
-          setIsSponsorOpen(true);
-        }}
-        onOpenPayment={(app) => {
-          setPayingApp(app);
-        }}
+        onClose={() => handleSelectApp(null)}
+        onInstall={handleInstallClick}
+        isStarred={selectedApp ? starredIds.includes(selectedApp.id) : false}
+        onToggleStar={handleToggleStar}
+        onOpenVerifierWithHash={handleOpenVerifierWithHash}
+        onShowToast={showToast}
       />
 
       <InstallModal
-        app={installingApp}
-        isOpen={!!installingApp}
-        onClose={() => setInstallingApp(null)}
-        isInstalled={
-          installingApp ? installedRecords.some((r) => r.appId === installingApp.id) : false
-        }
-        onInstalledChange={refreshUserData}
+        app={installApp}
+        selectedArch={installArch}
+        onClose={() => setInstallApp(null)}
       />
 
-      <PaymentModal
-        app={payingApp}
-        isOpen={!!payingApp}
-        onClose={() => setPayingApp(null)}
-        onSuccess={() => {
-          refreshUserData();
-        }}
-      />
-
-      <PricingModal isOpen={isPricingOpen} onClose={() => setIsPricingOpen(false)} />
-      <NiruviInfoModal isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} />
-      <JsonExportModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} />
-      <NiruviBridgeModal isOpen={isBridgeOpen} onClose={() => setIsBridgeOpen(false)} />
-      <SponsorModal
-        isOpen={isSponsorOpen}
-        onClose={() => setIsSponsorOpen(false)}
-        app={sponsorApp}
-      />
       <AuthModal />
       <AccountManagementModal />
     </div>
   );
-};
-
+}
 export default App;

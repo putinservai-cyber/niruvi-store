@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Trash2, Check, ArrowLeft, Settings } from 'lucide-react';
 import { CONSENT_STORAGE_KEY } from '../components/CookieConsent';
+import { DEVELOPER_NAME, CONTACT_EMAIL, SUPPORT_EMAIL } from '../config/site';
 
 interface PrivacyPageProps {
   onBackToStore: () => void;
@@ -18,6 +19,8 @@ export const Privacy: React.FC<PrivacyPageProps> = ({
       localStorage.removeItem(CONSENT_STORAGE_KEY);
       localStorage.removeItem('niruvi_installed_apps');
       localStorage.removeItem('niruvi_bookmarked_apps');
+      localStorage.removeItem('niruvi_starred_apps');
+      localStorage.removeItem('niruvi_download_history');
       localStorage.removeItem('niruvi_custom_apps');
       setClearedSuccess(true);
       setTimeout(() => setClearedSuccess(false), 4000);
@@ -39,24 +42,8 @@ export const Privacy: React.FC<PrivacyPageProps> = ({
         </button>
 
         <span className="text-xs font-mono text-neutral-400">
-          Last Updated: [LAST UPDATED DATE]
+          Last Updated: October 1, 2026
         </span>
-      </div>
-
-      {/* Template Legal Review Banner */}
-      <div
-        role="note"
-        aria-label="Legal template notice"
-        className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs leading-relaxed"
-      >
-        <strong>Legal Template Notice:</strong> This Privacy Policy is a plain-English template
-        tailored to Niruvi Store&apos;s static GitHub Pages architecture. Replace bracketed
-        placeholders (<code className="font-mono">[OWNER NAME]</code>,{' '}
-        <code className="font-mono">[CONTACT EMAIL]</code>,{' '}
-        <code className="font-mono">[COUNTRY/JURISDICTION]</code>,{' '}
-        <code className="font-mono">[LAST UPDATED DATE]</code>) and have this document reviewed by a
-        qualified legal professional for compliance with GDPR/UK GDPR, India&apos;s Digital Personal
-        Data Protection (DPDP) Act 2023, and CCPA/CPRA.
       </div>
 
       <header className="space-y-3 border-b border-neutral-800 pb-6">
@@ -66,18 +53,17 @@ export const Privacy: React.FC<PrivacyPageProps> = ({
         </div>
         <h1 className="text-3xl font-extrabold text-white tracking-tight">Privacy Policy</h1>
         <p className="text-sm text-neutral-300 leading-relaxed">
-          Niruvi Store (<code className="font-mono text-sky-400">https://niruvi-store.putinservai.workers.dev</code>, &ldquo;we&rdquo;, &ldquo;us&rdquo;, or &ldquo;our&rdquo;), operated by{' '}
-          <strong>[OWNER NAME]</strong> under the laws of <strong>[COUNTRY/JURISDICTION]</strong>,
-          is a static, open-source Linux AppImage directory hosted on Cloudflare Workers. We designed
-          Niruvi Store to work without mandatory user accounts, tracking pixels, or advertising
-          networks.
+          Niruvi Store (<code className="font-mono text-sky-400">https://niruvi-store.putinservai.workers.dev</code>, &ldquo;we&rdquo;, &ldquo;us&rdquo;, or &ldquo;our&rdquo;), developed and operated by{' '}
+          <strong>{DEVELOPER_NAME}</strong>, is an open-source Linux AppImage directory hosted on
+          Cloudflare Workers. We designed Niruvi Store to work without mandatory user accounts,
+          tracking pixels, or advertising networks.
         </p>
         <p className="text-sm font-bold text-emerald-400">
           We do not sell, rent, or trade your personal data to any third party.
         </p>
       </header>
 
-      {/* STEP 4: What User Data We Collect Table */}
+      {/* What User Data We Collect Table */}
       <section aria-labelledby="what-data-we-collect" className="space-y-4">
         <h2 id="what-data-we-collect" className="text-xl font-bold text-white">
           1. What User Data We Collect
@@ -104,21 +90,21 @@ export const Privacy: React.FC<PrivacyPageProps> = ({
                   IP Address &amp; HTTP Request Logs (User-Agent, Referrer, Timestamp)
                 </td>
                 <td className="p-3.5">
-                  Delivering static HTML/CSS/JS files over HTTPS and DDoS/security mitigation
+                  Delivering HTML/CSS/JS files over HTTPS and DDoS/security mitigation
                 </td>
                 <td className="p-3.5">
-                  GitHub Pages / Fastly CDN infrastructure (GitHub, Inc.)
+                  Cloudflare Workers / GitHub Pages CDN infrastructure
                 </td>
                 <td className="p-3.5">
-                  Transient CDN logs per GitHub&apos;s Privacy Statement
+                  Transient CDN logs per infrastructure privacy policies
                 </td>
                 <td className="p-3.5">
-                  GitHub, Inc. (infrastructure host). Not accessible to [OWNER NAME].
+                  Infrastructure host. Not sold or shared by {DEVELOPER_NAME}.
                 </td>
               </tr>
               <tr>
                 <td className="p-3.5 font-semibold text-white">
-                  Cookie / Privacy Consent Preference (<code className="font-mono">niruvi_cookie_consent_v1</code>)
+                  Cookie / Privacy Consent Preference (<code className="font-mono">{CONSENT_STORAGE_KEY}</code>)
                 </td>
                 <td className="p-3.5">
                   Remembers your Accept, Reject, or custom consent settings
@@ -127,7 +113,7 @@ export const Privacy: React.FC<PrivacyPageProps> = ({
                   Your browser&apos;s <code className="font-mono">localStorage</code> (on your device only)
                 </td>
                 <td className="p-3.5">
-                  Until you clear browser data or click &ldquo;Clear Local Data&rdquo; below
+                  Until you clear browser data or click &ldquo;Delete All Local Browser Data Now&rdquo; below
                 </td>
                 <td className="p-3.5">
                   Only you on your local device
@@ -155,10 +141,10 @@ export const Privacy: React.FC<PrivacyPageProps> = ({
                   Search Queries &amp; Category Filters
                 </td>
                 <td className="p-3.5">
-                  Filters the static JSON catalog in your browser memory and updates the shareable URL
+                  Filters the catalog and updates the shareable URL
                 </td>
                 <td className="p-3.5">
-                  Browser memory &amp; URL query string (not logged to a backend database)
+                  Browser memory &amp; URL query string
                 </td>
                 <td className="p-3.5">
                   Current browsing session only
@@ -169,19 +155,19 @@ export const Privacy: React.FC<PrivacyPageProps> = ({
               </tr>
               <tr>
                 <td className="p-3.5 font-semibold text-white">
-                  App Submission / Test Form Inputs
+                  App Submission &amp; Broken Package Reports
                 </td>
                 <td className="p-3.5">
-                  Validates AppImage parameters and saves to your local test catalog after explicit consent
+                  Allows community contributors to submit new AppImages or report broken links
                 </td>
                 <td className="p-3.5">
-                  Your browser&apos;s <code className="font-mono">localStorage</code> (or GitHub API if you import a public repo URL)
+                  Cloudflare D1 / KV and local browser storage
                 </td>
                 <td className="p-3.5">
-                  Until cleared by you
+                  Until reviewed or cleared
                 </td>
                 <td className="p-3.5">
-                  Only you (unless you publicly submit a pull request or issue on GitHub)
+                  Store maintainer ({DEVELOPER_NAME})
                 </td>
               </tr>
             </tbody>
@@ -196,23 +182,10 @@ export const Privacy: React.FC<PrivacyPageProps> = ({
         </h2>
         <p className="text-sm text-neutral-300 leading-relaxed">
           Niruvi Store self-hosts its application catalog metadata and UI icons. We do{' '}
-          <strong>not</strong> load Google Fonts, third-party analytics scripts, or unconsented
-          iframes on page load. Third-party connections occur only in the following situations:
+          <strong>not</strong> load third-party analytics scripts or unconsented iframes on page
+          load. Third-party connections occur only in the following situations:
         </p>
         <ul className="list-disc pl-6 space-y-2 text-sm text-neutral-300">
-          <li>
-            <strong>GitHub Pages (Hosting Provider):</strong> Serves the static web application.
-            Governed by the{' '}
-            <a
-              href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline text-sky-400 hover:text-sky-300"
-            >
-              GitHub Privacy Statement
-            </a>
-            .
-          </li>
           <li>
             <strong>Direct AppImage Downloads (GitHub Releases, GitLab Releases, Publisher Mirrors):</strong>{' '}
             When you click an external download link or trigger <code className="font-mono">niruvi://install</code>,
@@ -250,11 +223,6 @@ export const Privacy: React.FC<PrivacyPageProps> = ({
             <strong>Right to Erasure / Deletion:</strong> Because your bookmarks, installed app
             records, and consent choices are stored locally in your browser, you can erase them
             instantly using the button below.
-          </li>
-          <li>
-            <strong>Right to Access &amp; Portability:</strong> You can inspect or export your
-            locally added catalog JSON entries using the &ldquo;Export JSON&rdquo; tool in the
-            navigation bar.
           </li>
         </ul>
 
@@ -296,15 +264,22 @@ export const Privacy: React.FC<PrivacyPageProps> = ({
           4. Contact &amp; Data Protection Inquiries
         </h2>
         <p className="text-sm text-neutral-300 leading-relaxed">
-          For any privacy questions, data subject requests, or security disclosures, please contact{' '}
-          <strong>[OWNER NAME]</strong> at{' '}
+          For any privacy questions, data subject requests, or security disclosures, please contact
+          developer <strong>{DEVELOPER_NAME}</strong> at{' '}
           <a
-            href="mailto:[CONTACT EMAIL]"
+            href={`mailto:${CONTACT_EMAIL}`}
             className="underline text-sky-400 hover:text-sky-300 font-mono"
           >
-            [CONTACT EMAIL]
+            {CONTACT_EMAIL}
           </a>{' '}
-          (Jurisdiction: <strong>[COUNTRY/JURISDICTION]</strong>).
+          or support at{' '}
+          <a
+            href={`mailto:${SUPPORT_EMAIL}`}
+            className="underline text-emerald-400 hover:text-emerald-300 font-mono"
+          >
+            {SUPPORT_EMAIL}
+          </a>
+          .
         </p>
       </section>
     </article>

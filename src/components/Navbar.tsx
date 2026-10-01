@@ -1,355 +1,389 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
-  HelpCircle,
-  GitBranch,
-  FolderCheck,
+  Search,
   ShieldCheck,
+  Bookmark,
   PlusCircle,
-  Store,
+  X,
   User,
   LogOut,
-  Zap,
-  Heart,
+  Compass,
   Sun,
   Moon,
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 import { NiruviLogo } from './NiruviLogo';
+import { useAuth } from '../context/AuthContext';
+import { DEVELOPER_NAME } from '../config/site';
 
-export type NavView =
-  | 'store'
-  | 'library'
-  | 'verifier'
-  | 'submit'
-  | 'admin'
-  | 'security'
-  | 'privacy'
-  | 'terms'
-  | 'cookies'
-  | 'refunds';
+export type NavTab = 'browse' | 'verifier' | 'library' | 'submit';
 
 interface NavbarProps {
-  currentView: NavView;
-  onViewChange: (v: NavView) => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
-  installedCount: number;
-  onOpenInfo: () => void;
-  onOpenExport: () => void;
-  onOpenBridge: () => void;
-  onOpenSponsor?: () => void;
-  onOpenPricing?: () => void;
+  totalApps: number;
+  activeTab: NavTab;
+  onTabChange: (tab: NavTab) => void;
+  starredCount: number;
+  theme?: 'dark' | 'light';
+  onToggleTheme?: () => void;
+  showSearch?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
-  currentView,
-  onViewChange,
-  installedCount,
-  onOpenInfo,
-  onOpenBridge,
-  onOpenSponsor,
+  searchQuery,
+  onSearchChange,
+  totalApps,
+  activeTab,
+  onTabChange,
+  starredCount,
+  theme = 'dark',
+  onToggleTheme,
+  showSearch = true,
 }) => {
   const { user, openAuthModal, openAccountModal, signOut } = useAuth();
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = window.localStorage.getItem('niruvi_theme');
-      if (saved === 'light' || saved === 'dark') return saved;
-    }
-    return 'dark';
-  });
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (typeof document !== 'undefined') {
-      document.documentElement.setAttribute('data-theme', theme);
-      try {
-        window.localStorage.setItem('niruvi_theme', theme);
-      } catch {
-        // Ignore storage errors
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
       }
-    }
-  }, [theme]);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-  // Shortcut: '/' key focuses search bar
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isInputFocused =
+        target?.tagName === 'INPUT' ||
+        target?.tagName === 'TEXTAREA' ||
+        target?.tagName === 'SELECT' ||
+        target?.isContentEditable;
+
       if (
-        e.key === '/' &&
-        document.activeElement?.tagName !== 'INPUT' &&
-        document.activeElement?.tagName !== 'TEXTAREA' &&
-        document.activeElement?.tagName !== 'SELECT'
+        (e.key === '/' && !isInputFocused && !e.metaKey && !e.ctrlKey && !e.altKey) ||
+        ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k')
       ) {
         e.preventDefault();
-        document.getElementById('store-search-input')?.focus();
+        if (activeTab !== 'browse') {
+          onTabChange('browse');
+        }
+        setTimeout(() => {
+          searchInputRef.current?.focus();
+          searchInputRef.current?.select();
+        }, 0);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [activeTab, onTabChange]);
 
   return (
-    <header
-      role="banner"
-      className="sticky top-0 z-40 bg-[#0a0a0c]/95 backdrop-blur-md border-b border-neutral-800"
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Upper Navigation Row */}
-        <div className="min-h-16 py-2 flex items-center justify-between gap-4">
-          {/* Brand Identity (Native Button instead of clickable div) */}
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => onViewChange('store')}
-              aria-label="Niruvi Store home"
-              className="min-h-[44px] flex items-center gap-3 cursor-pointer group text-left rounded-xl px-1.5 py-1 hover:bg-neutral-900/60 transition-colors"
-            >
-              <NiruviLogo size={38} className="group-hover:scale-105 transition-transform" />
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-lg text-white tracking-tight group-hover:text-neutral-200 transition-colors">
-                    Niruvi Store
-                  </span>
-                  <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-neutral-900 text-neutral-200 border border-neutral-700 font-mono">
-                    AppImage
-                  </span>
-                </div>
-                <span className="text-[11px] text-neutral-300 hidden sm:block">
-                  Linux Desktop Software Hub
+    <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-neutral-950/95 border-b border-neutral-800">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3">
+        {/* Responsive Primary Header Grid:
+            - Mobile & Tablet (< 1024px): Row 1 has Brand (left) + Nav/Actions (right); Row 2 has full-width Search Bar
+            - Desktop (>= 1024px): Single balanced 3-column row [Brand | Search | Nav + Actions] with zero overflow */}
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] lg:grid-cols-[auto_minmax(220px,1fr)_auto] items-center gap-2.5 sm:gap-4">
+          {/* 1. Brand Logo & Title */}
+          <button
+            type="button"
+            onClick={() => onTabChange('browse')}
+            className="order-1 min-w-0 flex items-center gap-2.5 sm:gap-3 shrink-0 cursor-pointer group text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded-lg"
+          >
+            <div className="relative flex items-center justify-center w-9 h-9 rounded-lg bg-neutral-900 border border-neutral-800 group-hover:border-sky-500/50 transition-colors shrink-0">
+              <NiruviLogo className="w-6 h-6" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="font-bold text-sm sm:text-base tracking-tight text-white truncate">
+                  Niruvi Store
+                </span>
+                <span className="hidden xl:inline-block text-xs font-mono text-neutral-400 shrink-0">
+                  · {totalApps.toLocaleString()} AppImages
                 </span>
               </div>
-            </button>
+              <p className="text-[11px] text-neutral-400 truncate">
+                Linux AppImage Catalog · by {DEVELOPER_NAME}
+              </p>
+            </div>
+          </button>
 
-            <button
-              type="button"
-              onClick={onOpenBridge}
-              className="hidden md:inline-flex min-h-[44px] items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-neutral-300 hover:text-white hover:bg-neutral-900 transition-colors cursor-pointer"
-              title="Niruvi Desktop App Integration"
+          {/* 2. Primary Header Search Bar (Visible on Catalog Browse View, Responsive across Mobile/Tablet/Desktop) */}
+          {showSearch ? (
+            <form
+              role="search"
+              aria-label="Catalog search"
+              onSubmit={(e) => e.preventDefault()}
+              className="order-3 col-span-2 lg:order-2 lg:col-span-1 w-full max-w-xl lg:mx-auto min-w-0"
             >
-              <Zap className="w-3.5 h-3.5 text-sky-400" aria-hidden="true" />
-              <span>Desktop Bridge</span>
-            </button>
-          </div>
+              <label htmlFor="catalog-search-input" className="sr-only">
+                Search Linux AppImages by name, category, publisher, or tag
+              </label>
+              <div className="relative flex items-center w-full min-w-0">
+                <Search
+                  className="w-4 h-4 text-sky-400 absolute left-3.5 pointer-events-none shrink-0"
+                  aria-hidden="true"
+                />
+                <input
+                  ref={searchInputRef}
+                  id="catalog-search-input"
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    onSearchChange(e.target.value);
+                    if (activeTab !== 'browse') onTabChange('browse');
+                  }}
+                  aria-label="Search Linux AppImages by name, category, publisher, or tag"
+                  placeholder={`Search ${totalApps.toLocaleString()} Linux AppImages... ( / )`}
+                  className="w-full min-w-0 min-h-[40px] pl-10 pr-12 py-2 bg-neutral-900 border border-neutral-800 rounded-xl text-xs sm:text-sm text-white placeholder-neutral-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
+                />
+                {searchQuery ? (
+                  <button
+                    type="button"
+                    onClick={() => onSearchChange('')}
+                    aria-label="Clear search query"
+                    className="absolute right-2.5 p-1 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer"
+                  >
+                    <X className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                ) : (
+                  <kbd
+                    aria-hidden="true"
+                    className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-neutral-950 border border-neutral-800 text-[10px] font-mono text-neutral-400 absolute right-3 pointer-events-none"
+                  >
+                    /
+                  </kbd>
+                )}
+              </div>
+            </form>
+          ) : (
+            <div className="hidden lg:block lg:order-2" />
+          )}
 
-          {/* Quick Utility Actions & Auth */}
-          <div className="flex items-center gap-2">
-            {onOpenSponsor && (
+          {/* 3. Tablet/Desktop Navigation Links + Theme & Account Controls */}
+          <div className="order-2 lg:order-3 flex items-center justify-end gap-1.5 sm:gap-2 shrink-0 min-w-0">
+            <nav
+              aria-label="Main store navigation"
+              className="hidden md:flex items-center gap-1 bg-neutral-900/80 p-1 rounded-xl border border-neutral-800"
+            >
               <button
-                id="open-sponsor-btn"
                 type="button"
-                onClick={onOpenSponsor}
-                className="min-h-[44px] flex items-center gap-1.5 text-xs font-semibold text-rose-200 hover:text-white bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 px-3.5 py-2 rounded-lg transition-colors shadow-sm cursor-pointer"
-                title="Support Open-Source Store & Linux App Developers (Ko-fi / UPI)"
+                onClick={() => onTabChange('browse')}
+                aria-current={activeTab === 'browse' ? 'page' : undefined}
+                className={`flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                  activeTab === 'browse'
+                    ? 'bg-sky-600 text-white'
+                    : 'text-neutral-300 hover:text-white hover:bg-neutral-800/80'
+                }`}
               >
-                <Heart className="w-3.5 h-3.5 fill-rose-400/30 text-rose-300" aria-hidden="true" />
-                <span>Donate &amp; Support</span>
+                <Compass className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                <span>Catalog</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onTabChange('verifier')}
+                aria-current={activeTab === 'verifier' ? 'page' : undefined}
+                className={`flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                  activeTab === 'verifier'
+                    ? 'bg-sky-600 text-white'
+                    : 'text-neutral-300 hover:text-white hover:bg-neutral-800/80'
+                }`}
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" aria-hidden="true" />
+                <span className="hidden xl:inline">SHA-256 Verifier</span>
+                <span className="xl:hidden">Verifier</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onTabChange('library')}
+                aria-current={activeTab === 'library' ? 'page' : undefined}
+                className={`flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                  activeTab === 'library'
+                    ? 'bg-sky-600 text-white'
+                    : 'text-neutral-300 hover:text-white hover:bg-neutral-800/80'
+                }`}
+              >
+                <Bookmark className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                <span>Saved</span>
+                {starredCount > 0 && (
+                  <span className="font-mono text-[11px] opacity-90">({starredCount})</span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onTabChange('submit')}
+                aria-current={activeTab === 'submit' ? 'page' : undefined}
+                className={`flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                  activeTab === 'submit'
+                    ? 'bg-sky-600 text-white'
+                    : 'text-neutral-300 hover:text-white hover:bg-neutral-800/80'
+                }`}
+              >
+                <PlusCircle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                <span>Submit App</span>
+              </button>
+            </nav>
+
+            {onToggleTheme && (
+              <button
+                type="button"
+                onClick={onToggleTheme}
+                aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+                title={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+                className="min-h-[38px] min-w-[38px] flex items-center justify-center p-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border border-neutral-800 transition-colors cursor-pointer shrink-0"
+              >
+                {theme === 'light' ? (
+                  <Moon className="w-4 h-4" aria-hidden="true" />
+                ) : (
+                  <Sun className="w-4 h-4" aria-hidden="true" />
+                )}
               </button>
             )}
 
-            <button
-              id="open-bridge-btn"
-              type="button"
-              onClick={onOpenBridge}
-              className="min-h-[44px] flex items-center gap-1.5 text-xs font-semibold text-neutral-200 hover:text-white bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 px-3 py-2 rounded-lg transition-colors cursor-pointer"
-              title="Connect and test Niruvi Desktop App (niruvi://)"
-            >
-              <Zap className="w-3.5 h-3.5 text-neutral-200" aria-hidden="true" />
-              <span className="hidden xs:inline">Connect Desktop</span>
-            </button>
-
-            <button
-              id="open-info-modal-btn"
-              type="button"
-              onClick={onOpenInfo}
-              className="hidden lg:flex min-h-[44px] items-center gap-1.5 text-xs font-medium text-neutral-200 hover:text-white bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 px-3 py-2 rounded-lg transition-colors cursor-pointer"
-              title="How niruvi:// desktop protocol integration works"
-            >
-              <HelpCircle className="w-3.5 h-3.5 text-neutral-300" aria-hidden="true" />
-              <span>Protocol Guide</span>
-            </button>
-
-            <a
-              id="niruvi-github-link"
-              href="https://github.com/putinservai-cyber/niruvi"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden xl:flex min-h-[44px] items-center gap-1.5 text-xs font-medium text-neutral-200 hover:text-white bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 px-3 py-2 rounded-lg transition-colors"
-              title="Official Niruvi Desktop App Repository"
-            >
-              <GitBranch className="w-3.5 h-3.5 text-neutral-300" aria-hidden="true" />
-              <span>GitHub Repository</span>
-            </a>
-
-            <button
-              id="theme-toggle-btn"
-              type="button"
-              onClick={() => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))}
-              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
-              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
-              className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-neutral-200 hover:text-white transition-colors cursor-pointer"
-            >
-              {theme === 'dark' ? (
-                <Sun className="w-4 h-4 text-amber-300" aria-hidden="true" />
-              ) : (
-                <Moon className="w-4 h-4 text-sky-400" aria-hidden="true" />
-              )}
-            </button>
-
-            {/* Auth Profile / Account Management Button */}
+            {/* Account Menu */}
             {user ? (
-              <div className="flex items-center gap-1.5 bg-neutral-900 border border-neutral-700 p-1 rounded-xl">
+              <div className="relative shrink-0" ref={menuRef}>
                 <button
                   type="button"
-                  onClick={openAccountModal}
-                  className="min-h-[44px] flex items-center gap-2 pl-2 pr-2 py-1 rounded-lg hover:bg-neutral-800 transition text-left cursor-pointer"
-                  aria-label={`Open account settings for ${user.displayName}`}
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  aria-expanded={userMenuOpen}
+                  aria-haspopup="menu"
+                  aria-label={`Account menu for ${user.displayName}`}
+                  className="min-h-[38px] flex items-center gap-2 pl-2 pr-2.5 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 transition-colors cursor-pointer"
                 >
-                  {user.avatarUrl ? (
-                    <img
-                      src={user.avatarUrl}
-                      alt={`${user.displayName} avatar`}
-                      referrerPolicy="no-referrer"
-                      className="w-6 h-6 rounded-full object-cover border border-neutral-600"
-                    />
-                  ) : (
-                    <div
-                      aria-hidden="true"
-                      className="w-6 h-6 rounded-full bg-white text-black flex items-center justify-center text-[10px] font-bold"
-                    >
-                      {user.displayName.slice(0, 2).toUpperCase()}
+                  <img
+                    src={
+                      user.avatarUrl ||
+                      `https://api.dicebear.com/7.x/identicon/svg?seed=${user.username}`
+                    }
+                    alt={user.displayName}
+                    className="w-5 h-5 rounded-md object-cover bg-neutral-800 shrink-0"
+                  />
+                  <span className="hidden sm:block text-xs font-medium text-white max-w-[96px] truncate">
+                    {user.displayName}
+                  </span>
+                </button>
+
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-56 rounded-xl bg-neutral-900 border border-neutral-800 shadow-xl py-1.5 z-50">
+                    <div className="px-3.5 py-2 border-b border-neutral-800">
+                      <p className="text-xs font-semibold text-white truncate">
+                        {user.displayName}
+                      </p>
+                      <p className="text-[11px] text-neutral-400 font-mono truncate">
+                        @{user.username}
+                      </p>
                     </div>
-                  )}
-                  <div className="hidden sm:block">
-                    <div className="text-xs font-semibold text-white leading-tight max-w-[100px] truncate">
-                      {user.displayName}
+                    <div className="p-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          openAccountModal();
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-neutral-300 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer"
+                      >
+                        <User className="w-3.5 h-3.5" />
+                        <span>Account Settings</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          signOut();
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>Sign Out</span>
+                      </button>
                     </div>
-                    <span className="text-[9px] uppercase tracking-wider font-mono text-neutral-300">
-                      Account
-                    </span>
                   </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={signOut}
-                  aria-label="Sign out of account"
-                  className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-neutral-300 hover:text-white rounded-lg hover:bg-neutral-800 transition cursor-pointer"
-                  title="Sign out"
-                >
-                  <LogOut className="w-4 h-4" aria-hidden="true" />
-                </button>
+                )}
               </div>
             ) : (
               <button
-                id="header-sign-in-btn"
                 type="button"
                 onClick={openAuthModal}
-                className="min-h-[44px] flex items-center gap-1.5 text-xs font-semibold text-black bg-white hover:bg-neutral-200 px-4 py-2 rounded-lg shadow-sm transition-all cursor-pointer"
+                className="min-h-[38px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-800 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer shrink-0"
               >
-                <User className="w-3.5 h-3.5" aria-hidden="true" />
+                <User className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                 <span>Sign In</span>
               </button>
             )}
           </div>
         </div>
 
-        {/* Navigation Tabs Row */}
+        {/* Mobile Navigation Bar (< 768px) — 4 equal columns with min-w-0 so it never overflows */}
         <nav
-          aria-label="Primary store navigation"
-          className="flex items-center gap-1.5 border-t border-neutral-800/80 overflow-x-auto py-1.5"
+          aria-label="Mobile store navigation"
+          className="md:hidden grid grid-cols-4 gap-1.5 pt-2.5 mt-2.5 border-t border-neutral-800/80"
         >
           <button
-            id="nav-tab-store"
             type="button"
-            onClick={() => onViewChange('store')}
-            aria-current={currentView === 'store' ? 'page' : undefined}
-            className={`min-h-[44px] flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
-              currentView === 'store'
-                ? 'bg-white text-black shadow-sm'
-                : 'text-neutral-300 hover:text-white hover:bg-neutral-900'
+            onClick={() => onTabChange('browse')}
+            aria-current={activeTab === 'browse' ? 'page' : undefined}
+            className={`min-h-[38px] min-w-0 flex items-center justify-center gap-1 px-1.5 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${
+              activeTab === 'browse'
+                ? 'bg-sky-600 text-white border-sky-500'
+                : 'bg-neutral-900 text-neutral-300 border-neutral-800 hover:text-white'
             }`}
           >
-            <Store className="w-4 h-4" aria-hidden="true" />
-            <span>Store Browse</span>
+            <Compass className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            <span className="truncate">Catalog</span>
           </button>
 
           <button
-            id="nav-tab-library"
             type="button"
-            onClick={() => onViewChange('library')}
-            aria-current={currentView === 'library' ? 'page' : undefined}
-            className={`min-h-[44px] flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
-              currentView === 'library'
-                ? 'bg-white text-black shadow-sm'
-                : 'text-neutral-300 hover:text-white hover:bg-neutral-900'
+            onClick={() => onTabChange('verifier')}
+            aria-current={activeTab === 'verifier' ? 'page' : undefined}
+            className={`min-h-[38px] min-w-0 flex items-center justify-center gap-1 px-1.5 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${
+              activeTab === 'verifier'
+                ? 'bg-sky-600 text-white border-sky-500'
+                : 'bg-neutral-900 text-neutral-300 border-neutral-800 hover:text-white'
             }`}
           >
-            <FolderCheck className="w-4 h-4" aria-hidden="true" />
-            <span>My Library</span>
-            {installedCount > 0 && (
-              <span
-                className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                  currentView === 'library'
-                    ? 'bg-neutral-200 text-black'
-                    : 'bg-neutral-800 text-white'
-                }`}
-              >
-                {installedCount}
-              </span>
-            )}
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" aria-hidden="true" />
+            <span className="truncate">Verify</span>
           </button>
 
           <button
-            id="nav-tab-verifier"
             type="button"
-            onClick={() => onViewChange('verifier')}
-            aria-current={currentView === 'verifier' ? 'page' : undefined}
-            className={`min-h-[44px] flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
-              currentView === 'verifier'
-                ? 'bg-white text-black shadow-sm'
-                : 'text-neutral-300 hover:text-white hover:bg-neutral-900'
+            onClick={() => onTabChange('library')}
+            aria-current={activeTab === 'library' ? 'page' : undefined}
+            className={`min-h-[38px] min-w-0 flex items-center justify-center gap-1 px-1.5 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${
+              activeTab === 'library'
+                ? 'bg-sky-600 text-white border-sky-500'
+                : 'bg-neutral-900 text-neutral-300 border-neutral-800 hover:text-white'
             }`}
           >
-            <ShieldCheck className="w-4 h-4" aria-hidden="true" />
-            <span>SHA-256 Verifier</span>
+            <Bookmark className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            <span className="truncate">
+              Saved{starredCount > 0 ? ` (${starredCount})` : ''}
+            </span>
           </button>
 
           <button
-            id="nav-tab-submit"
             type="button"
-            onClick={() => onViewChange('submit')}
-            aria-current={currentView === 'submit' ? 'page' : undefined}
-            className={`min-h-[44px] flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
-              currentView === 'submit'
-                ? 'bg-white text-black shadow-sm'
-                : 'text-neutral-300 hover:text-white hover:bg-neutral-900'
+            onClick={() => onTabChange('submit')}
+            aria-current={activeTab === 'submit' ? 'page' : undefined}
+            className={`min-h-[38px] min-w-0 flex items-center justify-center gap-1 px-1.5 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${
+              activeTab === 'submit'
+                ? 'bg-sky-600 text-white border-sky-500'
+                : 'bg-neutral-900 text-neutral-300 border-neutral-800 hover:text-white'
             }`}
           >
-            <PlusCircle className="w-4 h-4" aria-hidden="true" />
-            <span>Submit AppImage</span>
+            <PlusCircle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            <span className="truncate">Submit</span>
           </button>
-
-          {/* Admin Dashboard: Strictly visible only to Admin accounts */}
-          {user && user.role?.toUpperCase() === 'ADMIN' && (
-            <button
-              id="nav-tab-admin"
-              type="button"
-              onClick={() => onViewChange('admin')}
-              aria-current={currentView === 'admin' ? 'page' : undefined}
-              className={`min-h-[44px] flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors border ml-auto cursor-pointer ${
-                currentView === 'admin'
-                  ? 'bg-white text-black border-white shadow-sm'
-                  : 'bg-neutral-900 text-neutral-200 border-neutral-700 hover:text-white hover:bg-neutral-800'
-              }`}
-            >
-              <ShieldCheck className="w-4 h-4 text-emerald-400" aria-hidden="true" />
-              <span>Admin Monitoring</span>
-              <span
-                className={`px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold ${
-                  currentView === 'admin' ? 'bg-black text-white' : 'bg-white text-black'
-                }`}
-              >
-                ADMIN
-              </span>
-            </button>
-          )}
         </nav>
       </div>
     </header>

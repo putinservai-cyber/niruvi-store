@@ -225,8 +225,15 @@ function resolveAppImageHubAssetUrl(relativePath?: string | null): string | null
   if (!relativePath || typeof relativePath !== 'string') return null;
   const trimmed = relativePath.trim();
   if (!trimmed) return null;
-  if (/^https?:\/\//i.test(trimmed)) return trimmed;
-  return `${APPIMAGEHUB_DATABASE_BASE_URL}/${trimmed.replace(/^\/+/, '')}`;
+  const rawUrl = /^https?:\/\//i.test(trimmed)
+    ? trimmed.replace(/^http:\/\//i, 'https://')
+    : `${APPIMAGEHUB_DATABASE_BASE_URL}/${trimmed.replace(/^\/+/, '')}`;
+  try {
+    const parsed = new URL(encodeURI(rawUrl));
+    return parsed.protocol === 'https:' ? parsed.toString() : null;
+  } catch {
+    return null;
+  }
 }
 
 function stripHtmlTags(raw?: string | null): string {
@@ -241,18 +248,20 @@ function stripHtmlTags(raw?: string | null): string {
  * Normalizes a single AppImageHub `feed.json` entry into the canonical Niruvi schema.
  * Returns `null` if the entry lacks a valid name.
  */
-export function normalizeAppImageHubItem(raw: RawAppImageHubItem): NormalizedCatalogApp | null {
+export function normalizeAppImageHubItem(
+  raw: RawAppImageHubItem,
+  disambiguationSuffix?: string
+): NormalizedCatalogApp | null {
   if (!raw || typeof raw.name !== 'string' || !raw.name.trim()) {
     return null;
   }
 
-  const id = normalizeAppId(raw.name);
-  if (!id) return null;
+  const baseId = normalizeAppId(raw.name);
+  if (!baseId) return null;
+  const id = disambiguationSuffix ? `${baseId}-${disambiguationSuffix}`.slice(0, 64) : baseId;
 
   const cleanName = raw.name.replace(/_/g, ' ').trim();
-  const cleanDescription =
-    stripHtmlTags(raw.description) ||
-    `${cleanName} portable Linux desktop application packaged in AppImage format.`;
+  const cleanDescription = stripHtmlTags(raw.description);
 
   const rawCategories = Array.isArray(raw.categories)
     ? raw.categories.filter((c): c is string => typeof c === 'string' && c.trim().length > 0)
@@ -266,7 +275,7 @@ export function normalizeAppImageHubItem(raw: RawAppImageHubItem): NormalizedCat
 
   for (const link of links) {
     if (!link || typeof link.url !== 'string') continue;
-    const type = (link.type || '').toLowerCase();
+    const type = typeof link.type === 'string' ? link.type.toLowerCase() : '';
     if (type === 'github' && !githubRepo) {
       githubRepo = extractGitHubRepoSlug(link.url);
     } else if (type === 'download' && !downloadUrl) {
@@ -275,7 +284,7 @@ export function normalizeAppImageHubItem(raw: RawAppImageHubItem): NormalizedCat
         githubRepo = extractGitHubRepoSlug(link.url);
       }
     } else if (!homepage && /^https?:\/\//i.test(link.url)) {
-      homepage = link.url.trim();
+      homepage = link.url.trim().replace(/^http:\/\//i, 'https://');
     }
   }
 
@@ -294,6 +303,14 @@ export function normalizeAppImageHubItem(raw: RawAppImageHubItem): NormalizedCat
   } else if (!downloadUrl.startsWith('https://')) {
     downloadUrl = downloadUrl.replace(/^http:\/\//i, 'https://');
   }
+  try {
+    const u = new URL(downloadUrl);
+    if (u.protocol !== 'https:' || u.hostname === 'example.com') {
+      downloadUrl = repoUrl ? `${repoUrl}/releases` : appImageHubPageUrl;
+    }
+  } catch {
+    downloadUrl = repoUrl ? `${repoUrl}/releases` : appImageHubPageUrl;
+  }
 
   const icon =
     Array.isArray(raw.icons) && raw.icons.length > 0
@@ -307,10 +324,16 @@ export function normalizeAppImageHubItem(raw: RawAppImageHubItem): NormalizedCat
     : [];
 
   const firstAuthor = Array.isArray(raw.authors) && raw.authors[0] ? raw.authors[0] : undefined;
+  const rawAuthorName =
+    firstAuthor?.name !== undefined && firstAuthor?.name !== null
+      ? String(firstAuthor.name).trim()
+      : '';
+  const rawAuthorUrl =
+    typeof firstAuthor?.url === 'string' ? firstAuthor.url.trim() : '';
   const authorName =
-    firstAuthor?.name?.trim() || (githubRepo ? githubRepo.split('/')[0] : cleanName);
+    rawAuthorName || (githubRepo ? githubRepo.split('/')[0] : cleanName);
   const authorUrl =
-    firstAuthor?.url?.trim() ||
+    rawAuthorUrl ||
     (githubRepo ? `https://github.com/${githubRepo.split('/')[0]}` : homepage);
 
   return {
@@ -324,13 +347,48 @@ export function normalizeAppImageHubItem(raw: RawAppImageHubItem): NormalizedCat
     license:
       raw.license && typeof raw.license === 'string' && raw.license.trim()
         ? raw.license.trim()
-        : 'Not specified',
+        : '',
     homepage,
     github_repo: githubRepo,
     download_url: downloadUrl,
     author_name: authorName,
     author_url: authorUrl,
   };
+}
+
+/**
+ * Normalizes an entire AppImageHub `feed.json` items array, guaranteeing that every
+ * single entry receives a unique `id` (disambiguating case/punctuation collisions).
+ */
+export function normalizeAllAppImageHubItems(
+  rawItems: RawAppImageHubItem[]
+): NormalizedCatalogApp[] {
+  const results: NormalizedCatalogApp[] = [];
+  const seenIds = new Set<string>();
+
+  for (let idx = 0; idx < rawItems.length; idx++) {
+    const raw = rawItems[idx];
+    const initial = normalizeAppImageHubItem(raw);
+    if (!initial) continue;
+
+    let finalApp = initial;
+    if (seenIds.has(finalApp.id)) {
+      const authorSlug = normalizeAppId(finalApp.author_name || '');
+      const candidateWithAuthor =
+        authorSlug && authorSlug !== finalApp.id
+          ? `${finalApp.id}-${authorSlug}`.slice(0, 64)
+          : `${finalApp.id}-${idx + 1}`.slice(0, 64);
+      finalApp = {
+        ...finalApp,
+        id: seenIds.has(candidateWithAuthor) ? `${finalApp.id}-${idx + 1}` : candidateWithAuthor,
+      };
+    }
+
+    seenIds.add(finalApp.id);
+    results.push(finalApp);
+  }
+
+  return results;
 }
 
 /**
@@ -599,7 +657,7 @@ export function buildAppMetadataFromNormalized(
   );
   const sha256 = hasConfirmedSha ? releaseInfo!.sha256 : '';
 
-  const licenseStr = normalized.license || 'Open Source';
+  const licenseStr = normalized.license || '';
   const licenseCategory: AppMetadata['licenseCategory'] =
     /mit|apache|bsd|isc|zlib|unlicense/i.test(licenseStr)
       ? 'Permissive'

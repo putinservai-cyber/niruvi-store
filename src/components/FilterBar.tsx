@@ -1,211 +1,230 @@
-import React, { useState, useEffect } from 'react';
-import { Category, Architecture, FilterState, LicenseType, TrustTier } from '../types';
-import { SIMPLIFIED_CATEGORIES } from '../utils/appimagehub';
-import { Search, SlidersHorizontal, Cpu, Scale, ShieldCheck, Clock, X } from 'lucide-react';
+import React from 'react';
+import { Category, SimplifiedCategory } from '../types';
+import {
+  LayoutGrid,
+  Code2,
+  Palette,
+  Film,
+  FileText,
+  Gamepad2,
+  Shield,
+  Wrench,
+  Globe,
+  GraduationCap,
+  Cpu,
+  ShieldCheck,
+  ArrowUpDown,
+  RotateCcw,
+} from 'lucide-react';
+
+export type SortOption = 'featured' | 'name' | 'recent';
+
+export const SIMPLIFIED_CATEGORIES: SimplifiedCategory[] = [
+  'All',
+  'Development',
+  'Audio/Video',
+  'Graphics',
+  'System/Utilities',
+  'Games',
+  'Office',
+  'Internet',
+  'Education',
+];
 
 interface FilterBarProps {
-  filters: FilterState;
-  onFilterChange: (newFilters: Partial<FilterState>) => void;
-  totalResults: number;
+  categories?: Category[];
+  selectedCategory: string;
+  onSelectCategory: (cat: any) => void;
+  selectedArch: 'All' | 'x86_64' | 'aarch64' | 'armhf';
+  onSelectArch: (arch: 'All' | 'x86_64' | 'aarch64' | 'armhf') => void;
+  onlyVerified: boolean;
+  onToggleVerified: () => void;
+  onlyRecentlyUpdated?: boolean;
+  onToggleRecentlyUpdated?: () => void;
+  sortBy: SortOption;
+  onSortChange: (sort: SortOption) => void;
+  resultCount: number;
+  pageStart?: number;
+  pageEnd?: number;
+  onResetFilters?: () => void;
 }
 
+const categoryIcons: Record<string, React.ReactNode> = {
+  All: <LayoutGrid className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+  Development: <Code2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+  'Audio/Video': <Film className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+  Graphics: <Palette className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+  'System/Utilities': <Wrench className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+  Games: <Gamepad2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+  Office: <FileText className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+  Internet: <Globe className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+  'Office/Productivity': <FileText className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+  'Network/Internet': <Globe className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+  'Education/Science': <GraduationCap className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+  'Graphics & Design': <Palette className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+  'Audio & Video': <Film className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+  Productivity: <FileText className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+  'System & Security': <Shield className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+  Utilities: <Wrench className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+  'Internet & Network': <Globe className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+  Education: <GraduationCap className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />,
+};
+
 export const FilterBar: React.FC<FilterBarProps> = ({
-  filters,
-  onFilterChange,
-  totalResults,
+  categories,
+  selectedCategory,
+  onSelectCategory,
+  selectedArch,
+  onSelectArch,
+  onlyVerified,
+  onToggleVerified,
+  sortBy,
+  onSortChange,
+  resultCount,
+  pageStart = 1,
+  pageEnd = resultCount,
+  onResetFilters,
 }) => {
-  const [localSearch, setLocalSearch] = useState(filters.searchQuery);
+  const displayCategories: string[] =
+    categories && categories.length > 0 ? categories : SIMPLIFIED_CATEGORIES;
 
-  // Sync local input when parent resets filters or URL query changes
-  useEffect(() => {
-    setLocalSearch(filters.searchQuery);
-  }, [filters.searchQuery]);
+  const hasActiveFilters =
+    selectedCategory !== 'All' ||
+    selectedArch !== 'All' ||
+    onlyVerified ||
+    sortBy !== 'featured';
 
-  // Debounce search query updates (200ms)
-  useEffect(() => {
-    if (localSearch === filters.searchQuery) return;
-    const timer = setTimeout(() => {
-      onFilterChange({ searchQuery: localSearch });
-    }, 200);
-    return () => clearTimeout(timer);
-  }, [localSearch, filters.searchQuery, onFilterChange]);
+  const rangeLabel =
+    resultCount === 0
+      ? 'Showing 0 of 0 apps'
+      : `Showing ${pageStart.toLocaleString()}-${pageEnd.toLocaleString()} of ${resultCount.toLocaleString()} apps`;
 
   return (
     <section
-      aria-label="Search and filter Linux applications"
-      className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-4 sm:p-5 space-y-4 backdrop-blur-sm"
+      aria-label="Application catalog filters"
+      className="w-full min-w-0 space-y-3 mb-6 bg-neutral-900/50 border border-neutral-800 rounded-2xl p-3.5 sm:p-4"
     >
-      {/* Top Row: Search + Architecture + Quick Toggles + Sort */}
-      <div className="flex flex-col lg:flex-row gap-3">
-        {/* Search Input with explicit label */}
-        <div className="relative flex-1">
-          <label htmlFor="store-search-input" className="sr-only">
-            Search Linux AppImages by name, category, publisher, or tag
-          </label>
-          <Search
-            className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
-            aria-hidden="true"
-          />
-          <input
-            id="store-search-input"
-            type="search"
-            autoComplete="off"
-            value={localSearch}
-            onChange={(e) => setLocalSearch(e.target.value)}
-            placeholder="Search Linux apps (e.g. Blender, VSCodium, Kdenlive, Wayland, IDE)..."
-            className="w-full min-h-[44px] pl-10 pr-10 py-2.5 bg-neutral-950 border border-neutral-700 rounded-xl text-sm text-neutral-100 placeholder-neutral-400 focus:outline-hidden focus:border-sky-400 transition-all"
-          />
-          {localSearch && (
+      {/* Row 1: Category Filter Buttons (Scrollable on Mobile, Wrapped on Tablet/Desktop) */}
+      <div
+        role="group"
+        aria-label="Filter by application category"
+        className="flex items-center gap-1.5 overflow-x-auto md:flex-wrap pb-1 md:pb-0 max-w-full"
+      >
+        {displayCategories.map((cat) => {
+          const active = selectedCategory === cat;
+          return (
             <button
               type="button"
-              onClick={() => {
-                setLocalSearch('');
-                onFilterChange({ searchQuery: '' });
-              }}
-              aria-label="Clear search query"
-              className="absolute right-2 top-1/2 -translate-y-1/2 min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded-lg text-neutral-300 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer"
+              key={cat}
+              onClick={() => onSelectCategory(cat)}
+              aria-pressed={active}
+              className={`min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer border ${
+                active
+                  ? 'bg-sky-600 text-white border-sky-500'
+                  : 'bg-neutral-950 text-neutral-300 border-neutral-800 hover:bg-neutral-800 hover:text-white'
+              }`}
             >
-              <X className="w-4 h-4" aria-hidden="true" />
+              {categoryIcons[cat] || (
+                <LayoutGrid className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+              )}
+              <span>{cat}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Row 2: Architecture, Verified SHA-256, Sort, and Visible Range Count */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-2.5 border-t border-neutral-800/80 min-w-0">
+        <div className="flex flex-wrap items-center gap-2 min-w-0">
+          {/* Architecture selector */}
+          <div
+            role="group"
+            aria-label="Filter by CPU architecture"
+            className="flex flex-wrap items-center gap-1 bg-neutral-950 border border-neutral-800 rounded-xl p-1 min-w-0"
+          >
+            <span className="flex items-center gap-1 px-2 py-1 text-xs text-neutral-400 font-mono">
+              <Cpu className="w-3.5 h-3.5 text-sky-400 shrink-0" aria-hidden="true" />
+              <span className="hidden sm:inline">Arch:</span>
+            </span>
+            {(['All', 'x86_64', 'aarch64', 'armhf'] as const).map((arch) => (
+              <button
+                type="button"
+                key={arch}
+                onClick={() => onSelectArch(arch)}
+                aria-pressed={selectedArch === arch}
+                className={`px-2 sm:px-2.5 py-1 rounded-lg text-xs font-mono transition-colors cursor-pointer ${
+                  selectedArch === arch
+                    ? 'bg-sky-600 text-white font-semibold'
+                    : 'text-neutral-300 hover:text-white'
+                }`}
+              >
+                {arch}
+              </button>
+            ))}
+          </div>
+
+          {/* Verified SHA-256 Toggle */}
+          <button
+            type="button"
+            onClick={onToggleVerified}
+            aria-pressed={onlyVerified}
+            className={`min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-colors cursor-pointer ${
+              onlyVerified
+                ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400'
+                : 'bg-neutral-950 border-neutral-800 text-neutral-300 hover:text-white'
+            }`}
+          >
+            <ShieldCheck
+              className={`w-3.5 h-3.5 shrink-0 ${onlyVerified ? 'text-emerald-400' : 'text-neutral-400'}`}
+              aria-hidden="true"
+            />
+            <span>Verified SHA-256 Only</span>
+          </button>
+
+          {/* Sort Selector */}
+          <div className="min-h-[36px] flex items-center gap-1.5 bg-neutral-950 border border-neutral-800 rounded-xl px-2.5 py-1.5">
+            <ArrowUpDown className="w-3.5 h-3.5 text-sky-400 shrink-0" aria-hidden="true" />
+            <label htmlFor="catalog-sort-select" className="sr-only">
+              Sort applications by
+            </label>
+            <select
+              id="catalog-sort-select"
+              aria-label="Sort applications by"
+              value={sortBy}
+              onChange={(e) => onSortChange(e.target.value as SortOption)}
+              className="bg-transparent text-xs font-medium text-neutral-200 focus:outline-none cursor-pointer"
+            >
+              <option value="featured" className="bg-neutral-900 text-white">
+                Sort: Verified First
+              </option>
+              <option value="name" className="bg-neutral-900 text-white">
+                Sort: Name (A–Z)
+              </option>
+              <option value="recent" className="bg-neutral-900 text-white">
+                Sort: Recently Updated
+              </option>
+            </select>
+          </div>
+
+          {hasActiveFilters && onResetFilters && (
+            <button
+              type="button"
+              onClick={onResetFilters}
+              aria-label="Reset all catalog filters"
+              className="min-h-[36px] flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-xs font-medium text-neutral-300 hover:text-white transition-colors cursor-pointer"
+            >
+              <RotateCcw className="w-3 h-3 shrink-0" aria-hidden="true" />
+              <span>Reset</span>
             </button>
           )}
         </div>
 
-        {/* Select Filters */}
-        <div className="flex flex-wrap sm:flex-nowrap gap-2.5">
-          {/* Architecture Filter */}
-          <div className="flex items-center gap-2 bg-neutral-950 border border-neutral-700 rounded-xl px-3 min-h-[44px]">
-            <Cpu className="w-4 h-4 text-neutral-300 flex-shrink-0" aria-hidden="true" />
-            <label htmlFor="filter-arch-select" className="text-xs text-neutral-300 font-medium whitespace-nowrap">
-              Arch:
-            </label>
-            <select
-              id="filter-arch-select"
-              value={filters.architecture}
-              onChange={(e) =>
-                onFilterChange({ architecture: e.target.value as Architecture | 'All' })
-              }
-              className="bg-transparent text-xs text-neutral-100 font-semibold focus:outline-hidden cursor-pointer py-2"
-            >
-              <option value="All" className="bg-neutral-900">All (x86_64 &amp; ARM64)</option>
-              <option value="x86_64" className="bg-neutral-900">x86_64 (AMD/Intel)</option>
-              <option value="aarch64" className="bg-neutral-900">aarch64 (ARM64)</option>
-              <option value="armhf" className="bg-neutral-900">armhf (ARMv7)</option>
-            </select>
-          </div>
-
-          {/* License Filter */}
-          <div className="flex items-center gap-2 bg-neutral-950 border border-neutral-700 rounded-xl px-3 min-h-[44px]">
-            <Scale className="w-4 h-4 text-neutral-300 flex-shrink-0" aria-hidden="true" />
-            <label htmlFor="filter-license-select" className="text-xs text-neutral-300 font-medium whitespace-nowrap">
-              License:
-            </label>
-            <select
-              id="filter-license-select"
-              value={filters.licenseCategory}
-              onChange={(e) =>
-                onFilterChange({ licenseCategory: e.target.value as LicenseType })
-              }
-              className="bg-transparent text-xs text-neutral-100 font-semibold focus:outline-hidden cursor-pointer py-2"
-            >
-              <option value="All" className="bg-neutral-900">All Licenses</option>
-              <option value="Open Source" className="bg-neutral-900">Copyleft (GPL/LGPL)</option>
-              <option value="Permissive" className="bg-neutral-900">Permissive (MIT/Apache)</option>
-              <option value="Proprietary" className="bg-neutral-900">Proprietary / Freeware</option>
-            </select>
-          </div>
-
-          {/* Verified Only Toggle */}
-          <button
-            id="filter-verified-only-btn"
-            type="button"
-            aria-pressed={Boolean(filters.verifiedOnly)}
-            onClick={() => onFilterChange({ verifiedOnly: !filters.verifiedOnly })}
-            className={`min-h-[44px] px-3 rounded-xl border text-xs font-semibold inline-flex items-center gap-1.5 whitespace-nowrap transition-colors cursor-pointer ${
-              filters.verifiedOnly
-                ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300'
-                : 'bg-neutral-950 border-neutral-700 text-neutral-300 hover:text-white hover:bg-neutral-900'
-            }`}
-            title="Show only packages with confirmed SHA-256 checksums"
-          >
-            <ShieldCheck className="w-4 h-4 text-emerald-400" aria-hidden="true" />
-            <span>Verified Only</span>
-          </button>
-
-          {/* Recently Updated Toggle */}
-          <button
-            id="filter-recently-updated-btn"
-            type="button"
-            aria-pressed={Boolean(filters.recentlyUpdated)}
-            onClick={() => onFilterChange({ recentlyUpdated: !filters.recentlyUpdated })}
-            className={`min-h-[44px] px-3 rounded-xl border text-xs font-semibold inline-flex items-center gap-1.5 whitespace-nowrap transition-colors cursor-pointer ${
-              filters.recentlyUpdated
-                ? 'bg-sky-500/20 border-sky-500/50 text-sky-300'
-                : 'bg-neutral-950 border-neutral-700 text-neutral-300 hover:text-white hover:bg-neutral-900'
-            }`}
-            title="Filter packages updated recently"
-          >
-            <Clock className="w-4 h-4 text-sky-400" aria-hidden="true" />
-            <span>Recently Updated</span>
-          </button>
-
-          {/* Sort By */}
-          <div className="flex items-center gap-2 bg-neutral-950 border border-neutral-700 rounded-xl px-3 min-h-[44px]">
-            <SlidersHorizontal className="w-4 h-4 text-neutral-300 flex-shrink-0" aria-hidden="true" />
-            <label htmlFor="filter-sort-select" className="text-xs text-neutral-300 font-medium whitespace-nowrap">
-              Sort:
-            </label>
-            <select
-              id="filter-sort-select"
-              value={filters.sortBy}
-              onChange={(e) =>
-                onFilterChange({ sortBy: e.target.value as FilterState['sortBy'] })
-              }
-              className="bg-transparent text-xs text-neutral-100 font-semibold focus:outline-hidden cursor-pointer py-2"
-            >
-              <option value="featured" className="bg-neutral-900">Featured</option>
-              <option value="popular" className="bg-neutral-900">Most Downloads</option>
-              <option value="rating" className="bg-neutral-900">Highest Rated</option>
-              <option value="recent" className="bg-neutral-900">Recently Updated</option>
-              <option value="name" className="bg-neutral-900">Alphabetical (A–Z)</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Row: Simplified Category Pills + Results Counter */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-neutral-800/80">
-        <div
-          role="group"
-          aria-label="Filter by application category"
-          className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 no-scrollbar"
-        >
-          {SIMPLIFIED_CATEGORIES.map((category) => {
-            const isActive = filters.category === category;
-            return (
-              <button
-                key={category}
-                id={`category-btn-${category.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
-                type="button"
-                aria-pressed={isActive}
-                onClick={() => onFilterChange({ category: category as Category })}
-                className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-white text-black shadow-sm'
-                    : 'bg-neutral-950 text-neutral-200 hover:text-white hover:bg-neutral-800 border border-neutral-800'
-                }`}
-              >
-                {category}
-              </button>
-            );
-          })}
-        </div>
-
+        {/* Visible Range & Total Count */}
         <div
           aria-live="polite"
-          className="text-xs text-neutral-300 font-mono whitespace-nowrap self-end sm:self-center"
+          className="text-xs text-neutral-300 font-mono shrink-0"
         >
-          Showing <span className="text-white font-bold">{totalResults}</span>{' '}
-          {totalResults === 1 ? 'package' : 'packages'}
+          {rangeLabel}
         </div>
       </div>
     </section>

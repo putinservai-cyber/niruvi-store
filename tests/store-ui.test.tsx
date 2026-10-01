@@ -6,7 +6,7 @@ import '@testing-library/jest-dom/vitest';
 import axe from 'axe-core';
 import { App } from '../src/App';
 import { AuthProvider } from '../src/context/AuthContext';
-import { APPS_CATALOG } from '../src/data/apps';
+import { APPS_CATALOG, TOTAL_CATALOG_COUNT } from '../src/data/apps';
 import { SITE_URL } from '../src/config/site';
 import {
   isValidHttpsDownloadUrl,
@@ -14,7 +14,7 @@ import {
 } from '../src/utils/catalogSchema';
 
 const SAMPLE_CATALOG = APPS_CATALOG.filter((a) =>
-  ['vscodium', 'kdenlive', 'firefox'].includes(a.id),
+  ['vscodium', 'kdenlive', 'gimp'].includes(a.id),
 );
 
 beforeEach(() => {
@@ -24,6 +24,7 @@ beforeEach(() => {
   global.fetch = vi.fn().mockResolvedValue({
     ok: false,
     status: 404,
+    headers: new Headers(),
     json: async () => ({}),
   } as Response);
 });
@@ -62,16 +63,65 @@ describe('Niruvi Store — URL & Catalog Schema Validation', () => {
   });
 });
 
-describe('Niruvi Store — Search, Filtering, and Empty State', () => {
-  it('renders main landmarks, h1 heading, skip link, and search input', () => {
+describe('Niruvi Store — Search, Filtering, Pagination, and Empty State', () => {
+  it('renders main landmarks, h1 heading, skip link, and search input only on the catalog search page', () => {
     renderStore();
     expect(screen.getByText('Skip to main content')).toBeInTheDocument();
     expect(
       screen.getByRole('heading', { level: 1, name: /Linux AppImage Software Directory/i }),
     ).toBeInTheDocument();
+
+    const searchInput = screen.getByLabelText(
+      /Search Linux AppImages by name, category, publisher, or tag/i,
+    );
+    expect(searchInput).toBeInTheDocument();
+
+    // Ensure search bar is inside the primary header and NOT inside the filtering section
+    const header = screen.getByRole('banner');
     expect(
-      screen.getByLabelText(/Search Linux AppImages by name, category, publisher, or tag/i),
+      within(header).getByLabelText(
+        /Search Linux AppImages by name, category, publisher, or tag/i,
+      ),
     ).toBeInTheDocument();
+    const filterSection = screen.getByRole('region', { name: /Application catalog filters/i });
+    expect(
+      within(filterSection).queryByLabelText(
+        /Search Linux AppImages by name, category, publisher, or tag/i,
+      ),
+    ).not.toBeInTheDocument();
+
+    // Verify developer PutinServai and contact/support emails
+    const footer = screen.getByRole('contentinfo');
+    expect(within(footer).getByText('PutinServai')).toBeInTheDocument();
+    expect(within(footer).getByRole('link', { name: 'niruvi.linux@gmail.com' })).toHaveAttribute(
+      'href',
+      'mailto:niruvi.linux@gmail.com',
+    );
+    expect(within(footer).getByRole('link', { name: 'support.niruvi@gmail.com' })).toHaveAttribute(
+      'href',
+      'mailto:support.niruvi@gmail.com',
+    );
+
+    // Navigating to SHA-256 Verifier hides the catalog search bar
+    const verifierButtons = screen.getAllByRole('button', { name: /SHA-256 Verifier|Verify/i });
+    fireEvent.click(verifierButtons[0]);
+    expect(
+      screen.queryByLabelText(/Search Linux AppImages by name, category, publisher, or tag/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it('shows 48-per-page paginated count across all 2,569+ apps on default catalog load', () => {
+    render(
+      <AuthProvider>
+        <App />
+      </AuthProvider>,
+    );
+    expect(TOTAL_CATALOG_COUNT).toBeGreaterThanOrEqual(2500);
+    expect(
+      screen.getAllByText(
+        new RegExp(`Showing 1-48 of ${TOTAL_CATALOG_COUNT.toLocaleString()} apps`, 'i'),
+      ).length,
+    ).toBeGreaterThan(0);
   });
 
   it('filters catalog by search query and updates URL query string', async () => {
@@ -108,8 +158,8 @@ describe('Niruvi Store — Search, Filtering, and Empty State', () => {
   });
 });
 
-describe('Niruvi Store — Application Detail Modal & niruvi:// Fallback', () => {
-  it('opens application details, displays niruvi:// link, fallback manual download, and SHA-256 checksum', () => {
+describe('Niruvi Store — Application Detail Modal & Direct Upstream Download', () => {
+  it('opens application details, displays direct upstream HTTPS download, niruvi:// link, and real SHA-256 checksum', () => {
     renderStore();
 
     const kdenliveButtons = screen.getAllByRole('button', {
@@ -132,10 +182,6 @@ describe('Niruvi Store — Application Detail Modal & niruvi:// Fallback', () =>
     expect(parsedSchema.name).toBe('Kdenlive');
     expect(parsedSchema.url).toBe(`${SITE_URL}/app/kdenlive`);
 
-    expect(
-      within(dialog).getByText(/Don’t have the Niruvi desktop app installed\?/i),
-    ).toBeInTheDocument();
-
     const manualDownloadLink = within(dialog).getByRole('link', {
       name: /Download Kdenlive AppImage/i,
     });
@@ -143,23 +189,6 @@ describe('Niruvi Store — Application Detail Modal & niruvi:// Fallback', () =>
     expect(manualDownloadLink).toHaveAttribute('rel', 'noopener noreferrer');
 
     expect(within(dialog).getByRole('button', { name: /Copy SHA-256/i })).toBeInTheDocument();
-
-    // Start inline AppImage download animation and cancel it
-    fireEvent.click(manualDownloadLink);
-    const cancelBtn = within(dialog).getByRole('button', { name: /Cancel Download/i });
-    expect(cancelBtn).toBeInTheDocument();
-    fireEvent.click(cancelBtn);
-    expect(within(dialog).getByText(/Download cancelled at/i)).toBeInTheDocument();
-  });
-
-  it('opens SponsorModal with razorpay.me/@putin direct link', () => {
-    renderStore();
-    const sponsorBtn = screen.getByRole('button', { name: /Donate & Support/i });
-    fireEvent.click(sponsorBtn);
-
-    const dialog = screen.getByRole('dialog');
-    const rzpLink = within(dialog).getByRole('link', { name: /Open razorpay\.me\/@putin/i });
-    expect(rzpLink).toHaveAttribute('href', 'https://razorpay.me/@putin');
   });
 });
 
@@ -185,7 +214,7 @@ describe('Niruvi Store — Legal Pages, Cookie Consent & WCAG 2.2 AA Accessibili
     expect(
       screen.getByRole('heading', { level: 1, name: 'Privacy Policy' }),
     ).toBeInTheDocument();
-    expect(screen.getAllByText(/We do not sell your personal data/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/We do not sell.*personal data/i).length).toBeGreaterThan(0);
 
     fireEvent.click(within(footer).getByRole('link', { name: /Terms & Conditions/i }));
     expect(

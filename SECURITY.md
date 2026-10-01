@@ -58,6 +58,6 @@ To maintain security hygiene across development and deployment, we adhere to the
 If you discover a security vulnerability within Niruvi Store or its protocol bridge:
 
 - **Do NOT** open a public GitHub issue.
-- Please report vulnerabilities directly via email to: **security@niruvi.store**
+- Please report vulnerabilities directly to developer **PutinServai** via email: **niruvi.linux@gmail.com** or **support.niruvi@gmail.com**
 - Include detailed steps to reproduce, affected endpoints, and proof of concept.
 - We acknowledge reports within 48 hours and coordinate responsible disclosure timelines.

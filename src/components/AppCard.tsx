@@ -1,276 +1,170 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { AppMetadata } from '../types';
+import { isGenuineSha256 } from '../utils/catalogSchema';
+import { ShieldCheck, Download, Bookmark, Cpu, HardDrive, ExternalLink } from 'lucide-react';
 import { AppIcon } from './AppIcon';
-import { sanitizeText, sanitizeUrl } from '../utils/sanitize';
-import {
-  CheckCircle2,
-  Download,
-  HardDrive,
-  Star,
-  Check,
-  ShieldCheck,
-  Users,
-  Cpu,
-  Scale,
-  Copy,
-  AlertTriangle,
-  ExternalLink,
-} from 'lucide-react';
 
 interface AppCardProps {
   app: AppMetadata;
-  isInstalled: boolean;
-  isBookmarked: boolean;
   onSelect: (app: AppMetadata) => void;
-  onInstall: (app: AppMetadata) => void;
-  onToggleBookmark: (appId: string) => void;
+  onInstall: (app: AppMetadata, e: React.MouseEvent) => void;
+  isStarred?: boolean;
+  onToggleStar?: (appId: string, e: React.MouseEvent) => void;
 }
-
-const getSourceBadge = (app: AppMetadata) => {
-  if (!app.publisher.verified) {
-    return {
-      label: 'Checksum Unverified',
-      title: 'SHA-256 hash has not been verified by the release pipeline',
-      color: 'text-amber-300',
-      isOfficial: false,
-      isUnverified: true,
-    };
-  }
-
-  const tier =
-    app.trustTier || (app.sourceType === 'Official' ? 'Official Developer' : 'Verified Community');
-  if (tier === 'Official Developer') {
-    return {
-      label: 'Official · SHA-256 Verified',
-      title: 'Official Developer Build with Verified SHA-256',
-      color: 'text-sky-300',
-      isOfficial: true,
-      isUnverified: false,
-    };
-  }
-  if (tier === 'Verified Community') {
-    return {
-      label: 'Community · SHA-256 Verified',
-      title: 'Verified Community Packaged Build',
-      color: 'text-emerald-300',
-      isOfficial: false,
-      isUnverified: false,
-    };
-  }
-  return {
-    label: 'Checksum Unverified',
-    title: 'Unverified Community Build',
-    color: 'text-amber-300',
-    isOfficial: false,
-    isUnverified: true,
-  };
-};
 
 export const AppCard: React.FC<AppCardProps> = ({
   app,
-  isInstalled,
-  isBookmarked,
   onSelect,
   onInstall,
-  onToggleBookmark,
+  isStarred = false,
+  onToggleStar,
 }) => {
-  const [copiedSha, setCopiedSha] = useState(false);
-  const sourceBadge = getSourceBadge(app);
-  const cleanName = sanitizeText(app.name, 100);
-  const cleanPublisher = sanitizeText(app.publisher.name, 80);
-  const cleanTagline = sanitizeText(app.tagline, 300);
-  const safeSourceUrl = sanitizeUrl(app.sourceUrl || app.homepageUrl);
+  const isTrulyVerified = Boolean(app.publisher.verified && isGenuineSha256(app.sha256));
+  const summaryText = (app.tagline || app.description || '').trim();
+  const displayVersion =
+    app.version && app.version !== 'latest' ? `v${app.version.replace(/^v/i, '')}` : 'latest';
 
   return (
     <article
-      id={`app-card-${app.id}`}
-      aria-label={`${cleanName} version ${app.version}`}
-      className="group relative flex flex-col bg-neutral-900/70 hover:bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded-2xl p-5 transition-all duration-150 shadow-sm hover:shadow-md"
+      aria-label={app.name}
+      className="group relative min-w-0 w-full overflow-hidden bg-neutral-900 border border-neutral-800 rounded-xl p-4 sm:p-5 hover:border-sky-500/60 hover:bg-neutral-900/90 transition-colors flex flex-col justify-between h-full"
     >
-      {/* Top row: Icon + Identity + Bookmark */}
-      <div className="flex items-start justify-between gap-3 mb-3">
+      <div className="min-w-0">
+        <div className="flex items-start justify-between gap-2.5 mb-3.5 min-w-0">
+          <button
+            type="button"
+            onClick={() => onSelect(app)}
+            aria-label={`View details for ${app.name}`}
+            className="relative shrink-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 cursor-pointer"
+          >
+            <AppIcon
+              slug={app.iconSlug || app.id}
+              name={app.name}
+              iconUrl={app.icon}
+              brandColor={app.brandColor}
+              className="w-12 h-12 rounded-xl group-hover:scale-[1.02] transition-transform duration-200"
+            />
+          </button>
+
+          <div className="flex items-center gap-1.5 flex-wrap justify-end min-w-0">
+            {onToggleStar && (
+              <button
+                type="button"
+                onClick={(e) => onToggleStar(app.id, e)}
+                aria-label={
+                  isStarred ? `Remove ${app.name} from saved` : `Save ${app.name} to library`
+                }
+                aria-pressed={isStarred}
+                title={isStarred ? 'Remove from My Library' : 'Save to My Library'}
+                className={`p-1.5 rounded-lg border transition-colors cursor-pointer shrink-0 ${
+                  isStarred
+                    ? 'bg-sky-500/15 border-sky-500/40 text-sky-400'
+                    : 'bg-neutral-800/80 border-neutral-700/80 text-neutral-400 hover:text-white hover:border-neutral-600'
+                }`}
+              >
+                <Bookmark className={`w-3.5 h-3.5 ${isStarred ? 'fill-sky-400' : ''}`} />
+              </button>
+            )}
+            <span className="px-2 py-0.5 rounded-md bg-neutral-800 border border-neutral-700/80 text-xs font-medium text-neutral-300 truncate max-w-[140px]">
+              {app.simplifiedCategory || app.category}
+            </span>
+          </div>
+        </div>
+
         <button
           type="button"
           onClick={() => onSelect(app)}
-          aria-label={`View details for ${cleanName} v${app.version}`}
-          className="flex items-start gap-3.5 min-w-0 text-left flex-1 cursor-pointer rounded-xl focus:outline-hidden"
+          aria-label={`View details for ${app.name} — ${summaryText || app.category}`}
+          className="text-left w-full min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded-lg cursor-pointer"
         >
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-neutral-800/80 border border-neutral-700/60 p-1.5 shadow-md flex-shrink-0 group-hover:scale-105 transition-transform overflow-hidden">
-            <AppIcon
-              slug={app.iconSlug}
-              iconUrl={app.icon}
-              name={cleanName}
-              brandColor={app.brandColor}
-              className="w-9 h-9 sm:w-10 sm:h-10"
-            />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <h3 className="font-bold text-base text-white tracking-tight truncate group-hover:text-sky-300 transition-colors">
-                {cleanName}
-              </h3>
-              {app.publisher.verified ? (
+          <div className="mb-2 min-w-0">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <h2 className="text-base font-semibold text-white group-hover:text-sky-400 transition-colors truncate min-w-0">
+                {app.name}
+              </h2>
+              {isTrulyVerified && (
                 <span
-                  title="Verified SHA-256 Checksum"
-                  aria-label="Verified SHA-256 Checksum"
-                  className="text-emerald-400 inline-flex items-center"
+                  title="Verified SHA-256 checksum"
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-medium text-emerald-400 shrink-0"
                 >
-                  <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
-                </span>
-              ) : (
-                <span
-                  title="Unverified Checksum"
-                  aria-label="Unverified Checksum"
-                  className="text-amber-400 inline-flex items-center"
-                >
-                  <AlertTriangle className="w-3.5 h-3.5" aria-hidden="true" />
+                  <ShieldCheck className="w-3 h-3" aria-hidden="true" />
+                  <span>Verified SHA-256</span>
                 </span>
               )}
             </div>
-            <p className="text-xs text-neutral-300 truncate mt-0.5">{cleanPublisher}</p>
+            <p className="text-xs text-neutral-400 truncate mt-0.5">{app.publisher.name}</p>
           </div>
-        </button>
 
-        {/* Bookmark star button (minimum 44x44px target size) */}
-        <button
-          type="button"
-          onClick={() => onToggleBookmark(app.id)}
-          aria-pressed={isBookmarked}
-          aria-label={isBookmarked ? `Remove ${cleanName} from bookmarks` : `Bookmark ${cleanName}`}
-          className={`min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-xl transition-colors cursor-pointer ${
-            isBookmarked
-              ? 'text-amber-400 hover:text-amber-300 bg-amber-500/10 border border-amber-500/30'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-800 border border-transparent'
-          }`}
-          title={isBookmarked ? `Remove ${cleanName} from bookmarks` : `Bookmark ${cleanName}`}
-        >
-          <Star className={`w-4 h-4 ${isBookmarked ? 'fill-amber-400' : ''}`} aria-hidden="true" />
+          {summaryText ? (
+            <p className="text-xs text-neutral-300 line-clamp-2 mb-4 leading-relaxed break-words">
+              {summaryText}
+            </p>
+          ) : (
+            <p className="text-xs text-neutral-500 italic mb-4 leading-relaxed">
+              No description provided by upstream repository.
+            </p>
+          )}
         </button>
       </div>
 
-      {/* Tagline (clickable to open detail modal) */}
-      <button
-        type="button"
-        onClick={() => onSelect(app)}
-        className="text-left text-xs text-neutral-200 line-clamp-2 mb-3 leading-relaxed flex-1 cursor-pointer hover:text-white"
-      >
-        {cleanTagline}
-      </button>
-
-      {/* Clean unboxed metadata row: Status · Category · Size · Arch */}
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-3 text-[11px] text-neutral-300">
-        {sourceBadge && (
-          <span
-            title={sourceBadge.title}
-            className={`font-semibold inline-flex items-center gap-1 ${sourceBadge.color}`}
-          >
-            {sourceBadge.isUnverified ? (
-              <AlertTriangle className="w-3 h-3" aria-hidden="true" />
-            ) : sourceBadge.isOfficial ? (
-              <ShieldCheck className="w-3 h-3" aria-hidden="true" />
-            ) : (
-              <Users className="w-3 h-3" aria-hidden="true" />
-            )}
-            <span>{sourceBadge.label}</span>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-1.5 mb-3.5 text-xs text-neutral-300 font-mono min-w-0">
+          <span className="px-2 py-0.5 rounded bg-neutral-800/90 border border-neutral-700/70 truncate max-w-[110px]">
+            {displayVersion}
           </span>
-        )}
-        <span aria-hidden="true">·</span>
-        <span>{app.category}</span>
-        <span aria-hidden="true">·</span>
-        <span className="inline-flex items-center gap-1 font-mono tabular-nums">
-          <HardDrive className="w-3 h-3 text-neutral-400" aria-hidden="true" />
-          <span>{app.size}</span>
-        </span>
-        <span aria-hidden="true">·</span>
-        <span className="inline-flex items-center gap-1 font-mono">
-          <Cpu className="w-3 h-3 text-sky-400" aria-hidden="true" />
-          <span>{app.architectures.join(', ')}</span>
-        </span>
-        {isInstalled && (
-          <>
-            <span aria-hidden="true">·</span>
-            <span className="text-emerald-300 inline-flex items-center gap-1 font-semibold">
-              <Check className="w-3 h-3" aria-hidden="true" />
-              <span>Installed</span>
+          {app.size && (
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-800/90 border border-neutral-700/70 shrink-0">
+              <HardDrive className="w-3 h-3 text-neutral-400 shrink-0" aria-hidden="true" />
+              <span>{app.size}</span>
             </span>
-          </>
-        )}
-      </div>
-
-      {/* Copyable SHA-256 Digest + Upstream Source Link */}
-      <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 mb-3 rounded-lg bg-neutral-950 border border-neutral-800 text-[11px]">
-        <div className="font-mono text-neutral-300 truncate" title={`SHA-256: ${app.sha256}`}>
-          <span className="text-neutral-400">SHA-256: </span>
-          <span className={app.publisher.verified ? 'text-emerald-400' : 'text-amber-300'}>
-            {app.sha256.slice(0, 14)}…
+          )}
+          <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-800/90 border border-neutral-700/70 truncate max-w-[140px]">
+            <Cpu className="w-3 h-3 text-sky-400 shrink-0" aria-hidden="true" />
+            <span className="truncate">{app.architectures.join(', ')}</span>
           </span>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigator.clipboard.writeText(app.sha256);
-              setCopiedSha(true);
-              setTimeout(() => setCopiedSha(false), 1800);
-            }}
-            aria-label={`Copy SHA-256 checksum for ${cleanName}`}
-            className="text-neutral-300 hover:text-white inline-flex items-center gap-1 font-medium cursor-pointer"
-            title="Copy full 64-character SHA-256 checksum"
-          >
-            {copiedSha ? (
-              <Check className="w-3 h-3 text-emerald-400" aria-hidden="true" />
-            ) : (
-              <Copy className="w-3 h-3" aria-hidden="true" />
-            )}
-            <span>{copiedSha ? 'Copied' : 'Hash'}</span>
-          </button>
-          {safeSourceUrl && (
-            <a
-              href={safeSourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Source repository for ${cleanName}`}
-              className="text-sky-400 hover:text-sky-300 inline-flex items-center gap-0.5"
-              title={`Source: ${safeSourceUrl}`}
-            >
-              <span>Source</span>
-              <ExternalLink className="w-2.5 h-2.5" aria-hidden="true" />
-            </a>
+          {app.license && (
+            <span className="px-2 py-0.5 rounded bg-neutral-800/90 border border-neutral-700/70 truncate max-w-[110px]">
+              {app.license}
+            </span>
           )}
         </div>
-      </div>
 
-      {/* Bottom actions */}
-      <div className="flex items-center justify-between gap-2 pt-3 border-t border-neutral-800 mt-auto">
-        <div className="flex items-center gap-1.5 text-xs text-neutral-300 font-mono">
-          <span>v{app.version}</span>
-          <span aria-hidden="true">·</span>
-          <span
-            className="inline-flex items-center gap-1 truncate max-w-[110px]"
-            title={`License: ${app.license}`}
-          >
-            <Scale className="w-3 h-3 text-neutral-400 flex-shrink-0" aria-hidden="true" />
-            <span className="truncate">{app.license}</span>
-          </span>
+        <div className="pt-3 border-t border-neutral-800 flex items-center justify-between gap-2 min-w-0">
+          <div className="text-[11px] text-neutral-400 font-mono truncate min-w-0">
+            {isTrulyVerified ? (
+              <span className="text-emerald-400">SHA-256: {app.sha256.slice(0, 10)}…</span>
+            ) : (
+              <span>Checksum not available</span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <a
+              href={app.downloadUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              aria-label={`Direct download ${app.name}`}
+              title="Direct HTTPS download from upstream publisher"
+              className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 transition-colors"
+            >
+              {app.downloadUrl.toLowerCase().endsWith('.appimage') ? (
+                <Download className="w-3.5 h-3.5" aria-hidden="true" />
+              ) : (
+                <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
+              )}
+            </a>
+            <button
+              type="button"
+              onClick={(e) => onInstall(app, e)}
+              aria-label={`Install ${app.name}`}
+              className="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" aria-hidden="true" />
+              <span>Download</span>
+            </button>
+          </div>
         </div>
-
-        <button
-          id={`install-btn-${app.id}`}
-          type="button"
-          onClick={() => onInstall(app)}
-          aria-label={
-            isInstalled ? `Manage ${cleanName} installation` : `Install ${cleanName} with Niruvi`
-          }
-          className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-semibold shadow-sm inline-flex items-center gap-1.5 transition-colors cursor-pointer ${
-            isInstalled
-              ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-100 border border-neutral-600'
-              : 'bg-white hover:bg-neutral-200 text-black font-bold'
-          }`}
-        >
-          <Download className="w-3.5 h-3.5" aria-hidden="true" />
-          <span>{isInstalled ? 'Manage' : `Install with Niruvi`}</span>
-        </button>
       </div>
     </article>
   );

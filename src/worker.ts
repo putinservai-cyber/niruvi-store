@@ -17,7 +17,7 @@
  */
 
 import { sanitizeText, sanitizeUrl, sanitizeUsername } from './utils/sanitize';
-import { APPS_CATALOG } from './data/apps';
+import { APPS_CATALOG, TOTAL_CATALOG_COUNT } from './data/apps';
 import { AppMetadata } from './types';
 import { isGenuineSha256 } from './utils/catalogSchema';
 import {
@@ -25,10 +25,57 @@ import {
   RawAppImageHubItem,
   GitHubReleaseResponse,
   normalizeAppImageHubItem,
+  parseGitHubNextPageUrl,
   extractVersionHistoryFromReleases,
   buildAppMetadataFromNormalized,
   mapToSimplifiedCategory,
 } from './utils/appimagehub';
+
+let cachedFullStaticCatalog: AppMetadata[] | null = null;
+
+async function getFullStaticCatalog(env?: Env): Promise<AppMetadata[]> {
+  if (cachedFullStaticCatalog && cachedFullStaticCatalog.length > 0) {
+    return cachedFullStaticCatalog;
+  }
+
+  // 1. Cloudflare Workers static asset binding
+  if (env?.ASSETS && typeof env.ASSETS.fetch === 'function') {
+    try {
+      const res = await env.ASSETS.fetch(new Request('https://niruvi.store/catalog.json'));
+      if (res.ok) {
+        const parsed = await res.json();
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          cachedFullStaticCatalog = parsed as AppMetadata[];
+          return cachedFullStaticCatalog;
+        }
+      }
+    } catch {
+      // Fallback below
+    }
+  }
+
+  // 2. Node / Vitest local runtime fallback
+  if (typeof process !== 'undefined' && process.versions?.node) {
+    try {
+      const fsMod = 'node:' + 'fs';
+      const pathMod = 'node:' + 'path';
+      const fs = await import(/* @vite-ignore */ fsMod);
+      const path = await import(/* @vite-ignore */ pathMod);
+      const p = path.join(process.cwd(), 'public', 'catalog.json');
+      if (fs.existsSync(p)) {
+        const parsed = JSON.parse(fs.readFileSync(p, 'utf-8'));
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          cachedFullStaticCatalog = parsed as AppMetadata[];
+          return cachedFullStaticCatalog;
+        }
+      }
+    } catch {
+      // Fallback below
+    }
+  }
+
+  return APPS_CATALOG;
+}
 
 export interface D1PreparedStatement {
   bind(...values: any[]): D1PreparedStatement;
@@ -234,6 +281,52 @@ async function ensureD1Tables(db?: D1Database): Promise<void> {
           release_notes TEXT,
           version_history_json TEXT NOT NULL DEFAULT '[]',
           source_origin TEXT NOT NULL DEFAULT 'appimagehub',
+          updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )`
+      )
+      .run();
+
+    await db
+      .prepare(
+        `CREATE TABLE IF NOT EXISTS catalog_releases (
+          id TEXT PRIMARY KEY,
+          app_id TEXT NOT NULL,
+          version TEXT NOT NULL,
+          tag_name TEXT NOT NULL,
+          published_at TEXT NOT NULL,
+          release_notes TEXT,
+          assets_json TEXT NOT NULL DEFAULT '[]',
+          sha256 TEXT NOT NULL DEFAULT '',
+          verified INTEGER NOT NULL DEFAULT 0,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )`
+      )
+      .run();
+
+    await db
+      .prepare(
+        `CREATE TABLE IF NOT EXISTS catalog_assets (
+          id TEXT PRIMARY KEY,
+          release_id TEXT NOT NULL,
+          app_id TEXT NOT NULL,
+          name TEXT NOT NULL,
+          architecture TEXT NOT NULL,
+          download_url TEXT NOT NULL,
+          size_bytes INTEGER NOT NULL DEFAULT 0,
+          size_formatted TEXT NOT NULL DEFAULT '',
+          sha256 TEXT NOT NULL DEFAULT '',
+          verified INTEGER NOT NULL DEFAULT 0,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )`
+      )
+      .run();
+
+    await db
+      .prepare(
+        `CREATE TABLE IF NOT EXISTS catalog_categories (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL UNIQUE,
+          app_count INTEGER NOT NULL DEFAULT 0,
           updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         )`
       )
@@ -569,8 +662,10 @@ export default {
       });
     }
 
-    const secret = env?.JWT_SECRET;
-    if (!secret) {
+    const isPublicCatalogRead =
+      method === 'GET' && (path === '/api/catalog' || path.startsWith('/api/catalog/'));
+    const secret = env?.JWT_SECRET || '';
+    if (!secret && !isPublicCatalogRead) {
       return jsonResponse(
         {
           error: 'JWT_SECRET is not configured. Run `wrangler secret put JWT_SECRET` to configure it.',
@@ -1055,8 +1150,40 @@ export default {
         );
       }
 
-      // 12. GET /api/catalog/:id — Single app detail + version history (with on-demand GitHub Releases cache)
-      if (path.startsWith('/api/catalog/') && path !== '/api/catalog/sync' && method === 'GET') {
+      // 12. GET /api/catalog/sync or /api/catalog/sync/status — Check GitHub & AppImageHub sync status
+      if (
+        (path === '/api/catalog/sync' || path === '/api/catalog/sync/status') &&
+        method === 'GET'
+      ) {
+        let nextOffset = 0;
+        if (env?.NIRUVI_AUTH_KV) {
+          try {
+            const saved = await env.NIRUVI_AUTH_KV.get('catalog_sync:offset');
+            if (saved) nextOffset = parseInt(saved, 10) || 0;
+          } catch {
+            // Default to 0
+          }
+        }
+        return jsonResponse(
+          {
+            status: 'ok',
+            synced: true,
+            totalCatalogCount: TOTAL_CATALOG_COUNT,
+            nextOffset,
+            recentLogs: memorySyncLogs.slice(-10),
+          },
+          200,
+          origin
+        );
+      }
+
+      // 12b. GET /api/catalog/:id — Single app detail + version history (with on-demand GitHub Releases cache)
+      if (
+        path.startsWith('/api/catalog/') &&
+        path !== '/api/catalog/sync' &&
+        path !== '/api/catalog/sync/status' &&
+        method === 'GET'
+      ) {
         const appId = decodeURIComponent(path.slice('/api/catalog/'.length)).trim().toLowerCase();
         const allApps = await getMergedCatalogApps(env);
         const found = allApps.find((a) => a.id.toLowerCase() === appId);
@@ -1318,7 +1445,8 @@ export default {
 export async function fetchCachedGitHubReleases(
   env: Env,
   repoSlug: string,
-  fetchImpl: typeof fetch = fetch
+  fetchImpl: typeof fetch = fetch,
+  maxPages = 3
 ): Promise<GitHubReleaseResponse[]> {
   const cleanRepo = repoSlug.replace(/^\/+|\/+$/g, '');
   const cacheKey = `gh_releases:${cleanRepo.toLowerCase()}`;
@@ -1343,21 +1471,51 @@ export async function fetchCachedGitHubReleases(
     headers.Authorization = `Bearer ${env.GITHUB_TOKEN}`;
   }
 
-  const apiUrl = `https://api.github.com/repos/${cleanRepo}/releases?per_page=8`;
-  const res = await fetchImpl(apiUrl, { headers });
+  const allReleases: GitHubReleaseResponse[] = [];
+  let nextUrl: string | null = `https://api.github.com/repos/${cleanRepo}/releases?per_page=100`;
+  let pageCount = 0;
 
-  const remainingHeader = res.headers?.get?.('X-RateLimit-Remaining');
-  if (res.status === 403 || res.status === 429 || remainingHeader === '0') {
-    throw new Error(`GitHub API rate limit reached for ${cleanRepo} (status ${res.status})`);
-  }
-  if (!res.ok) {
-    throw new Error(`GitHub Releases API returned ${res.status} for ${cleanRepo}`);
+  while (nextUrl && pageCount < maxPages) {
+    pageCount += 1;
+    const res = await fetchImpl(nextUrl, { headers });
+
+    const remainingHeader = res.headers?.get?.('X-RateLimit-Remaining');
+    const resetHeader = res.headers?.get?.('X-RateLimit-Reset');
+    if (res.status === 403 || res.status === 429 || remainingHeader === '0') {
+      if (allReleases.length > 0) {
+        break;
+      }
+      throw new Error(
+        `GitHub API rate limit reached for ${cleanRepo} (status ${res.status}${resetHeader ? `, reset ${resetHeader}` : ''})`
+      );
+    }
+    if (!res.ok) {
+      if (allReleases.length > 0) {
+        break;
+      }
+      throw new Error(`GitHub Releases API returned ${res.status} for ${cleanRepo}`);
+    }
+
+    const pageData = (await res.json()) as GitHubReleaseResponse[];
+    if (Array.isArray(pageData)) {
+      allReleases.push(...pageData);
+    }
+
+    // Stop paging if rate limit remaining is low
+    if (remainingHeader !== null && remainingHeader !== undefined) {
+      const rem = parseInt(remainingHeader, 10);
+      if (Number.isFinite(rem) && rem < 10) {
+        break;
+      }
+    }
+
+    const linkHeader = res.headers?.get?.('Link') || res.headers?.get?.('link');
+    nextUrl = parseGitHubNextPageUrl(linkHeader);
   }
 
-  const releases = (await res.json()) as GitHubReleaseResponse[];
-  if (env?.NIRUVI_AUTH_KV && Array.isArray(releases)) {
+  if (env?.NIRUVI_AUTH_KV && allReleases.length > 0) {
     try {
-      await env.NIRUVI_AUTH_KV.put(cacheKey, JSON.stringify(releases), {
+      await env.NIRUVI_AUTH_KV.put(cacheKey, JSON.stringify(allReleases), {
         expirationTtl: 6 * 3600,
       });
     } catch {
@@ -1365,7 +1523,7 @@ export async function fetchCachedGitHubReleases(
     }
   }
 
-  return Array.isArray(releases) ? releases : [];
+  return allReleases;
 }
 
 /**
@@ -1376,6 +1534,7 @@ export async function fetchCachedGitHubReleases(
 export async function syncAppImageHubCatalogBatch(
   env: Env,
   options: {
+    offset?: number;
     maxItems?: number;
     maxGithubEnrich?: number;
     rawFeedItemsOverride?: RawAppImageHubItem[];
@@ -1383,6 +1542,9 @@ export async function syncAppImageHubCatalogBatch(
   } = {}
 ): Promise<{
   runId: string;
+  totalFeedCount: number;
+  offset: number;
+  nextOffset: number;
   processed: number;
   enriched: number;
   verifiedCount: number;
@@ -1391,8 +1553,8 @@ export async function syncAppImageHubCatalogBatch(
 }> {
   const runId = `sync_${crypto.randomUUID()}`;
   const fetchFn = options.fetchImpl || fetch;
-  const maxItems = options.maxItems ?? 100;
-  const maxGithubEnrich = options.maxGithubEnrich ?? 8;
+  const maxItems = options.maxItems ?? 150;
+  const maxGithubEnrich = options.maxGithubEnrich ?? 10;
 
   await ensureD1Tables(env?.DB);
 
@@ -1410,17 +1572,43 @@ export async function syncAppImageHubCatalogBatch(
     rawItems = Array.isArray(payload.items) ? payload.items : [];
   }
 
+  let startOffset = options.offset ?? 0;
+  if (options.offset === undefined && !options.rawFeedItemsOverride && env?.NIRUVI_AUTH_KV) {
+    try {
+      const savedOffset = await env.NIRUVI_AUTH_KV.get('catalog_sync:offset');
+      if (savedOffset) {
+        const parsedOffset = parseInt(savedOffset, 10);
+        if (Number.isFinite(parsedOffset) && parsedOffset >= 0 && parsedOffset < rawItems.length) {
+          startOffset = parsedOffset;
+        }
+      }
+    } catch {
+      // Default to 0
+    }
+  }
+
   let processed = 0;
   let enriched = 0;
   let verifiedCount = 0;
   let failedCount = 0;
   const errors: Array<{ appId: string; message: string }> = [];
+  const seenBatchIds = new Set<string>();
+  const batchSlice = rawItems.slice(startOffset, startOffset + maxItems);
 
-  for (const rawItem of rawItems.slice(0, maxItems)) {
+  for (let i = 0; i < batchSlice.length; i++) {
+    const rawItem = batchSlice[i];
     const candidateId = typeof rawItem?.name === 'string' ? rawItem.name : 'unknown';
     try {
-      const normalized = normalizeAppImageHubItem(rawItem);
+      let normalized = normalizeAppImageHubItem(rawItem);
       if (!normalized) continue;
+
+      if (seenBatchIds.has(normalized.id)) {
+        normalized = {
+          ...normalized,
+          id: `${normalized.id}-${startOffset + i + 1}`.slice(0, 64),
+        };
+      }
+      seenBatchIds.add(normalized.id);
 
       let releaseInfo: Awaited<ReturnType<typeof extractVersionHistoryFromReleases>> = null;
       if (normalized.github_repo && enriched < maxGithubEnrich) {
@@ -1447,7 +1635,7 @@ export async function syncAppImageHubCatalogBatch(
         verifiedCount += 1;
       }
 
-      await upsertCatalogAppToD1(env, appMeta);
+      await upsertCatalogAppToD1(env, appMeta, releaseInfo);
       processed += 1;
     } catch (err: any) {
       failedCount += 1;
@@ -1457,16 +1645,30 @@ export async function syncAppImageHubCatalogBatch(
     }
   }
 
+  const nextOffset =
+    rawItems.length > 0 && startOffset + maxItems < rawItems.length ? startOffset + maxItems : 0;
+
+  if (!options.rawFeedItemsOverride && env?.NIRUVI_AUTH_KV) {
+    try {
+      await env.NIRUVI_AUTH_KV.put('catalog_sync:offset', String(nextOffset));
+    } catch {
+      // Ignore KV cursor write failure
+    }
+  }
+
   await recordSyncLog(
     env,
     runId,
     null,
     'completed',
-    `Processed ${processed} apps (${enriched} GitHub-enriched, ${verifiedCount} verified, ${failedCount} failed)`
+    `Processed ${processed} apps from feed (${rawItems.length} total, offset ${startOffset}->${nextOffset}, ${enriched} GitHub-enriched, ${verifiedCount} verified, ${failedCount} failed)`
   );
 
   return {
     runId,
+    totalFeedCount: rawItems.length,
+    offset: startOffset,
+    nextOffset,
     processed,
     enriched,
     verifiedCount,
@@ -1500,9 +1702,14 @@ async function recordSyncLog(
   memorySyncLogs.push({ id, runId, appId, status, message, createdAt });
 }
 
-async function upsertCatalogAppToD1(env: Env, app: AppMetadata): Promise<void> {
+async function upsertCatalogAppToD1(
+  env: Env,
+  app: AppMetadata,
+  releaseInfo?: Awaited<ReturnType<typeof extractVersionHistoryFromReleases>>
+): Promise<void> {
   const isVerified = Boolean(app.publisher.verified && isGenuineSha256(app.sha256));
   const simplified = app.simplifiedCategory || mapToSimplifiedCategory(app.category);
+  const nowIso = new Date().toISOString();
 
   if (env?.DB) {
     try {
@@ -1553,7 +1760,7 @@ async function upsertCatalogAppToD1(env: Env, app: AppMetadata): Promise<void> {
           app.size,
           JSON.stringify(app.architectures || ['x86_64']),
           app.license,
-          app.licenseCategory,
+          app.licenseCategory || 'Open Source',
           app.publisher.name,
           app.publisher.website || null,
           app.publisher.github || null,
@@ -1571,9 +1778,84 @@ async function upsertCatalogAppToD1(env: Env, app: AppMetadata): Promise<void> {
           app.rating || 0,
           app.changelog?.[0] || null,
           JSON.stringify(app.versionHistory || []),
-          new Date().toISOString()
+          nowIso
         )
         .run();
+
+      // Upsert category entry in catalog_categories
+      const categoryId = simplified.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      await env.DB.prepare(
+        `INSERT INTO catalog_categories (id, name, app_count, updated_at)
+         VALUES (?, ?, 1, ?)
+         ON CONFLICT(id) DO UPDATE SET
+           updated_at = excluded.updated_at`
+      )
+        .bind(categoryId, simplified, nowIso)
+        .run();
+
+      // Upsert releases & assets into catalog_releases and catalog_assets
+      const versions = releaseInfo?.versionHistory || app.versionHistory || [];
+      for (const ver of versions) {
+        const releaseId = `${app.id}:${ver.tagName || ver.version}`;
+        const primaryVerifiedAsset = (ver.assets || []).find(
+          (a) => a.verified && isGenuineSha256(a.sha256)
+        );
+        const verVerified = Boolean(primaryVerifiedAsset);
+        await env.DB.prepare(
+          `INSERT INTO catalog_releases (
+            id, app_id, version, tag_name, published_at, release_notes, assets_json, sha256, verified, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET
+            published_at = excluded.published_at,
+            release_notes = excluded.release_notes,
+            assets_json = excluded.assets_json,
+            sha256 = excluded.sha256,
+            verified = excluded.verified`
+        )
+          .bind(
+            releaseId,
+            app.id,
+            ver.version,
+            ver.tagName || ver.version,
+            ver.releaseDate || app.releaseDate || nowIso,
+            ver.releaseNotes || null,
+            JSON.stringify(ver.assets || []),
+            primaryVerifiedAsset ? primaryVerifiedAsset.sha256 : '',
+            verVerified ? 1 : 0,
+            nowIso
+          )
+          .run();
+
+        for (const asset of ver.assets || []) {
+          const assetId = `${releaseId}:${asset.architecture}:${asset.name}`;
+          const assetVerified = Boolean(asset.verified && isGenuineSha256(asset.sha256));
+          await env.DB.prepare(
+            `INSERT INTO catalog_assets (
+              id, release_id, app_id, name, architecture, download_url, size_bytes, size_formatted, sha256, verified, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+              download_url = excluded.download_url,
+              size_bytes = excluded.size_bytes,
+              size_formatted = excluded.size_formatted,
+              sha256 = excluded.sha256,
+              verified = excluded.verified`
+          )
+            .bind(
+              assetId,
+              releaseId,
+              app.id,
+              asset.name,
+              asset.architecture,
+              asset.downloadUrl,
+              asset.sizeBytes || 0,
+              asset.size || '',
+              assetVerified && asset.sha256 ? asset.sha256 : '',
+              assetVerified ? 1 : 0,
+              nowIso
+            )
+            .run();
+        }
+      }
       return;
     } catch {
       // Fallback to in-memory catalog store
@@ -1593,6 +1875,19 @@ async function upsertCatalogAppToD1(env: Env, app: AppMetadata): Promise<void> {
 
 async function getMergedCatalogApps(env: Env): Promise<AppMetadata[]> {
   const merged = new Map<string, AppMetadata>();
+  const fullStaticCatalog = await getFullStaticCatalog(env);
+
+  for (const app of fullStaticCatalog) {
+    const isVerified = Boolean(app.publisher.verified && isGenuineSha256(app.sha256));
+    merged.set(app.id, {
+      ...app,
+      simplifiedCategory: app.simplifiedCategory || mapToSimplifiedCategory(app.category),
+      publisher: {
+        ...app.publisher,
+        verified: isVerified,
+      },
+    });
+  }
 
   for (const app of APPS_CATALOG) {
     const isVerified = Boolean(app.publisher.verified && isGenuineSha256(app.sha256));
@@ -1614,7 +1909,7 @@ async function getMergedCatalogApps(env: Env): Promise<AppMetadata[]> {
     try {
       await ensureD1Tables(env.DB);
       const { results } = await env.DB.prepare(
-        `SELECT * FROM catalog_apps ORDER BY verified DESC, release_date DESC LIMIT 2000`
+        `SELECT * FROM catalog_apps ORDER BY verified DESC, release_date DESC LIMIT 5000`
       ).all<Record<string, any>>();
 
       for (const row of results || []) {

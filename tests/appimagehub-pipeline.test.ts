@@ -1,7 +1,16 @@
+import fs from 'fs';
+import path from 'path';
 import { describe, it, expect } from 'vitest';
-import worker, { Env, KVNamespace, syncAppImageHubCatalogBatch } from '../src/worker';
+import worker, {
+  Env,
+  KVNamespace,
+  syncAppImageHubCatalogBatch,
+  fetchCachedGitHubReleases,
+} from '../src/worker';
+import { TOTAL_CATALOG_COUNT, APPIMAGEHUB_FEED_COUNT } from '../src/data/apps';
 import {
   normalizeAppImageHubItem,
+  normalizeAllAppImageHubItems,
   mapToSimplifiedCategory,
   extractVersionHistoryFromReleases,
   buildAppMetadataFromNormalized,
@@ -265,5 +274,63 @@ describe('Worker Catalog Pipeline, Cron Batch Sync & API Routes', () => {
       env
     );
     expect(subRes.status).toBe(201);
+  });
+
+  it('imports all 2,569 AppImageHub feed entries without collisions, follows GitHub Link pagination, and paginates 48/page on /api/catalog', async () => {
+    expect(APPIMAGEHUB_FEED_COUNT).toBeGreaterThanOrEqual(2500);
+    expect(TOTAL_CATALOG_COUNT).toBe(APPIMAGEHUB_FEED_COUNT);
+
+    // Verify duplicate app names with different authors disambiguate instead of dropping
+    const dupes = normalizeAllAppImageHubItems([
+      { name: 'Iris', authors: [{ name: 'author-one' }] },
+      { name: 'iris', authors: [{ name: 'author-two' }] },
+    ]);
+    expect(dupes.length).toBe(2);
+    expect(dupes[0].id).not.toBe(dupes[1].id);
+
+    // Verify GitHub Releases pagination follows Link rel="next" with per_page=100
+    const env = createEnv();
+    const calledUrls: string[] = [];
+    const paginatedFetch = (async (input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : input.toString();
+      calledUrls.push(url);
+      if (url.includes('page=2')) {
+        return new Response(
+          JSON.stringify([{ tag_name: 'v1.0.0', published_at: '2025-01-01T00:00:00Z', assets: [] }]),
+          { status: 200, headers: { 'X-RateLimit-Remaining': '4998' } }
+        );
+      }
+      return new Response(
+        JSON.stringify([{ tag_name: 'v2.0.0', published_at: '2026-01-01T00:00:00Z', assets: [] }]),
+        {
+          status: 200,
+          headers: {
+            Link: '<https://api.github.com/repos/owner/repo/releases?per_page=100&page=2>; rel="next"',
+            'X-RateLimit-Remaining': '4999',
+          },
+        }
+      );
+    }) as unknown as typeof fetch;
+
+    const releases = await fetchCachedGitHubReleases(env, 'owner/repo', paginatedFetch);
+    expect(calledUrls[0]).toContain('per_page=100');
+    expect(calledUrls.length).toBe(2);
+    expect(releases.length).toBe(2);
+
+    // Verify server-side 48/page pagination across all 2,569 apps
+    const p1Res = await worker.fetch(
+      new Request('https://niruvi.store/api/catalog?page=1&limit=48'),
+      env
+    );
+    const p1 = (await p1Res.json()) as { items: any[]; total: number; totalPages: number };
+    expect(p1.items.length).toBe(48);
+    expect(p1.total).toBeGreaterThanOrEqual(2569);
+    expect(p1.totalPages).toBeGreaterThanOrEqual(54);
+
+    // Verify sitemap.xml contains one URL per app
+    const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml');
+    const sitemapContent = fs.readFileSync(sitemapPath, 'utf-8');
+    const appUrlCount = (sitemapContent.match(/\/app\//g) || []).length;
+    expect(appUrlCount).toBe(TOTAL_CATALOG_COUNT);
   });
 });

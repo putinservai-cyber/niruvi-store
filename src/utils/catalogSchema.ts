@@ -56,15 +56,15 @@ export const ScreenshotSchema = z.object({
 export const CatalogAppSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
-  tagline: z.string().min(1),
-  description: z.string().min(1),
+  tagline: z.string().default(''),
+  description: z.string().default(''),
   category: z.string().min(1),
   simplifiedCategory: z.string().optional(),
   version: z.string().min(1),
   releaseDate: z.string(),
   size: z.string(),
   architectures: z.array(z.enum(['x86_64', 'aarch64', 'armhf'])).min(1),
-  license: z.string().min(1),
+  license: z.string().default(''),
   licenseCategory: z.enum(['Open Source', 'Permissive', 'Proprietary']).optional(),
   publisher: z.object({
     name: z.string().min(1),

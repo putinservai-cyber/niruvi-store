@@ -1,5 +1,5 @@
 /**
- * Central site URL and metadata configuration.
+ * Central site URL, developer, and contact metadata configuration.
  * Uses VITE_SITE_URL when provided at build time, falling back to the
  * live Cloudflare Workers production URL.
  */
@@ -18,6 +18,9 @@ const withProtocol = /^https?:\/\//i.test(rawSiteUrl) ? rawSiteUrl : `https://${
 
 export const SITE_URL = withProtocol.replace(/\/+$/, '');
 export const SITE_NAME = 'Niruvi Store';
+export const DEVELOPER_NAME = 'PutinServai';
+export const CONTACT_EMAIL = 'niruvi.linux@gmail.com';
+export const SUPPORT_EMAIL = 'support.niruvi@gmail.com';
 export const DEFAULT_TITLE = 'Niruvi Store — Verified Linux AppImage Marketplace';
 export const DEFAULT_DESCRIPTION =
   'Discover standalone Linux AppImage packages with cryptographic SHA-256 verification, upstream source transparency, and one-click niruvi:// desktop installation.';

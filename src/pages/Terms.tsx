@@ -1,5 +1,6 @@
 import React from 'react';
 import { Scale, ArrowLeft, ShieldAlert, Terminal } from 'lucide-react';
+import { DEVELOPER_NAME, CONTACT_EMAIL, SUPPORT_EMAIL } from '../config/site';
 
 interface TermsPageProps {
   onBackToStore: () => void;
@@ -19,21 +20,8 @@ export const Terms: React.FC<TermsPageProps> = ({ onBackToStore }) => {
         </button>
 
         <span className="text-xs font-mono text-neutral-400">
-          Last Updated: [LAST UPDATED DATE]
+          Last Updated: October 1, 2026
         </span>
-      </div>
-
-      <div
-        role="note"
-        aria-label="Legal template notice"
-        className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs leading-relaxed"
-      >
-        <strong>Legal Template Notice:</strong> These Terms &amp; Conditions are a template tailored
-        to Niruvi Store. Replace <code className="font-mono">[OWNER NAME]</code>,{' '}
-        <code className="font-mono">[CONTACT EMAIL]</code>,{' '}
-        <code className="font-mono">[COUNTRY/JURISDICTION]</code>, and{' '}
-        <code className="font-mono">[LAST UPDATED DATE]</code> and consult a qualified lawyer in
-        your jurisdiction.
       </div>
 
       <header className="space-y-3 border-b border-neutral-800 pb-6">
@@ -45,21 +33,21 @@ export const Terms: React.FC<TermsPageProps> = ({ onBackToStore }) => {
           Terms &amp; Conditions
         </h1>
         <p className="text-sm text-neutral-300 leading-relaxed">
-          Welcome to Niruvi Store, operated by <strong>[OWNER NAME]</strong>. By accessing this
-          static directory or using <code className="font-mono">niruvi://</code> installation links,
-          you agree to these Terms &amp; Conditions.
+          Welcome to Niruvi Store, developed and operated by <strong>{DEVELOPER_NAME}</strong>. By
+          accessing this directory or using <code className="font-mono">niruvi://</code>{' '}
+          installation links, you agree to these Terms &amp; Conditions.
         </p>
       </header>
 
       <section aria-labelledby="terms-nature" className="space-y-3">
         <h2 id="terms-nature" className="text-xl font-bold text-white">
-          1. Static Catalog Directory &amp; Third-Party Software Licenses
+          1. Catalog Directory &amp; Third-Party Software Licenses
         </h2>
         <p className="text-sm text-neutral-300 leading-relaxed">
-          Niruvi Store is a curated catalog index of standalone Linux <code className="font-mono">.AppImage</code>{' '}
-          packages. We do not host or modify third-party binary executables; all downloads are
-          fetched directly from upstream publisher repositories (such as GitHub Releases or official
-          project mirrors).
+          Niruvi Store is a curated catalog index of standalone Linux{' '}
+          <code className="font-mono">.AppImage</code> packages. We do not host or modify
+          third-party binary executables; all downloads are fetched directly from upstream publisher
+          repositories (such as GitHub Releases or official project mirrors).
         </p>
         <p className="text-sm text-neutral-300 leading-relaxed">
           Each listed application is governed by its own upstream license (for example, GPL-3.0,
@@ -79,7 +67,7 @@ export const Terms: React.FC<TermsPageProps> = ({ onBackToStore }) => {
           downloaded file executable (<code className="font-mono">chmod +x</code>) or launching it,
           you are responsible for verifying its cryptographic <strong>SHA-256 checksum</strong>{' '}
           against the upstream release digest using <code className="font-mono">sha256sum --check</code>{' '}
-          or the Niruvi desktop verifier.
+          or the Niruvi SHA-256 Verifier.
         </p>
       </section>
 
@@ -95,11 +83,10 @@ export const Terms: React.FC<TermsPageProps> = ({ onBackToStore }) => {
           OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, SECURITY, OR NON-INFRINGEMENT.
         </p>
         <p className="text-sm text-neutral-300 leading-relaxed">
-          To the maximum extent permitted by applicable law in <strong>[COUNTRY/JURISDICTION]</strong>,{' '}
-          <strong>[OWNER NAME]</strong> and Niruvi Store contributors shall not be liable for any
-          direct, indirect, incidental, consequential, or special damages, data loss, or system
-          damage arising out of your download, installation, or execution of any third-party
-          software indexed in this catalog.
+          To the maximum extent permitted by applicable law, <strong>{DEVELOPER_NAME}</strong> and
+          Niruvi Store contributors shall not be liable for any direct, indirect, incidental,
+          consequential, or special damages, data loss, or system damage arising out of your
+          download, installation, or execution of any third-party software indexed in this catalog.
         </p>
       </section>
 
@@ -118,16 +105,23 @@ export const Terms: React.FC<TermsPageProps> = ({ onBackToStore }) => {
 
       <section aria-labelledby="terms-law" className="space-y-2 border-t border-neutral-800 pt-6">
         <h2 id="terms-law" className="text-xl font-bold text-white">
-          5. Governing Law &amp; Contact
+          5. Contact &amp; Support
         </h2>
         <p className="text-sm text-neutral-300 leading-relaxed">
-          These Terms are governed by the laws of <strong>[COUNTRY/JURISDICTION]</strong>. Questions
-          or takedown requests may be sent to <strong>[OWNER NAME]</strong> at{' '}
+          Questions, catalog corrections, or takedown requests may be sent to{' '}
+          <strong>{DEVELOPER_NAME}</strong> at{' '}
           <a
-            href="mailto:[CONTACT EMAIL]"
+            href={`mailto:${CONTACT_EMAIL}`}
             className="underline text-sky-400 hover:text-sky-300 font-mono"
           >
-            [CONTACT EMAIL]
+            {CONTACT_EMAIL}
+          </a>{' '}
+          or{' '}
+          <a
+            href={`mailto:${SUPPORT_EMAIL}`}
+            className="underline text-emerald-400 hover:text-emerald-300 font-mono"
+          >
+            {SUPPORT_EMAIL}
           </a>
           .
         </p>

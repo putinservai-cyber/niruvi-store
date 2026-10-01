@@ -14,11 +14,18 @@ node_modules/
 /.pnp
 .pnp.js
 
-# Production Build Artifacts
+# Production & Generated Build Artifacts
 dist/
 dist-ssr/
 *.local
 feed.json
+public/feed.json
+catalog.json
+public/catalog.json
+appimagehub-feed.json
+catalog/appimagehub-feed.json
+sitemap.xml
+public/sitemap.xml
 
 # Logs & Diagnostics
 *.log
