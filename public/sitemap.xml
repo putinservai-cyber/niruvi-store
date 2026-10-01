@@ -1,322 +1,322 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/</loc>
+    <loc>niruvi-store.runs-on.dev/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/verifier</loc>
+    <loc>niruvi-store.runs-on.dev/verifier</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/submit</loc>
+    <loc>niruvi-store.runs-on.dev/submit</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/library</loc>
+    <loc>niruvi-store.runs-on.dev/library</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/privacy</loc>
+    <loc>niruvi-store.runs-on.dev/privacy</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/terms</loc>
+    <loc>niruvi-store.runs-on.dev/terms</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/cookies</loc>
+    <loc>niruvi-store.runs-on.dev/cookies</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/refunds</loc>
+    <loc>niruvi-store.runs-on.dev/refunds</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/blender</loc>
+    <loc>niruvi-store.runs-on.dev/app/blender</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/keepassxc</loc>
+    <loc>niruvi-store.runs-on.dev/app/keepassxc</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/krita</loc>
+    <loc>niruvi-store.runs-on.dev/app/krita</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/obs-studio</loc>
+    <loc>niruvi-store.runs-on.dev/app/obs-studio</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/vscodium</loc>
+    <loc>niruvi-store.runs-on.dev/app/vscodium</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/audacity</loc>
+    <loc>niruvi-store.runs-on.dev/app/audacity</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/etcher</loc>
+    <loc>niruvi-store.runs-on.dev/app/etcher</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/freecad</loc>
+    <loc>niruvi-store.runs-on.dev/app/freecad</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/freetube</loc>
+    <loc>niruvi-store.runs-on.dev/app/freetube</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/gimp</loc>
+    <loc>niruvi-store.runs-on.dev/app/gimp</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/handbrake</loc>
+    <loc>niruvi-store.runs-on.dev/app/handbrake</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/inkscape</loc>
+    <loc>niruvi-store.runs-on.dev/app/inkscape</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/joplin</loc>
+    <loc>niruvi-store.runs-on.dev/app/joplin</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/kdenlive</loc>
+    <loc>niruvi-store.runs-on.dev/app/kdenlive</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/supertuxkart</loc>
+    <loc>niruvi-store.runs-on.dev/app/supertuxkart</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/appimage-recipes</loc>
+    <loc>niruvi-store.runs-on.dev/app/appimage-recipes</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/appimagelauncher</loc>
+    <loc>niruvi-store.runs-on.dev/app/appimagelauncher</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/appimageupdater</loc>
+    <loc>niruvi-store.runs-on.dev/app/appimageupdater</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/arch-deployer</loc>
+    <loc>niruvi-store.runs-on.dev/app/arch-deployer</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/ardour</loc>
+    <loc>niruvi-store.runs-on.dev/app/ardour</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/auto-wall</loc>
+    <loc>niruvi-store.runs-on.dev/app/auto-wall</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/blender-lts</loc>
+    <loc>niruvi-store.runs-on.dev/app/blender-lts</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/cemu</loc>
+    <loc>niruvi-store.runs-on.dev/app/cemu</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/digikam</loc>
+    <loc>niruvi-store.runs-on.dev/app/digikam</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/dolphin-emu</loc>
+    <loc>niruvi-store.runs-on.dev/app/dolphin-emu</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/element</loc>
+    <loc>niruvi-store.runs-on.dev/app/element</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/flare</loc>
+    <loc>niruvi-store.runs-on.dev/app/flare</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/godot</loc>
+    <loc>niruvi-store.runs-on.dev/app/godot</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/gwenview</loc>
+    <loc>niruvi-store.runs-on.dev/app/gwenview</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/kate</loc>
+    <loc>niruvi-store.runs-on.dev/app/kate</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/kdevelop</loc>
+    <loc>niruvi-store.runs-on.dev/app/kdevelop</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/kicad</loc>
+    <loc>niruvi-store.runs-on.dev/app/kicad</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/konsole</loc>
+    <loc>niruvi-store.runs-on.dev/app/konsole</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/ktube</loc>
+    <loc>niruvi-store.runs-on.dev/app/ktube</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/libreoffice</loc>
+    <loc>niruvi-store.runs-on.dev/app/libreoffice</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/portable-linux-apps</loc>
+    <loc>niruvi-store.runs-on.dev/app/portable-linux-apps</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/lmms</loc>
+    <loc>niruvi-store.runs-on.dev/app/lmms</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/musescore</loc>
+    <loc>niruvi-store.runs-on.dev/app/musescore</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/obsidian</loc>
+    <loc>niruvi-store.runs-on.dev/app/obsidian</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/okular</loc>
+    <loc>niruvi-store.runs-on.dev/app/okular</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/openshot</loc>
+    <loc>niruvi-store.runs-on.dev/app/openshot</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/pcsx2</loc>
+    <loc>niruvi-store.runs-on.dev/app/pcsx2</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/peazip</loc>
+    <loc>niruvi-store.runs-on.dev/app/peazip</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/pho</loc>
+    <loc>niruvi-store.runs-on.dev/app/pho</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/phoenix-firestorm</loc>
+    <loc>niruvi-store.runs-on.dev/app/phoenix-firestorm</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/ppsspp</loc>
+    <loc>niruvi-store.runs-on.dev/app/ppsspp</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/qbittorrent</loc>
+    <loc>niruvi-store.runs-on.dev/app/qbittorrent</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/qgis</loc>
+    <loc>niruvi-store.runs-on.dev/app/qgis</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/retroarch</loc>
+    <loc>niruvi-store.runs-on.dev/app/retroarch</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/rpcs3</loc>
+    <loc>niruvi-store.runs-on.dev/app/rpcs3</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/shard</loc>
+    <loc>niruvi-store.runs-on.dev/app/shard</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/shotcut</loc>
+    <loc>niruvi-store.runs-on.dev/app/shotcut</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/signal</loc>
+    <loc>niruvi-store.runs-on.dev/app/signal</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/telegram</loc>
+    <loc>niruvi-store.runs-on.dev/app/telegram</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/transmission</loc>
+    <loc>niruvi-store.runs-on.dev/app/transmission</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.putinservai.workers.dev/app/vlc</loc>
+    <loc>niruvi-store.runs-on.dev/app/vlc</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
