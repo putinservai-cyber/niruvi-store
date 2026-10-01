@@ -2,8 +2,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
+const rawBase = process.env.VITE_BASE || process.env.VITE_BASE_PATH || '/niruvi-store/';
+const normalizedBase = rawBase.endsWith('/') ? rawBase : `${rawBase}/`;
+
 export default defineConfig({
-  base: process.env.VITE_BASE_PATH || '/',
+  base: normalizedBase,
   plugins: [react(), tailwindcss()],
   build: {
     chunkSizeWarningLimit: 1000,

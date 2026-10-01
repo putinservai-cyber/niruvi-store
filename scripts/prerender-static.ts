@@ -2,11 +2,18 @@ import fs from 'fs';
 import path from 'path';
 
 const rawEnvSiteUrl = (
-  process.env.VITE_SITE_URL || 'https://niruvi-store.putinservai.workers.dev'
+  process.env.VITE_SITE_URL || 'https://putinservai-cyber.github.io/niruvi-store'
 ).trim();
 const SITE_URL = (
   /^https?:\/\//i.test(rawEnvSiteUrl) ? rawEnvSiteUrl : `https://${rawEnvSiteUrl}`
 ).replace(/\/+$/, '');
+
+const rawBase = (
+  process.env.VITE_BASE ||
+  process.env.VITE_BASE_PATH ||
+  '/niruvi-store/'
+).trim();
+const BASE_PATH = rawBase.endsWith('/') ? rawBase : `${rawBase}/`;
 
 function escapeHtml(str: string): string {
   return String(str || '')
@@ -103,7 +110,7 @@ function runPrerender() {
       return `<article class="bg-neutral-900/70 border border-neutral-800 rounded-2xl p-5">
         <div class="flex items-center justify-between gap-2 mb-2">
           <h2 class="font-bold text-base text-white">
-            <a href="/app/${encodeURIComponent(app.id)}">${escapeHtml(app.name)}</a>
+            <a href="${BASE_PATH}app/${encodeURIComponent(app.id)}">${escapeHtml(app.name)}</a>
           </h2>
           ${verifiedBadge}
         </div>
@@ -116,7 +123,7 @@ function runPrerender() {
           <div><dt class="inline text-neutral-400">SHA-256:</dt> <dd class="inline break-all">${escapeHtml(app.sha256)}</dd></div>
         </dl>
         <div class="mt-3 flex items-center gap-3 text-xs">
-          <a href="/app/${encodeURIComponent(app.id)}" class="underline text-sky-400">View Details &amp; Verify</a>
+          <a href="${BASE_PATH}app/${encodeURIComponent(app.id)}" class="underline text-sky-400">View Details &amp; Verify</a>
           <a href="${escapeHtml(app.downloadUrl)}" rel="noopener noreferrer" class="underline text-emerald-400">Direct HTTPS Download</a>
         </div>
       </article>`;
@@ -126,13 +133,13 @@ function runPrerender() {
   const homeInnerHtml = `
     <header class="border-b border-neutral-800 bg-[#0a0a0c] px-6 py-4">
       <div class="max-w-7xl mx-auto flex items-center justify-between">
-        <a href="/" class="font-bold text-lg text-white">Niruvi Store</a>
+        <a href="${BASE_PATH}" class="font-bold text-lg text-white">Niruvi Store</a>
         <nav aria-label="Primary store navigation" class="flex items-center gap-4 text-xs text-neutral-300">
-          <a href="/">Store Browse</a>
-          <a href="/verifier">SHA-256 Verifier</a>
-          <a href="/submit">Submit AppImage</a>
-          <a href="/privacy">Privacy Policy</a>
-          <a href="/terms">Terms</a>
+          <a href="${BASE_PATH}">Store Browse</a>
+          <a href="${BASE_PATH}verifier">SHA-256 Verifier</a>
+          <a href="${BASE_PATH}submit">Submit AppImage</a>
+          <a href="${BASE_PATH}privacy">Privacy Policy</a>
+          <a href="${BASE_PATH}terms">Terms</a>
         </nav>
       </div>
     </header>
@@ -194,7 +201,7 @@ function runPrerender() {
     const appInnerHtml = `
       <header class="border-b border-neutral-800 bg-[#0a0a0c] px-6 py-4">
         <div class="max-w-5xl mx-auto flex items-center justify-between">
-          <a href="/" class="font-bold text-lg text-white">← Back to Niruvi Store</a>
+          <a href="${BASE_PATH}" class="font-bold text-lg text-white">← Back to Niruvi Store</a>
           <span class="text-xs font-mono text-neutral-300">${escapeHtml(app.category)}</span>
         </div>
       </header>
@@ -266,6 +273,13 @@ chmod +x ./${escapeHtml(fileName)}
       heading: 'Submit or Test a Linux AppImage Package',
     },
     {
+      slug: 'donate',
+      title: 'Support & Donate — Niruvi Store',
+      description:
+        'Support open-source Linux AppImage indexing, SHA-256 verification, and niruvi:// desktop launcher development.',
+      heading: 'Support & Donate to Niruvi Store',
+    },
+    {
       slug: 'library',
       title: 'My Installed & Bookmarked AppImages — Niruvi Store',
       description: 'Manage your bookmarked and installed Linux AppImage packages.',
@@ -314,7 +328,7 @@ chmod +x ./${escapeHtml(fileName)}
     fs.mkdirSync(routeDir, { recursive: true });
     const inner = `
       <main id="main-content" class="max-w-4xl mx-auto px-6 py-10 space-y-4">
-        <a href="/" class="text-xs text-sky-400 underline">← Return to Niruvi Store</a>
+        <a href="${BASE_PATH}" class="text-xs text-sky-400 underline">← Return to Niruvi Store</a>
         <h1 class="text-2xl font-bold text-white">${escapeHtml(sp.heading)}</h1>
         <p class="text-sm text-neutral-300">${escapeHtml(sp.description)}</p>
       </main>`;

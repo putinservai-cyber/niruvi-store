@@ -454,6 +454,26 @@ export const AccountManagementModal: React.FC = () => {
                       ✓ Free Developer Submissions
                     </span>
                   </div>
+                  <div className="pt-3 flex flex-wrap items-center gap-2.5">
+                    <a
+                      href="https://ko-fi.com/putinservai"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs inline-flex items-center gap-1.5 transition"
+                    >
+                      <span>Support on Ko-fi</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                    <a
+                      href="https://razorpay.me/@putin"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs inline-flex items-center gap-1.5 transition"
+                    >
+                      <span>Donate via Razorpay</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
                 </div>
               </div>
 

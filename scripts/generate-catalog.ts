@@ -288,6 +288,7 @@ export function generateNiruviProtocolUrl(app: AppMetadata, selectedArch?: strin
     { path: '/', changefreq: 'daily', priority: '1.0' },
     { path: '/verifier', changefreq: 'weekly', priority: '0.8' },
     { path: '/submit', changefreq: 'weekly', priority: '0.8' },
+    { path: '/donate', changefreq: 'weekly', priority: '0.8' },
     { path: '/library', changefreq: 'weekly', priority: '0.7' },
     { path: '/privacy', changefreq: 'monthly', priority: '0.5' },
     { path: '/terms', changefreq: 'monthly', priority: '0.5' },

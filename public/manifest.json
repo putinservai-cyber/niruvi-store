@@ -2,8 +2,8 @@
   "name": "Niruvi Store — Verified Linux AppImage Marketplace",
   "short_name": "Niruvi Store",
   "description": "Discover standalone Linux AppImage packages with cryptographic SHA-256 verification and one-click niruvi:// desktop installation.",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0a0a0c",
   "theme_color": "#0a0a0c",
@@ -11,17 +11,17 @@
   "categories": ["developer", "utilities", "productivity"],
   "icons": [
     {
-      "src": "/favicon.png",
+      "src": "./favicon.png",
       "sizes": "64x64",
       "type": "image/png"
     },
     {
-      "src": "/apple-touch-icon.png",
+      "src": "./apple-touch-icon.png",
       "sizes": "180x180",
       "type": "image/png"
     },
     {
-      "src": "/niruvi-icon.png",
+      "src": "./niruvi-icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

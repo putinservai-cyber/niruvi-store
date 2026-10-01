@@ -5,7 +5,7 @@
   "description": "Verified Linux AppImage software marketplace with SHA-256 checksum verification and one-click niruvi:// desktop installation.",
   "type": "module",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=20.0.0"
   },
   "scripts": {
     "dev": "vite",

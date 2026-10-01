@@ -230,6 +230,21 @@ describe('Niruvi Store — Legal Pages, Cookie Consent & WCAG 2.2 AA Accessibili
     expect(
       screen.getByRole('heading', { level: 1, name: /Refund Policy/i }),
     ).toBeInTheDocument();
+
+    fireEvent.click(within(footer).getByRole('link', { name: /Donate & Support/i }));
+    expect(
+      screen.getByRole('heading', { level: 1, name: /Support & Donate to Niruvi Store/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /Open ko-fi\.com\/putinservai/i }),
+    ).toHaveAttribute('href', 'https://ko-fi.com/putinservai');
+    expect(
+      screen.getByRole('link', { name: /Open razorpay\.me\/@putin/i }),
+    ).toHaveAttribute('href', 'https://razorpay.me/@putin');
+    expect(screen.getByText('putinservai-1@okhdfcbank')).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: /UPI QR Code for putinservai-1@okhdfcbank/i }),
+    ).toBeInTheDocument();
   });
 
   it('passes automated axe-core WCAG 2.2 AA checks with zero critical/serious violations', async () => {

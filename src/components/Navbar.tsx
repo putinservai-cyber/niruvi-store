@@ -10,12 +10,13 @@ import {
   Compass,
   Sun,
   Moon,
+  Heart,
 } from 'lucide-react';
 import { NiruviLogo } from './NiruviLogo';
 import { useAuth } from '../context/AuthContext';
 import { DEVELOPER_NAME } from '../config/site';
 
-export type NavTab = 'browse' | 'verifier' | 'library' | 'submit';
+export type NavTab = 'browse' | 'verifier' | 'library' | 'submit' | 'donate';
 
 interface NavbarProps {
   searchQuery: string;
@@ -230,6 +231,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <PlusCircle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                 <span>Submit App</span>
               </button>
+
+              <button
+                type="button"
+                onClick={() => onTabChange('donate')}
+                aria-current={activeTab === 'donate' ? 'page' : undefined}
+                className={`flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                  activeTab === 'donate'
+                    ? 'bg-sky-600 text-white'
+                    : 'text-neutral-300 hover:text-white hover:bg-neutral-800/80'
+                }`}
+              >
+                <Heart className="w-3.5 h-3.5 text-rose-400 shrink-0" aria-hidden="true" />
+                <span>Donate</span>
+              </button>
             </nav>
 
             {onToggleTheme && (
@@ -322,10 +337,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Mobile Navigation Bar (< 768px) — 4 equal columns with min-w-0 so it never overflows */}
+        {/* Mobile Navigation Bar (< 768px) — 5 equal columns with min-w-0 so it never overflows */}
         <nav
           aria-label="Mobile store navigation"
-          className="md:hidden grid grid-cols-4 gap-1.5 pt-2.5 mt-2.5 border-t border-neutral-800/80"
+          className="md:hidden grid grid-cols-5 gap-1.5 pt-2.5 mt-2.5 border-t border-neutral-800/80"
         >
           <button
             type="button"
@@ -383,6 +398,20 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <PlusCircle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             <span className="truncate">Submit</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onTabChange('donate')}
+            aria-current={activeTab === 'donate' ? 'page' : undefined}
+            className={`min-h-[38px] min-w-0 flex items-center justify-center gap-1 px-1.5 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${
+              activeTab === 'donate'
+                ? 'bg-sky-600 text-white border-sky-500'
+                : 'bg-neutral-900 text-neutral-300 border-neutral-800 hover:text-white'
+            }`}
+          >
+            <Heart className="w-3.5 h-3.5 text-rose-400 shrink-0" aria-hidden="true" />
+            <span className="truncate">Donate</span>
           </button>
         </nav>
       </div>

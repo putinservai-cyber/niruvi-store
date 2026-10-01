@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { withBaseUrl } from '../config/site';
 
 export interface AppIconProps {
   slug: string;
@@ -22,7 +23,7 @@ export const AppIcon: React.FC<AppIconProps> = ({
   if (!imgError && iconUrl) {
     return (
       <img
-        src={iconUrl}
+        src={withBaseUrl(iconUrl)}
         alt={iconAltText}
         className={`${className} object-contain drop-shadow-sm`}
         loading="lazy"

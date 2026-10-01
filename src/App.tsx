@@ -19,8 +19,10 @@ import { Privacy } from './pages/Privacy';
 import { Terms } from './pages/Terms';
 import { Cookies } from './pages/Cookies';
 import { Refunds } from './pages/Refunds';
+import { Donate } from './pages/Donate';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { updatePageSeo } from './utils/seo';
+import { withBaseUrl, stripBaseUrl } from './config/site';
 import {
   PackageOpen,
   CheckCircle2,
@@ -43,19 +45,32 @@ function parseCurrentLocation(): RouteState {
     return { legalRoute: 'store', activeTab: 'browse', appId: null };
   }
 
-  const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase();
-  if (hash === 'privacy') return { legalRoute: 'privacy', activeTab: 'browse', appId: null };
-  if (hash === 'terms') return { legalRoute: 'terms', activeTab: 'browse', appId: null };
-  if (hash === 'cookies') return { legalRoute: 'cookies', activeTab: 'browse', appId: null };
-  if (hash === 'refunds') return { legalRoute: 'refunds', activeTab: 'browse', appId: null };
+  const hash = window.location.hash.replace(/^#\/?/, '').trim();
+  const lowerHash = hash.toLowerCase();
+  if (lowerHash === 'privacy') return { legalRoute: 'privacy', activeTab: 'browse', appId: null };
+  if (lowerHash === 'terms') return { legalRoute: 'terms', activeTab: 'browse', appId: null };
+  if (lowerHash === 'cookies') return { legalRoute: 'cookies', activeTab: 'browse', appId: null };
+  if (lowerHash === 'refunds') return { legalRoute: 'refunds', activeTab: 'browse', appId: null };
+  if (lowerHash === 'donate') return { legalRoute: 'store', activeTab: 'donate', appId: null };
+  if (lowerHash === 'verifier') return { legalRoute: 'store', activeTab: 'verifier', appId: null };
+  if (lowerHash === 'library') return { legalRoute: 'store', activeTab: 'library', appId: null };
+  if (lowerHash === 'submit') return { legalRoute: 'store', activeTab: 'submit', appId: null };
+  if (lowerHash.startsWith('app/')) {
+    const hashSlug = decodeURIComponent(hash.slice(4)).trim();
+    if (hashSlug) return { legalRoute: 'store', activeTab: 'browse', appId: hashSlug };
+  }
 
-  const pathname = window.location.pathname.replace(/\/+$/, '') || '/';
+  const params = new URLSearchParams(window.location.search);
+  const redirectedPath = params.get('p') || params.get('route');
+  const rawPathname = redirectedPath || window.location.pathname;
+  const pathname = stripBaseUrl(rawPathname).replace(/\/+$/, '') || '/';
   const lowerPath = pathname.toLowerCase();
 
   if (lowerPath === '/privacy') return { legalRoute: 'privacy', activeTab: 'browse', appId: null };
   if (lowerPath === '/terms') return { legalRoute: 'terms', activeTab: 'browse', appId: null };
   if (lowerPath === '/cookies') return { legalRoute: 'cookies', activeTab: 'browse', appId: null };
   if (lowerPath === '/refunds') return { legalRoute: 'refunds', activeTab: 'browse', appId: null };
+  if (lowerPath === '/donate') return { legalRoute: 'store', activeTab: 'donate', appId: null };
 
   if (lowerPath === '/verifier') return { legalRoute: 'store', activeTab: 'verifier', appId: null };
   if (lowerPath === '/library') return { legalRoute: 'store', activeTab: 'library', appId: null };
@@ -68,7 +83,6 @@ function parseCurrentLocation(): RouteState {
     }
   }
 
-  const params = new URLSearchParams(window.location.search);
   const queryAppId = params.get('app');
   if (queryAppId) {
     return { legalRoute: 'store', activeTab: 'browse', appId: queryAppId };
@@ -234,9 +248,9 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
         }
       }
 
-      // Static preview fallback: load /catalog.json once and paginate 48 per page
+      // Static preview / GitHub Pages fallback: load catalog.json respecting BASE_URL
       if (!fullCatalogCacheRef.current) {
-        const staticRes = await fetch('/catalog.json');
+        const staticRes = await fetch(withBaseUrl('catalog.json'));
         const staticType = staticRes.headers?.get?.('content-type') || '';
         if (staticRes.ok && staticType.includes('application/json')) {
           const allItems = await staticRes.json();
@@ -514,6 +528,16 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
       return;
     }
 
+    if (activeTab === 'donate' || legalRoute === 'donate') {
+      updatePageSeo({
+        title: 'Support & Donate — Niruvi Store',
+        description:
+          'Support open-source Linux AppImage indexing, SHA-256 verification, and niruvi:// desktop launcher development.',
+        path: '/donate',
+      });
+      return;
+    }
+
     updatePageSeo({
       title: `Niruvi Store — ${TOTAL_CATALOG_COUNT.toLocaleString()} Linux AppImage Applications`,
       description: `Browse ${TOTAL_CATALOG_COUNT.toLocaleString()} Linux AppImage packages from AppImageHub and GitHub Releases with direct upstream downloads and SHA-256 verification.`,
@@ -522,10 +546,15 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
   }, [legalRoute, activeTab, selectedApp]);
 
   const navigateLegal = useCallback((route: LegalRoute) => {
-    setLegalRoute(route);
+    if (route === 'donate') {
+      setLegalRoute('store');
+      setActiveTab('donate');
+    } else {
+      setLegalRoute(route);
+    }
     setSelectedApp(null);
     try {
-      const targetPath = route === 'store' ? '/' : `/${route}`;
+      const targetPath = route === 'store' ? withBaseUrl('/') : withBaseUrl(route);
       window.history.pushState({}, '', targetPath);
     } catch {}
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -536,7 +565,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
     setActiveTab(tab);
     setSelectedApp(null);
     try {
-      const targetPath = tab === 'browse' ? '/' : `/${tab}`;
+      const targetPath = tab === 'browse' ? withBaseUrl('/') : withBaseUrl(tab);
       window.history.pushState({}, '', targetPath);
     } catch {}
   }, []);
@@ -545,9 +574,9 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
     setSelectedApp(app);
     try {
       if (app) {
-        window.history.pushState({}, '', `/app/${encodeURIComponent(app.id)}`);
+        window.history.pushState({}, '', withBaseUrl(`app/${encodeURIComponent(app.id)}`));
       } else {
-        window.history.pushState({}, '', '/');
+        window.history.pushState({}, '', withBaseUrl('/'));
       }
     } catch {}
   }, []);
@@ -713,6 +742,13 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
               <SubmitAppView
                 onAppAdded={() => showToast('Application submitted for review.', 'success')}
                 onNavigateToStore={() => handleTabChange('browse')}
+              />
+            )}
+
+            {activeTab === 'donate' && (
+              <Donate
+                onBackToStore={() => handleTabChange('browse')}
+                onViewRefundPolicy={() => navigateLegal('refunds')}
               />
             )}
 

@@ -1,9 +1,19 @@
 import React from 'react';
-import { Settings, ExternalLink, Scale, Cookie, Receipt, FileText, Mail, Code2 } from 'lucide-react';
+import {
+  Settings,
+  ExternalLink,
+  Scale,
+  Cookie,
+  Receipt,
+  FileText,
+  Mail,
+  Code2,
+  Heart,
+} from 'lucide-react';
 import { NiruviLogo } from './NiruviLogo';
 import { DEVELOPER_NAME, CONTACT_EMAIL, SUPPORT_EMAIL } from '../config/site';
 
-export type LegalRoute = 'store' | 'privacy' | 'terms' | 'cookies' | 'refunds';
+export type LegalRoute = 'store' | 'donate' | 'privacy' | 'terms' | 'cookies' | 'refunds';
 
 interface FooterProps {
   currentRoute: string;
@@ -35,6 +45,23 @@ export const Footer: React.FC<FooterProps> = ({
           </div>
 
           <nav aria-label="Legal and privacy links" className="flex flex-wrap items-center gap-2">
+            <a
+              href="#/donate"
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigate('donate');
+              }}
+              aria-current={currentRoute === 'donate' ? 'page' : undefined}
+              className={`min-h-[38px] px-3 py-1.5 rounded-lg border inline-flex items-center gap-1.5 font-medium transition-colors ${
+                currentRoute === 'donate'
+                  ? 'bg-sky-600 text-white border-sky-500'
+                  : 'bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border-neutral-800'
+              }`}
+            >
+              <Heart className="w-3.5 h-3.5 text-rose-400" aria-hidden="true" />
+              <span>Donate &amp; Support</span>
+            </a>
+
             <a
               href="#/privacy"
               onClick={(e) => {
@@ -151,32 +178,32 @@ export const Footer: React.FC<FooterProps> = ({
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-neutral-800/80 text-neutral-400">
-          <p>
-            Catalog data indexed from{' '}
+        <div className="pt-4 border-t border-neutral-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <p className="text-neutral-400 leading-relaxed">
+            © {new Date().getFullYear()} Niruvi Store by {DEVELOPER_NAME}. All packages are
+            distributed under their respective upstream open-source or publisher licenses. We do not
+            sell your personal data.
+          </p>
+          <div className="flex items-center gap-4 shrink-0">
             <a
               href="https://appimage.github.io/"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline text-neutral-300 hover:text-white inline-flex items-center gap-1"
+              className="hover:text-white transition-colors inline-flex items-center gap-1"
             >
               <span>AppImageHub</span>
               <ExternalLink className="w-3 h-3" aria-hidden="true" />
-            </a>{' '}
-            and upstream GitHub Releases. Downloads link directly to the original author&apos;s release assets.
-          </p>
-          <p>
-            Licensed under{' '}
+            </a>
             <a
-              href="https://www.gnu.org/licenses/gpl-3.0.html"
+              href="https://appimage.org"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline text-neutral-300 hover:text-white inline-flex items-center gap-1"
+              className="hover:text-white transition-colors inline-flex items-center gap-1"
             >
-              <span>GPL-3.0</span>
+              <span>AppImage.org</span>
               <ExternalLink className="w-3 h-3" aria-hidden="true" />
             </a>
-          </p>
+          </div>
         </div>
       </div>
     </footer>
