@@ -119,6 +119,22 @@ describe('Niruvi Store — Application Detail Modal & niruvi:// Fallback', () =>
     const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByRole('heading', { name: 'Kdenlive' })).toBeInTheDocument();
 
+    // Verify dynamic SEO canonical URL, og:url, and SoftwareApplication JSON-LD point to niruvi-store.putinservai.workers.dev
+    const canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    expect(canonical?.getAttribute('href')).toBe(
+      'https://niruvi-store.putinservai.workers.dev/app/kdenlive',
+    );
+    const ogUrl = document.head.querySelector<HTMLMetaElement>('meta[property="og:url"]');
+    expect(ogUrl?.getAttribute('content')).toBe(
+      'https://niruvi-store.putinservai.workers.dev/app/kdenlive',
+    );
+    const jsonLdEl = document.getElementById('dynamic-software-jsonld');
+    expect(jsonLdEl).not.toBeNull();
+    const parsedSchema = JSON.parse(jsonLdEl?.textContent || '{}');
+    expect(parsedSchema['@type']).toBe('SoftwareApplication');
+    expect(parsedSchema.name).toBe('Kdenlive');
+    expect(parsedSchema.url).toBe('https://niruvi-store.putinservai.workers.dev/app/kdenlive');
+
     expect(
       within(dialog).getByText(/Don’t have the Niruvi desktop app installed\?/i),
     ).toBeInTheDocument();
@@ -130,6 +146,23 @@ describe('Niruvi Store — Application Detail Modal & niruvi:// Fallback', () =>
     expect(manualDownloadLink).toHaveAttribute('rel', 'noopener noreferrer');
 
     expect(within(dialog).getByRole('button', { name: /Copy SHA-256/i })).toBeInTheDocument();
+
+    // Start inline AppImage download animation and cancel it
+    fireEvent.click(manualDownloadLink);
+    const cancelBtn = within(dialog).getByRole('button', { name: /Cancel Download/i });
+    expect(cancelBtn).toBeInTheDocument();
+    fireEvent.click(cancelBtn);
+    expect(within(dialog).getByText(/Download cancelled at/i)).toBeInTheDocument();
+  });
+
+  it('opens SponsorModal with razorpay.me/@putin direct link', () => {
+    renderStore();
+    const sponsorBtn = screen.getByRole('button', { name: /Donate & Support/i });
+    fireEvent.click(sponsorBtn);
+
+    const dialog = screen.getByRole('dialog');
+    const rzpLink = within(dialog).getByRole('link', { name: /Open razorpay\.me\/@putin/i });
+    expect(rzpLink).toHaveAttribute('href', 'https://razorpay.me/@putin');
   });
 });
 

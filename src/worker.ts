@@ -41,6 +41,9 @@ export interface Env {
   FIREBASE_PROJECT_ID?: string;
   NIRUVI_AUTH_KV?: KVNamespace;
   DB?: D1Database;
+  ASSETS?: {
+    fetch(request: Request | string): Promise<Response>;
+  };
 }
 
 export interface WorkerUserRecord {
@@ -421,6 +424,37 @@ export default {
 
     if (method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: buildSecurityHeaders(origin) });
+    }
+
+    if (path === '/api/health' && method === 'GET') {
+      return jsonResponse({ status: 'ok', runtime: 'cloudflare-workers' }, 200, origin);
+    }
+
+    // Serve pre-rendered static assets with security and cache headers for non-API routes
+    if (!path.startsWith('/api/') && env?.ASSETS) {
+      const assetRes = await env.ASSETS.fetch(request);
+      const headers = new Headers(assetRes.headers);
+      const secHeaders = buildSecurityHeaders(origin);
+      for (const [k, v] of Object.entries(secHeaders)) {
+        headers.set(k, v);
+      }
+      if (path.startsWith('/assets/')) {
+        headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+      } else if (
+        path.startsWith('/icons/') ||
+        path === '/favicon.ico' ||
+        path === '/favicon.png' ||
+        path === '/apple-touch-icon.png' ||
+        path === '/niruvi-icon.png' ||
+        path === '/og-image.png'
+      ) {
+        headers.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
+      }
+      return new Response(assetRes.body, {
+        status: assetRes.status,
+        statusText: assetRes.statusText,
+        headers,
+      });
     }
 
     const secret = env?.JWT_SECRET;

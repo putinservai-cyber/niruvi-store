@@ -1,6 +1,46 @@
 import fs from 'fs';
 import path from 'path';
 
+const SITE_URL = (
+  process.env.VITE_SITE_URL || 'https://niruvi-store.putinservai.workers.dev'
+).replace(/\/+$/, '');
+
+const SYNTHETIC_HASH_PATTERNS = [
+  /0123456789abcdef/i,
+  /123456789abcdef0/i,
+  /23456789abcdef01/i,
+  /3456789abcdef012/i,
+  /456789abcdef0123/i,
+  /56789abcdef01234/i,
+  /6789abcdef012345/i,
+  /789abcdef0123456/i,
+  /89abcdef01234567/i,
+  /9abcdef012345678/i,
+  /abcdef0123456789/i,
+  /bcdef0123456789a/i,
+  /cdef0123456789ab/i,
+  /def0123456789abc/i,
+  /ef0123456789abcd/i,
+  /f0123456789abcde/i,
+  /7890123456789abc/i,
+  /890123456789abcd/i,
+  /90123456789abcde/i,
+  /a1b2c3d4e5f67890/i,
+  /b2c3d4e5f6789012/i,
+  /c3d4e5f678901234/i,
+  /d4e5f67890123456/i,
+  /e5f6789012345678/i,
+  /f67890123456789a/i,
+  /([a-f0-9])\1{7,}/i,
+];
+
+function isGenuineSha256(hash: unknown): boolean {
+  if (typeof hash !== 'string') return false;
+  const trimmed = hash.trim();
+  if (!/^[a-fA-F0-9]{64}$/.test(trimmed)) return false;
+  return !SYNTHETIC_HASH_PATTERNS.some((rx) => rx.test(trimmed));
+}
+
 interface RawAppEntry {
   id: string;
   name: string;
@@ -46,11 +86,33 @@ function generateCatalog() {
   const files = fs.readdirSync(appsDir).filter((f) => f.endsWith('.json'));
 
   const apps: any[] = [];
+  const seenHashes = new Set<string>();
 
   for (const file of files) {
     const raw: RawAppEntry = JSON.parse(fs.readFileSync(path.join(appsDir, file), 'utf-8'));
-    
-    // Default fallback values
+    const downloadUrl =
+      raw.download?.['x86_64'] || Object.values(raw.download || {})[0] || '';
+    const rawSha = (raw.sha256 || '').trim().toLowerCase();
+
+    // Only include entries that have a valid 64-char hex SHA-256 and a real HTTPS download URL
+    if (!/^[a-f0-9]{64}$/.test(rawSha) || !downloadUrl.startsWith('https://') || downloadUrl.includes('example.com')) {
+      continue;
+    }
+
+    const isVerifiedHash = isGenuineSha256(rawSha) && !seenHashes.has(rawSha);
+    if (isGenuineSha256(rawSha)) {
+      seenHashes.add(rawSha);
+    }
+
+    const sourceType =
+      raw.sourceType ||
+      (raw.developer?.toLowerCase().includes('community') ? 'Community' : 'Official');
+
+    const trustTier = isVerifiedHash
+      ? (raw as any).trustTier ||
+        (sourceType === 'Official' ? 'Official Developer' : 'Verified Community')
+      : 'Unverified Community';
+
     const app = {
       id: raw.id,
       name: raw.name,
@@ -59,42 +121,49 @@ function generateCatalog() {
       category: raw.category,
       version: raw.version,
       releaseDate: raw.releaseDate || '2025-01-01',
-      size: raw.size || '75.0 MB',
+      size: raw.size || 'Unknown size',
       architectures: raw.architectures || ['x86_64'],
       license: raw.license,
-      licenseCategory: raw.licenseCategory || (raw.license.includes('MIT') || raw.license.includes('Apache') || raw.license.includes('BSD') ? 'Permissive' : 'Open Source'),
+      licenseCategory:
+        raw.licenseCategory ||
+        (raw.license.includes('MIT') ||
+        raw.license.includes('Apache') ||
+        raw.license.includes('BSD')
+          ? 'Permissive'
+          : 'Open Source'),
       publisher: {
         name: raw.developer,
         website: raw.homepage,
-        verified: true,
+        verified: isVerifiedHash,
         github: raw.repository,
       },
-      sha256: raw.sha256 || '',
-      downloadUrl: raw.download?.['x86_64'] || Object.values(raw.download || {})[0] || '',
+      sha256: rawSha,
+      downloadUrl,
       downloadMap: raw.download || {},
       iconSlug: raw.iconSlug || raw.id,
       icon: fs.existsSync(path.join(process.cwd(), 'public', 'icons', `${raw.id}.svg`))
         ? `/icons/${raw.id}.svg`
         : fs.existsSync(path.join(process.cwd(), 'public', 'icons', `${raw.id}.png`))
           ? `/icons/${raw.id}.png`
-          : (raw.icon || null),
+          : raw.icon || null,
       brandColor: raw.brandColor || '#3B82F6',
       features: raw.features || [],
       homepageUrl: raw.homepage || raw.repository || '',
       sourceUrl: raw.repository || raw.homepage || '',
       repositoryUrl: raw.repositoryUrl || raw.repository || '',
-      releasesUrl: raw.releasesUrl || (raw.repository ? `${raw.repository.replace(/\/$/, '')}/releases` : ''),
-      sourceType: raw.sourceType || (raw.developer?.toLowerCase().includes('community') ? 'Community' : 'Official'),
-      trustTier: (raw as any).trustTier || (
-        (raw.sourceType === 'Official' || (!raw.sourceType && !raw.developer?.toLowerCase().includes('community')))
-          ? 'Official Developer'
-          : ((raw as any).unverified ? 'Unverified Community' : 'Verified Community')
-      ),
-      officialStatus: raw.officialStatus !== undefined ? raw.officialStatus : (raw.sourceType !== 'Community'),
+      releasesUrl:
+        raw.releasesUrl ||
+        (raw.repository ? `${raw.repository.replace(/\/$/, '')}/releases` : ''),
+      sourceType,
+      trustTier,
+      officialStatus:
+        raw.officialStatus !== undefined
+          ? raw.officialStatus && isVerifiedHash
+          : sourceType !== 'Community' && isVerifiedHash,
       tags: raw.keywords || [raw.category.toLowerCase()],
-      featured: raw.featured || false,
-      downloadsCount: raw.downloadsCount || Math.floor(Math.random() * 50000 + 10000),
-      rating: raw.rating || 4.8,
+      featured: Boolean(raw.featured && isVerifiedHash),
+      downloadsCount: typeof raw.downloadsCount === 'number' ? raw.downloadsCount : 0,
+      rating: typeof raw.rating === 'number' ? raw.rating : 0,
       changelog: raw.changelog || [`Version ${raw.version} AppImage release build`],
       requirements: raw.requirements || 'Linux 64-bit environment, libfuse2 or libfuse3',
     };
@@ -102,8 +171,10 @@ function generateCatalog() {
     apps.push(app);
   }
 
-  // Sort by featured and name
+  // Sort verified apps first, then featured, then alphabetical
   apps.sort((a, b) => {
+    if (a.publisher.verified && !b.publisher.verified) return -1;
+    if (!a.publisher.verified && b.publisher.verified) return 1;
     if (a.featured && !b.featured) return -1;
     if (!a.featured && b.featured) return 1;
     return a.name.localeCompare(b.name);
@@ -150,11 +221,47 @@ export function generateNiruviProtocolUrl(app: AppMetadata, selectedArch?: strin
 
   fs.writeFileSync(path.join(outDir, 'apps.ts'), tsContent, 'utf-8');
 
-  // 3. Generate feed.json (gitignored artifact built during CI / catalog generation)
+  // 3. Write public/robots.txt and public/sitemap.xml (including all app detail pages)
+  const publicDir = path.join(process.cwd(), 'public');
+  const robotsTxt = `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`;
+  fs.writeFileSync(path.join(publicDir, 'robots.txt'), robotsTxt, 'utf-8');
+
+  const staticRoutes = [
+    { path: '/', changefreq: 'daily', priority: '1.0' },
+    { path: '/verifier', changefreq: 'weekly', priority: '0.8' },
+    { path: '/submit', changefreq: 'weekly', priority: '0.8' },
+    { path: '/library', changefreq: 'weekly', priority: '0.7' },
+    { path: '/privacy', changefreq: 'monthly', priority: '0.5' },
+    { path: '/terms', changefreq: 'monthly', priority: '0.5' },
+    { path: '/cookies', changefreq: 'monthly', priority: '0.5' },
+    { path: '/refunds', changefreq: 'monthly', priority: '0.5' },
+  ];
+
+  const urlEntries = [
+    ...staticRoutes.map(
+      (r) => `  <url>
+    <loc>${SITE_URL}${r.path === '/' ? '/' : r.path}</loc>
+    <changefreq>${r.changefreq}</changefreq>
+    <priority>${r.priority}</priority>
+  </url>`
+    ),
+    ...apps.map(
+      (app) => `  <url>
+    <loc>${SITE_URL}/app/${encodeURIComponent(app.id)}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`
+    ),
+  ];
+
+  const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlEntries.join('\n')}\n</urlset>\n`;
+  fs.writeFileSync(path.join(publicDir, 'sitemap.xml'), sitemapXml, 'utf-8');
+
+  // 4. Generate feed.json (gitignored artifact built during CI / catalog generation)
   const feedPayload = {
     version: 1,
-    home_page_url: 'https://putinservai-cyber.github.io/niruvi-store/',
-    feed_url: 'https://putinservai-cyber.github.io/niruvi-store/feed.json',
+    home_page_url: `${SITE_URL}/`,
+    feed_url: `${SITE_URL}/feed.json`,
     description: 'AppImage applications for Linux without installation',
     expired: false,
     items: apps.map((app) => ({
@@ -170,9 +277,16 @@ export function generateNiruviProtocolUrl(app: AppMetadata, selectedArch?: strin
       icons: app.icon ? [app.icon] : [],
     })),
   };
-  fs.writeFileSync(path.join(process.cwd(), 'feed.json'), JSON.stringify(feedPayload, null, 2), 'utf-8');
+  fs.writeFileSync(
+    path.join(process.cwd(), 'feed.json'),
+    JSON.stringify(feedPayload, null, 2),
+    'utf-8'
+  );
 
-  console.log(`✅ Generated catalog with ${apps.length} applications, ${categories.length} categories, and feed.json!`);
+  const verifiedCount = apps.filter((a) => a.publisher.verified).length;
+  console.log(
+    `✅ Generated catalog with ${apps.length} applications (${verifiedCount} SHA-256 verified), ${categories.length} categories, sitemap.xml (${staticRoutes.length + apps.length} URLs), and feed.json!`
+  );
 }
 
 generateCatalog();

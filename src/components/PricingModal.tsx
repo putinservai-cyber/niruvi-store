@@ -442,13 +442,30 @@ export const PricingModal: React.FC<PricingModalProps> = ({
               <div className="p-5 rounded-2xl bg-neutral-900/40 border border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
                 <div className="flex items-center gap-4 text-neutral-400 flex-wrap justify-center sm:justify-start">
                   <span className="text-neutral-300 font-semibold">Accepted:</span>
-                  <span className="flex items-center gap-1.5"><CreditCard className="w-3.5 h-3.5 text-blue-400" /> Razorpay</span>
+                  <a
+                    href="https://razorpay.me/@putin"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-sky-400 hover:text-sky-300 underline"
+                  >
+                    <CreditCard className="w-3.5 h-3.5 text-blue-400" />
+                    <span>razorpay.me/@putin</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
                   <span className="flex items-center gap-1.5"><Smartphone className="w-3.5 h-3.5 text-emerald-400" /> UPI (GPay/PhonePe)</span>
-                  <span className="flex items-center gap-1.5"><Coffee className="w-3.5 h-3.5 text-rose-400" /> Ko-fi (@putinservai)</span>
+                  <a
+                    href="https://ko-fi.com/putinservai"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-rose-300 hover:text-rose-200 underline"
+                  >
+                    <Coffee className="w-3.5 h-3.5 text-rose-400" />
+                    <span>Ko-fi (@putinservai)</span>
+                  </a>
                 </div>
                 <div className="flex items-center gap-2 text-[11px] text-neutral-400">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  <span>256-bit Encrypted Checkout & Cryptographic HMAC Verification</span>
+                  <span>Direct Supporter Links &amp; License Activation</span>
                 </div>
               </div>
             </div>

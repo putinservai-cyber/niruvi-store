@@ -309,35 +309,38 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 </div>
               )}
 
-              {/* TAB 1: RAZORPAY */}
+              {/* TAB 1: RAZORPAY.ME (@PUTIN) */}
               {activeTab === 'razorpay' && (
                 <div className="space-y-4">
                   <div className="p-3.5 rounded-xl bg-neutral-900/60 border border-neutral-800 text-xs text-neutral-300 space-y-1.5">
                     <p className="font-semibold text-white flex items-center gap-1.5">
                       <ShieldCheck className="w-4 h-4 text-blue-400" />
-                      <span>Razorpay Secure Checkout</span>
+                      <span>Razorpay.me Direct Link (razorpay.me/@putin)</span>
                     </p>
                     <p className="text-[11px] text-neutral-400 leading-relaxed">
-                      Supports Visa, Mastercard, RuPay, NetBanking (SBI, HDFC, ICICI, etc.), and UPI with instant cryptographic receipt.
+                      Supports UPI, RuPay/Visa/Mastercard cards, and NetBanking directly via{' '}
+                      <strong className="text-neutral-200">razorpay.me/@putin</strong>.
                     </p>
                   </div>
 
-                  <button
-                    onClick={handleRazorpayPayment}
-                    disabled={isProcessing}
-                    className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-blue-950/50 disabled:opacity-50"
+                  <a
+                    href="https://razorpay.me/@putin"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-blue-950/50"
                   >
-                    {isProcessing ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Connecting to Gateway...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Lock className="w-3.5 h-3.5" />
-                        <span>Pay ₹{priceInr} via Razorpay</span>
-                      </>
-                    )}
+                    <CreditCard className="w-4 h-4" />
+                    <span>Open razorpay.me/@putin (₹{priceInr})</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={handleInstantFreeUnlock}
+                    className="w-full py-2.5 px-4 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-semibold transition border border-neutral-700 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Confirm &amp; Activate License After Payment</span>
                   </button>
                 </div>
               )}

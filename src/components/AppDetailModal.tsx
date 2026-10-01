@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { usePreventBodyScroll } from '../hooks/usePreventBodyScroll';
 import { AppMetadata } from '../types';
 import { AppIcon } from './AppIcon';
@@ -28,7 +28,11 @@ import {
   ThumbsUp,
   MessageSquarePlus,
   Loader2,
-  Heart
+  Heart,
+  XCircle,
+  RotateCcw,
+  Pause,
+  Play,
 } from 'lucide-react';
 
 const getOfficialSponsorUrl = (app: AppMetadata): string | null => {
@@ -98,6 +102,12 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
   const [copiedCli, setCopiedCli] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'security' | 'cli' | 'changelog' | 'reviews'>('overview');
 
+  // Inline AppImage download & cancellation state
+  const [dlPhase, setDlPhase] = useState<'idle' | 'downloading' | 'completed' | 'cancelled'>('idle');
+  const [dlProgress, setDlProgress] = useState(0);
+  const [dlPaused, setDlPaused] = useState(false);
+  const dlTimerRef = useRef<number | null>(null);
+
   // Reviews state
   const [reviewsList, setReviewsList] = useState<ReviewItem[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
@@ -110,6 +120,54 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
   const [reviewSuccess, setReviewSuccess] = useState(false);
 
   usePreventBodyScroll(!!app);
+
+  useEffect(() => {
+    setDlPhase('idle');
+    setDlProgress(0);
+    setDlPaused(false);
+    if (dlTimerRef.current) {
+      window.clearInterval(dlTimerRef.current);
+      dlTimerRef.current = null;
+    }
+  }, [app?.id]);
+
+  useEffect(() => {
+    if (!app || dlPhase !== 'downloading' || dlPaused) {
+      if (dlTimerRef.current) {
+        window.clearInterval(dlTimerRef.current);
+        dlTimerRef.current = null;
+      }
+      return;
+    }
+    dlTimerRef.current = window.setInterval(() => {
+      setDlProgress((prev) => {
+        const next = Math.min(100, prev + 5);
+        if (next >= 100) {
+          if (dlTimerRef.current) {
+            window.clearInterval(dlTimerRef.current);
+            dlTimerRef.current = null;
+          }
+          setDlPhase('completed');
+          if (isValidHttpsDownloadUrl(app.downloadUrl)) {
+            const anchor = document.createElement('a');
+            anchor.href = sanitizeUrl(app.downloadUrl);
+            anchor.target = '_blank';
+            anchor.rel = 'noopener noreferrer';
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+          }
+        }
+        return next;
+      });
+    }, 100);
+    return () => {
+      if (dlTimerRef.current) {
+        window.clearInterval(dlTimerRef.current);
+        dlTimerRef.current = null;
+      }
+    };
+  }, [app, dlPhase, dlPaused]);
 
   useEffect(() => {
     if (!app) return;
@@ -528,24 +586,165 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
                       Don’t have the Niruvi desktop app installed?
                     </h4>
                     <p className="text-neutral-300 mt-0.5">
-                      Download the standalone AppImage binary directly over HTTPS and verify its
-                      SHA-256 checksum before making it executable (<code className="font-mono">chmod +x</code>).
+                      Download the standalone <code className="font-mono text-neutral-200">{appImageFileName}</code> ({app.size}) directly over HTTPS and verify its SHA-256 checksum before making it executable (<code className="font-mono">chmod +x</code>).
                     </p>
                   </div>
                   {isValidHttpsDownloadUrl(app.downloadUrl) && (
-                    <a
-                      href={sanitizeUrl(app.downloadUrl)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="min-h-[44px] px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-600 font-semibold inline-flex items-center gap-2 whitespace-nowrap transition-colors"
-                    >
-                      <Download className="w-4 h-4 text-sky-400" aria-hidden="true" />
-                      <span>
-                        Download {sanitizeText(app.name, 60)} AppImage ({app.architectures[0] || 'x86_64'})
-                      </span>
-                    </a>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <a
+                        href={sanitizeUrl(app.downloadUrl)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
+                          if (dlPhase === 'idle' || dlPhase === 'cancelled') {
+                            e.preventDefault();
+                            setDlPaused(false);
+                            setDlProgress(5);
+                            setDlPhase('downloading');
+                          }
+                        }}
+                        className="min-h-[44px] px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-600 font-semibold inline-flex items-center gap-2 whitespace-nowrap transition-colors"
+                      >
+                        <Download className="w-4 h-4 text-sky-400" aria-hidden="true" />
+                        <span>
+                          Download {sanitizeText(app.name, 60)} AppImage ({app.architectures[0] || 'x86_64'})
+                        </span>
+                      </a>
+                    </div>
                   )}
                 </div>
+
+                {/* Active Cancelable Download Progress Bar */}
+                {dlPhase === 'downloading' && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className="p-3.5 rounded-xl bg-neutral-900 border border-sky-500/40 space-y-2.5 animate-in fade-in duration-150"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-white flex items-center gap-2">
+                        <span
+                          aria-hidden="true"
+                          className={`w-2 h-2 rounded-full ${
+                            dlPaused ? 'bg-amber-400' : 'bg-sky-400 animate-ping'
+                          }`}
+                        />
+                        <span>
+                          {dlPaused
+                            ? `Download Paused (${dlProgress}%)`
+                            : dlProgress < 85
+                            ? `Streaming ${appImageFileName} (${app.size})...`
+                            : 'Preparing SHA-256 Checksum Verification...'}
+                        </span>
+                      </span>
+                      <span className="font-mono text-sky-300 font-semibold tabular-nums">
+                        {dlProgress}%
+                      </span>
+                    </div>
+
+                    <div className="w-full h-2.5 rounded-full bg-neutral-950 border border-neutral-800 overflow-hidden p-0.5">
+                      <div
+                        className={`h-full rounded-full transition-all duration-150 ${
+                          dlPaused
+                            ? 'bg-amber-400'
+                            : 'bg-gradient-to-r from-sky-500 via-emerald-400 to-sky-400'
+                        }`}
+                        style={{ width: `${dlProgress}%` }}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 pt-1">
+                      <span className="text-[11px] text-neutral-300 font-mono">
+                        Target: ./{appImageFileName} · Arch: {app.architectures[0] || 'x86_64'}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setDlPaused((p) => !p)}
+                          className="min-h-[34px] px-3 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 text-xs font-semibold inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          {dlPaused ? (
+                            <>
+                              <Play className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
+                              <span>Resume</span>
+                            </>
+                          ) : (
+                            <>
+                              <Pause className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
+                              <span>Pause</span>
+                            </>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (dlTimerRef.current) {
+                              window.clearInterval(dlTimerRef.current);
+                              dlTimerRef.current = null;
+                            }
+                            setDlPaused(false);
+                            setDlPhase('cancelled');
+                          }}
+                          className="min-h-[34px] px-3 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-200 border border-rose-500/40 text-xs font-bold inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <XCircle className="w-3.5 h-3.5 text-rose-400" aria-hidden="true" />
+                          <span>Cancel Download</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {dlPhase === 'cancelled' && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className="p-3 rounded-xl bg-rose-950/25 border border-rose-500/40 flex flex-wrap items-center justify-between gap-2 animate-in fade-in duration-150"
+                  >
+                    <span className="text-rose-200 font-medium flex items-center gap-1.5">
+                      <XCircle className="w-4 h-4 text-rose-400" aria-hidden="true" />
+                      <span>Download cancelled at {dlProgress}% — binary handoff aborted.</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDlPaused(false);
+                        setDlProgress(5);
+                        setDlPhase('downloading');
+                      }}
+                      className="min-h-[34px] px-3 py-1 rounded-lg bg-white hover:bg-neutral-200 text-black font-bold text-xs inline-flex items-center gap-1 cursor-pointer"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+                      <span>Retry Download</span>
+                    </button>
+                  </div>
+                )}
+
+                {dlPhase === 'completed' && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className="p-3 rounded-xl bg-emerald-950/25 border border-emerald-500/40 space-y-2 animate-in fade-in duration-150"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-emerald-300 font-semibold flex items-center gap-1.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" aria-hidden="true" />
+                        <span>Download handed off to browser! Run in terminal after saving:</span>
+                      </span>
+                      <a
+                        href={sanitizeUrl(app.downloadUrl)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sky-400 hover:underline font-semibold"
+                      >
+                        Direct Mirror Link
+                      </a>
+                    </div>
+                    <pre className="p-2 bg-black/80 rounded border border-neutral-800 font-mono text-[11px] text-neutral-200 overflow-x-auto select-all">
+{`echo "${app.sha256}  ${appImageFileName}" | sha256sum --check && chmod +x ./${appImageFileName} && ./${appImageFileName}`}
+                    </pre>
+                  </div>
+                )}
 
                 <div className="pt-2 border-t border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="font-mono text-[11px] text-emerald-400 break-all">

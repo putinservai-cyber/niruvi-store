@@ -3,20 +3,36 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Redirecting — Niruvi Store</title>
-    <script>
-      // GitHub Pages SPA fallback redirect: converts deep paths (e.g. /niruvi-store/app/blender)
-      // into hash routes (/#/app/blender) so refreshing deep links never 404s on GitHub Pages.
-      (function () {
-        var l = window.location;
-        var base = l.pathname.indexOf('/niruvi-store') === 0 ? '/niruvi-store/' : '/';
-        var subPath = l.pathname.slice(base.length).replace(/^\/+/, '');
-        var target = l.protocol + '//' + l.host + base + '#/' + subPath + (l.search || '');
-        l.replace(target);
-      })();
-    </script>
+    <meta name="theme-color" content="#0a0a0c" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="canonical" href="https://niruvi-store.putinservai.workers.dev/404" />
+    <title>404 Page Not Found — Niruvi Store</title>
+    <meta
+      name="description"
+      content="The requested Linux AppImage page could not be found on Niruvi Store."
+    />
   </head>
-  <body style="background:#0a0a0c;color:#f5f5f5;font-family:system-ui,sans-serif;padding:2rem;text-align:center;">
-    <p>Redirecting to Niruvi Store…</p>
+  <body style="background:#0a0a0c;color:#f5f5f5;font-family:system-ui,-apple-system,sans-serif;margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;">
+    <main style="max-width:32rem;width:100%;background:#171717;border:1px solid #262626;border-radius:1rem;padding:2rem;text-align:center;">
+      <p style="font-family:monospace;font-size:0.75rem;color:#38bdf8;margin:0 0 0.5rem 0;">HTTP 404 • NOT FOUND</p>
+      <h1 style="font-size:1.5rem;font-weight:700;margin:0 0 0.75rem 0;color:#ffffff;">Page or AppImage Not Found</h1>
+      <p style="font-size:0.875rem;color:#d4d4d4;line-height:1.6;margin:0 0 1.5rem 0;">
+        The Linux AppImage package or route you requested does not exist in the Niruvi Store catalog.
+      </p>
+      <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;">
+        <a
+          href="/"
+          style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 1.25rem;background:#ffffff;color:#000000;font-weight:600;font-size:0.875rem;border-radius:0.75rem;text-decoration:none;"
+        >
+          Browse AppImage Directory
+        </a>
+        <a
+          href="/verifier"
+          style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 1.25rem;background:#262626;color:#f5f5f5;font-weight:600;font-size:0.875rem;border-radius:0.75rem;text-decoration:none;border:1px solid #404040;"
+        >
+          SHA-256 Checksum Verifier
+        </a>
+      </div>
+    </main>
   </body>
 </html>

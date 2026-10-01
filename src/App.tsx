@@ -42,6 +42,7 @@ import {
   getCustomApps,
 } from './utils/storage';
 import { validateCatalogAtRuntime } from './utils/catalogSchema';
+import { updatePageSeo } from './utils/seo';
 import {
   ShieldCheck,
   Search,
@@ -80,14 +81,17 @@ function parseRouteFromLocation(): { view: NavView; appId: string | null } {
 
   // Check ?p= from GitHub Pages 404.html redirect or hash or pathname
   const searchParams = new URLSearchParams(window.location.search);
-  const redirectedPath = searchParams.get('p') || '';
-  const rawHash = window.location.hash.replace(/^#\/?/, '');
-  const rawPathname = window.location.pathname.replace(/^\/niruvi-store\/?/, '').replace(/^\/+/, '');
+  const redirectedPath = (searchParams.get('p') || '').replace(/^\/+/, '').replace(/\/+$/, '');
+  const rawHash = window.location.hash.replace(/^#\/?/, '').replace(/\/+$/, '');
+  const rawPathname = window.location.pathname
+    .replace(/^\/niruvi-store\/?/, '')
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '');
 
-  const candidate = (redirectedPath.replace(/^\/+/, '') || rawHash || rawPathname).split('?')[0];
+  const candidate = (redirectedPath || rawHash || rawPathname).split('?')[0].replace(/\/+$/, '');
 
   if (candidate.startsWith('app/')) {
-    const appId = decodeURIComponent(candidate.slice('app/'.length).trim());
+    const appId = decodeURIComponent(candidate.slice('app/'.length).replace(/\/+$/, '').trim());
     return { view: 'store', appId: appId || null };
   }
 
@@ -230,14 +234,14 @@ export const App: React.FC<AppProps> = ({
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, [fullCatalog]);
 
-  // Descriptive <title> per route (STEP 7)
+  // Descriptive <title>, <link rel="canonical">, meta description, OpenGraph, and SoftwareApplication JSON-LD per route
   useEffect(() => {
     if (selectedApp) {
-      document.title = `${selectedApp.name} (v${selectedApp.version}) — Niruvi Linux AppImage Store`;
+      updatePageSeo({ app: selectedApp });
       return;
     }
     const routeTitles: Record<NavView, string> = {
-      store: 'Niruvi Store — Static Linux AppImage Marketplace',
+      store: 'Niruvi Store — Verified Linux AppImage Marketplace',
       library: 'My Installed & Bookmarked Apps — Niruvi Store',
       verifier: 'SHA-256 Checksum Verifier — Niruvi Store',
       submit: 'Submit or Test an AppImage — Niruvi Store',
@@ -248,7 +252,11 @@ export const App: React.FC<AppProps> = ({
       cookies: 'Cookie & Local Storage Policy — Niruvi Store',
       refunds: 'Refund Policy — Niruvi Store',
     };
-    document.title = routeTitles[currentView] || 'Niruvi Store — Linux AppImage Marketplace';
+    const routePath = currentView === 'store' ? '/' : `/${currentView}`;
+    updatePageSeo({
+      title: routeTitles[currentView] || 'Niruvi Store — Verified Linux AppImage Marketplace',
+      path: routePath,
+    });
   }, [currentView, selectedApp]);
 
   const handleFilterChange = (newFilters: Partial<FilterState>) => {

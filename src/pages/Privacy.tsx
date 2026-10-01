@@ -66,9 +66,9 @@ export const Privacy: React.FC<PrivacyPageProps> = ({
         </div>
         <h1 className="text-3xl font-extrabold text-white tracking-tight">Privacy Policy</h1>
         <p className="text-sm text-neutral-300 leading-relaxed">
-          Niruvi Store (<code className="font-mono text-sky-400">https://niruvi-store.runs-on.dev</code>, &ldquo;we&rdquo;, &ldquo;us&rdquo;, or &ldquo;our&rdquo;), operated by{' '}
+          Niruvi Store (<code className="font-mono text-sky-400">https://niruvi-store.putinservai.workers.dev</code>, &ldquo;we&rdquo;, &ldquo;us&rdquo;, or &ldquo;our&rdquo;), operated by{' '}
           <strong>[OWNER NAME]</strong> under the laws of <strong>[COUNTRY/JURISDICTION]</strong>,
-          is a static, open-source Linux AppImage directory hosted on GitHub Pages. We designed
+          is a static, open-source Linux AppImage directory hosted on Cloudflare Workers. We designed
           Niruvi Store to work without mandatory user accounts, tracking pixels, or advertising
           networks.
         </p>

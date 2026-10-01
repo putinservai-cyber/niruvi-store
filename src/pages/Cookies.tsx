@@ -48,8 +48,8 @@ export const Cookies: React.FC<CookiesPageProps> = ({
         </div>
         <h1 className="text-3xl font-extrabold text-white tracking-tight">Cookie Policy</h1>
         <p className="text-sm text-neutral-300 leading-relaxed">
-          Niruvi Store (<code className="font-mono text-sky-400">https://niruvi-store.runs-on.dev</code>), operated by <strong>[OWNER NAME]</strong>, is a static web application
-          hosted on GitHub Pages.{' '}
+          Niruvi Store (<code className="font-mono text-sky-400">https://niruvi-store.putinservai.workers.dev</code>), operated by <strong>[OWNER NAME]</strong>, is a static web application
+          hosted on Cloudflare Workers.{' '}
           <strong>
             We do not set any advertising, cross-site tracking, or third-party analytics HTTP
             cookies.
