@@ -40,7 +40,7 @@ jobs:
         run: npm run build
         env:
           VITE_BASE: ${{ vars.VITE_BASE || '/niruvi-store/' }}
-          VITE_SITE_URL: ${{ vars.VITE_SITE_URL || 'https://putinservai-cyber.github.io/niruvi-store' }}
+          VITE_SITE_URL: ${{ vars.VITE_SITE_URL || 'https://putinservai-cyber.github.io' }}
 
       - name: Upload GitHub Pages Artifact
         uses: actions/upload-pages-artifact@v3

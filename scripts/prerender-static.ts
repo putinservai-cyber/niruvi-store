@@ -1,19 +1,39 @@
 import fs from 'fs';
 import path from 'path';
 
-const rawEnvSiteUrl = (
-  process.env.VITE_SITE_URL || 'https://putinservai-cyber.github.io/niruvi-store'
-).trim();
-const SITE_URL = (
-  /^https?:\/\//i.test(rawEnvSiteUrl) ? rawEnvSiteUrl : `https://${rawEnvSiteUrl}`
-).replace(/\/+$/, '');
-
 const rawBase = (
   process.env.VITE_BASE ||
   process.env.VITE_BASE_PATH ||
   '/niruvi-store/'
 ).trim();
-const BASE_PATH = rawBase.endsWith('/') ? rawBase : `${rawBase}/`;
+const normalizedBaseLeading = rawBase.startsWith('/') ? rawBase : `/${rawBase}`;
+const BASE_PATH = normalizedBaseLeading.endsWith('/')
+  ? normalizedBaseLeading
+  : `${normalizedBaseLeading}/`;
+const baseNoTrailing = BASE_PATH.replace(/\/+$/, '');
+
+const rawEnvSiteUrl = (
+  process.env.VITE_SITE_URL || 'https://putinservai-cyber.github.io'
+).trim();
+const httpsSiteOrigin = rawEnvSiteUrl
+  .replace(/^http:\/\//i, 'https://')
+  .replace(/^(?!https:\/\/)/i, 'https://')
+  .replace(/\/+$/, '');
+const strippedSiteOrigin =
+  baseNoTrailing && httpsSiteOrigin.endsWith(baseNoTrailing)
+    ? httpsSiteOrigin.slice(0, -baseNoTrailing.length)
+    : httpsSiteOrigin;
+const SITE_ORIGIN =
+  BASE_PATH !== '/' && !strippedSiteOrigin.includes('github.io')
+    ? 'https://putinservai-cyber.github.io'
+    : strippedSiteOrigin;
+
+/**
+ * Full public root URL combining VITE_SITE_URL + VITE_BASE (without trailing slash),
+ * e.g. 'https://putinservai-cyber.github.io/niruvi-store' or 'https://niruvi-store.runs-on.dev'.
+ */
+const SITE_URL = `${SITE_ORIGIN}${baseNoTrailing}`;
+const OG_IMAGE_URL = `${SITE_URL}/og-image.png`;
 
 function escapeHtml(str: string): string {
   return String(str || '')
@@ -22,6 +42,14 @@ function escapeHtml(str: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function buildCanonicalUrl(canonicalPath: string): string {
+  if (!canonicalPath || canonicalPath === '/') {
+    return `${SITE_URL}/`;
+  }
+  const clean = canonicalPath.startsWith('/') ? canonicalPath : `/${canonicalPath}`;
+  return `${SITE_URL}${clean.replace(/\/+$/, '')}`;
 }
 
 function replaceHeadMetadata(
@@ -33,14 +61,16 @@ function replaceHeadMetadata(
     jsonLd?: Record<string, unknown>;
   }
 ): string {
-  const canonicalUrl =
-    meta.canonicalPath === '/'
-      ? `${SITE_URL}/`
-      : `${SITE_URL}${meta.canonicalPath.startsWith('/') ? meta.canonicalPath : `/${meta.canonicalPath}`}`;
+  const canonicalUrl = buildCanonicalUrl(meta.canonicalPath);
+  const rootUrl = buildCanonicalUrl('/');
   const safeTitle = escapeHtml(meta.title);
   const safeDesc = escapeHtml(meta.description);
 
   let updated = html
+    .replace(/href="\.\/favicon\.ico"/g, `href="${BASE_PATH}favicon.ico"`)
+    .replace(/href="\.\/favicon\.png"/g, `href="${BASE_PATH}favicon.png"`)
+    .replace(/href="\.\/apple-touch-icon\.png"/g, `href="${BASE_PATH}apple-touch-icon.png"`)
+    .replace(/href="\.\/manifest\.json"/g, `href="${BASE_PATH}manifest.json"`)
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${safeTitle}</title>`)
     .replace(
       /<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i,
@@ -63,12 +93,24 @@ function replaceHeadMetadata(
       `<meta property="og:description" content="${safeDesc}" />`
     )
     .replace(
+      /<meta\s+property="og:image"\s+content="[^"]*"\s*\/?>/i,
+      `<meta property="og:image" content="${OG_IMAGE_URL}" />`
+    )
+    .replace(
       /<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/?>/i,
       `<meta name="twitter:title" content="${safeTitle}" />`
     )
     .replace(
       /<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/i,
       `<meta name="twitter:description" content="${safeDesc}" />`
+    )
+    .replace(
+      /<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/i,
+      `<meta name="twitter:image" content="${OG_IMAGE_URL}" />`
+    )
+    .replace(
+      /(<script[^>]*id="base-webapplication-jsonld"[^>]*>[\s\S]*?"url":\s*)"[^"]*"/i,
+      `$1"${rootUrl}"`
     );
 
   if (meta.jsonLd) {
@@ -100,6 +142,17 @@ function runPrerender() {
 
   const baseTemplate = fs.readFileSync(indexHtmlPath, 'utf-8');
   const apps: any[] = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'));
+
+  // Update dist/404.html canonical URL if present
+  const dist404Path = path.join(distDir, '404.html');
+  if (fs.existsSync(dist404Path)) {
+    const raw404 = fs.readFileSync(dist404Path, 'utf-8');
+    const updated404 = raw404.replace(
+      /<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i,
+      `<link rel="canonical" href="${buildCanonicalUrl('/404')}" />`
+    );
+    fs.writeFileSync(dist404Path, updated404, 'utf-8');
+  }
 
   // 1. Pre-render Homepage (dist/index.html) with all catalog cards
   const cardsHtml = apps
@@ -138,6 +191,7 @@ function runPrerender() {
           <a href="${BASE_PATH}">Store Browse</a>
           <a href="${BASE_PATH}verifier">SHA-256 Verifier</a>
           <a href="${BASE_PATH}submit">Submit AppImage</a>
+          <a href="${BASE_PATH}donate">Donate</a>
           <a href="${BASE_PATH}privacy">Privacy Policy</a>
           <a href="${BASE_PATH}terms">Terms</a>
         </nav>
@@ -184,7 +238,7 @@ function runPrerender() {
       operatingSystem: 'Linux',
       fileSize: app.size,
       downloadUrl: app.downloadUrl,
-      url: `${SITE_URL}${appPath}`,
+      url: buildCanonicalUrl(appPath),
       license: app.license,
       author: {
         '@type': 'Organization',
@@ -256,7 +310,7 @@ chmod +x ./${escapeHtml(fileName)}
     fs.writeFileSync(path.join(outAppDir, 'index.html'), appPageHtml, 'utf-8');
   }
 
-  // 3. Pre-render top-level static routes (/verifier, /submit, /library, /privacy, /terms, /cookies, /refunds)
+  // 3. Pre-render top-level static routes (/verifier, /submit, /donate, /library, /privacy, /terms, /cookies, /refunds)
   const staticPages = [
     {
       slug: 'verifier',
@@ -344,7 +398,7 @@ chmod +x ./${escapeHtml(fileName)}
   }
 
   console.log(
-    `✅ Pre-rendered dist/index.html, ${apps.length} dist/app/<id>/index.html pages, and ${staticPages.length} route pages!`
+    `✅ Pre-rendered dist/index.html, ${apps.length} dist/app/<id>/index.html pages, and ${staticPages.length} route pages (SITE_URL=${SITE_URL}, BASE_PATH=${BASE_PATH})!`
   );
 }
 

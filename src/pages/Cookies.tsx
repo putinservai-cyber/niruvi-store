@@ -1,7 +1,7 @@
 import React from 'react';
 import { Cookie, ArrowLeft, Settings } from 'lucide-react';
 import { CONSENT_STORAGE_KEY } from '../components/CookieConsent';
-import { DEVELOPER_NAME, CONTACT_EMAIL, SUPPORT_EMAIL } from '../config/site';
+import { DEVELOPER_NAME, CONTACT_EMAIL, SUPPORT_EMAIL, SITE_URL } from '../config/site';
 
 interface CookiesPageProps {
   onBackToStore: () => void;
@@ -36,8 +36,8 @@ export const Cookies: React.FC<CookiesPageProps> = ({
         </div>
         <h1 className="text-3xl font-extrabold text-white tracking-tight">Cookie Policy</h1>
         <p className="text-sm text-neutral-300 leading-relaxed">
-          Niruvi Store (<code className="font-mono text-sky-400">https://niruvi-store.putinservai.workers.dev</code>), developed and operated by <strong>{DEVELOPER_NAME}</strong>, is a web application
-          hosted on Cloudflare Workers.{' '}
+          Niruvi Store (<code className="font-mono text-sky-400">{SITE_URL}</code>), developed and operated by <strong>{DEVELOPER_NAME}</strong>, is a web application
+          for Linux AppImage discovery.{' '}
           <strong>
             We do not set any advertising, cross-site tracking, or third-party analytics HTTP
             cookies.

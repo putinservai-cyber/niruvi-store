@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Trash2, Check, ArrowLeft, Settings } from 'lucide-react';
 import { CONSENT_STORAGE_KEY } from '../components/CookieConsent';
-import { DEVELOPER_NAME, CONTACT_EMAIL, SUPPORT_EMAIL } from '../config/site';
+import { DEVELOPER_NAME, CONTACT_EMAIL, SUPPORT_EMAIL, SITE_URL } from '../config/site';
 
 interface PrivacyPageProps {
   onBackToStore: () => void;
@@ -53,9 +53,8 @@ export const Privacy: React.FC<PrivacyPageProps> = ({
         </div>
         <h1 className="text-3xl font-extrabold text-white tracking-tight">Privacy Policy</h1>
         <p className="text-sm text-neutral-300 leading-relaxed">
-          Niruvi Store (<code className="font-mono text-sky-400">https://niruvi-store.putinservai.workers.dev</code>, &ldquo;we&rdquo;, &ldquo;us&rdquo;, or &ldquo;our&rdquo;), developed and operated by{' '}
-          <strong>{DEVELOPER_NAME}</strong>, is an open-source Linux AppImage directory hosted on
-          Cloudflare Workers. We designed Niruvi Store to work without mandatory user accounts,
+          Niruvi Store (<code className="font-mono text-sky-400">{SITE_URL}</code>, &ldquo;we&rdquo;, &ldquo;us&rdquo;, or &ldquo;our&rdquo;), developed and operated by{' '}
+          <strong>{DEVELOPER_NAME}</strong>, is an open-source Linux AppImage directory. We designed Niruvi Store to work without mandatory user accounts,
           tracking pixels, or advertising networks.
         </p>
         <p className="text-sm font-bold text-emerald-400">

@@ -1,21 +1,62 @@
 /**
  * Central site URL, base path, developer, and contact metadata configuration.
- * Uses VITE_BASE / VITE_SITE_URL when provided at build time.
+ * Uses VITE_BASE and VITE_SITE_URL when provided at build time.
+ *
+ * Defaults (GitHub Pages):
+ *   VITE_BASE = '/niruvi-store/'
+ *   VITE_SITE_URL = 'https://putinservai-cyber.github.io'
+ *
+ * Custom domain mode:
+ *   VITE_BASE = '/'
+ *   VITE_SITE_URL = 'https://niruvi-store.runs-on.dev'
  */
 const metaEnv =
   typeof import.meta !== 'undefined'
     ? (import.meta as unknown as { env?: Record<string, string | undefined> }).env
     : undefined;
 
-const rawSiteUrl = (
-  (metaEnv && metaEnv.VITE_SITE_URL) ||
-  (typeof process !== 'undefined' && process.env && process.env.VITE_SITE_URL) ||
-  'https://putinservai-cyber.github.io/niruvi-store'
+const rawBaseInput = (
+  (metaEnv && (metaEnv.VITE_BASE || metaEnv.VITE_BASE_PATH || metaEnv.BASE_URL)) ||
+  (typeof process !== 'undefined' &&
+    process.env &&
+    (process.env.VITE_BASE || process.env.VITE_BASE_PATH)) ||
+  '/niruvi-store/'
 ).trim();
 
-const withProtocol = /^https?:\/\//i.test(rawSiteUrl) ? rawSiteUrl : `https://${rawSiteUrl}`;
+const normalizedBaseLeading = rawBaseInput.startsWith('/') ? rawBaseInput : `/${rawBaseInput}`;
+export const BASE_URL = normalizedBaseLeading.endsWith('/')
+  ? normalizedBaseLeading
+  : `${normalizedBaseLeading}/`;
 
-export const SITE_URL = withProtocol.replace(/\/+$/, '');
+const baseNoTrailing = BASE_URL.replace(/\/+$/, '');
+
+const rawSiteOriginInput = (
+  (metaEnv && metaEnv.VITE_SITE_URL) ||
+  (typeof process !== 'undefined' && process.env && process.env.VITE_SITE_URL) ||
+  'https://putinservai-cyber.github.io'
+).trim();
+
+const httpsSiteOrigin = rawSiteOriginInput
+  .replace(/^http:\/\//i, 'https://')
+  .replace(/^(?!https:\/\/)/i, 'https://')
+  .replace(/\/+$/, '');
+
+const strippedSiteOrigin =
+  baseNoTrailing && httpsSiteOrigin.endsWith(baseNoTrailing)
+    ? httpsSiteOrigin.slice(0, -baseNoTrailing.length)
+    : httpsSiteOrigin;
+
+// Prevent combining a custom domain (e.g. runs-on.dev) with the '/niruvi-store/' subpath
+export const SITE_ORIGIN =
+  BASE_URL !== '/' && !strippedSiteOrigin.includes('github.io')
+    ? 'https://putinservai-cyber.github.io'
+    : strippedSiteOrigin;
+
+/**
+ * Full public root URL combining VITE_SITE_URL + VITE_BASE (without trailing slash),
+ * e.g. 'https://putinservai-cyber.github.io/niruvi-store' or 'https://niruvi-store.runs-on.dev'.
+ */
+export const SITE_URL = `${SITE_ORIGIN}${baseNoTrailing}`;
 export const SITE_NAME = 'Niruvi Store';
 export const DEVELOPER_NAME = 'PutinServai';
 export const CONTACT_EMAIL = 'niruvi.linux@gmail.com';
@@ -27,16 +68,6 @@ export const DEFAULT_TITLE = 'Niruvi Store — Verified Linux AppImage Marketpla
 export const DEFAULT_DESCRIPTION =
   'Discover standalone Linux AppImage packages with cryptographic SHA-256 verification, upstream source transparency, and one-click niruvi:// desktop installation.';
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
-
-const rawBase = (
-  (metaEnv && (metaEnv.VITE_BASE || metaEnv.VITE_BASE_PATH || metaEnv.BASE_URL)) ||
-  (typeof process !== 'undefined' &&
-    process.env &&
-    (process.env.VITE_BASE || process.env.VITE_BASE_PATH)) ||
-  '/'
-).trim();
-
-export const BASE_URL = rawBase.endsWith('/') ? rawBase : `${rawBase}/`;
 
 /**
  * Resolves a local asset or route path against Vite's configured BASE_URL
@@ -61,19 +92,23 @@ export function withBaseUrl(assetOrRoutePath: string): string {
  */
 export function stripBaseUrl(pathname: string): string {
   if (!pathname) return '/';
-  const baseNoTrailing = BASE_URL.replace(/\/+$/, '');
   if (baseNoTrailing && baseNoTrailing !== '' && pathname.startsWith(baseNoTrailing)) {
     const rest = pathname.slice(baseNoTrailing.length);
     return rest.startsWith('/') ? rest : `/${rest}`;
+  }
+  if (pathname === '/niruvi-store' || pathname.startsWith('/niruvi-store/')) {
+    const rest = pathname.slice('/niruvi-store'.length);
+    return rest.startsWith('/') ? rest : `/${rest || ''}`;
   }
   return pathname.startsWith('/') ? pathname : `/${pathname}`;
 }
 
 /**
- * Builds a canonical URL for any path on the site.
+ * Builds an absolute canonical URL from VITE_SITE_URL + VITE_BASE + pathname.
  */
 export function buildCanonicalUrl(pathname = '/'): string {
-  const cleanPath = pathname.startsWith('/') ? pathname : `/${pathname}`;
+  const stripped = stripBaseUrl(pathname);
+  const cleanPath = stripped.startsWith('/') ? stripped : `/${stripped}`;
   if (cleanPath === '/' || cleanPath === '') {
     return `${SITE_URL}/`;
   }
