@@ -1,8 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 
-const SITE_URL = (
+const rawEnvSiteUrl = (
   process.env.VITE_SITE_URL || 'https://niruvi-store.putinservai.workers.dev'
+).trim();
+const SITE_URL = (
+  /^https?:\/\//i.test(rawEnvSiteUrl) ? rawEnvSiteUrl : `https://${rawEnvSiteUrl}`
 ).replace(/\/+$/, '');
 
 function escapeHtml(str: string): string {

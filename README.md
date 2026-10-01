@@ -35,21 +35,48 @@ Traditional Linux package managers require root privileges, complex PPA reposito
 
 ## 🏗️ Architecture
 
-**The production Niruvi Store site is the static GitHub Pages build only (`npm run build:static`).** The static catalog (`catalog/apps/*.json`) compiled into the Vite bundle is the single source of truth requiring **$0 operational budget**:
+Niruvi Store runs seamlessly both as a **Cloudflare Worker with D1, KV, and Cron Triggers** (`src/worker.ts` + `wrangler.json`) and as a **pre-rendered static build** (`npm run build`):
 
 ```text
 GitHub Repository (putinservai-cyber/niruvi-store)
- ├── React 18 + TypeScript + Tailwind CSS (Static Vite SPA)
- ├── JSON Application Catalog (catalog/apps/*.json — Single Source of Truth)
- ├── Automated Catalog Validator & Feed Generator (scripts/*)
- ├── Vitest Schema & Security Rules Test Suite (tests/*)
- ├── GitHub Actions CI (Gitleaks, Rules Check, Lint, Vitest, Static Build)
- ├── GitHub Pages (Continuous Deployment of dist/ to Live Web Store)
- ├── Upstream GitHub Releases (Direct HTTPS binary downloads)
- └── experimental/ (Optional Express/Cloudflare Worker prototypes — NOT part of the production build)
+ ├── React 18 + TypeScript + Tailwind v4 CSS (Vite SPA + Pre-rendered Static Routes)
+ ├── Curated SHA-256 Verified Catalog (catalog/apps/*.json + public/catalog.json)
+ ├── AppImageHub + GitHub Releases Data Pipeline (src/utils/appimagehub.ts)
+ ├── Cloudflare Worker API + Scheduled Cron Handler (src/worker.ts & wrangler.json)
+ ├── Cloudflare D1 SQL Schema Migrations (migrations/0001_catalog_pipeline.sql)
+ ├── Automated Pre-rendering & Sitemap Generator (scripts/generate-catalog.ts, scripts/prerender-static.ts)
+ └── Vitest Unit, Accessibility (axe-core), & Pipeline Test Suite (tests/*)
 ```
 
-> **Note on `experimental/`**: Files inside `experimental/` (`server.ts`, `worker.ts`, `wrangler.json`, `supabase/`, and DB helper scripts) are experimental prototypes and are **not part of the production build**. If experimenting with Cloudflare Workers & D1 (`experimental/wrangler.json`), provision secrets via `wrangler secret put JWT_SECRET` and create the D1 database via `wrangler d1 create niruvi_store_d1`, replacing the `00000000-0000-0000-0000-000000000000` placeholder in `experimental/wrangler.json`.
+### Automated AppImageHub + GitHub Releases Pipeline (`src/utils/appimagehub.ts` & `src/worker.ts`)
+1. **AppImageHub Feed Ingestion**: Fetches `https://appimage.github.io/feed.json` (version 1; 2,500+ Linux AppImages) and normalizes each package into Niruvi's schema (`id`, `name`, `description`, `categories`, `icon`, `screenshots`, `license`, `homepage`, `github_repo`), mapping desktop categories into 8 simplified categories (`Internet`, `Games`, `Graphics`, `Audio/Video`, `Office`, `Development`, `System/Utilities`, `Education`).
+2. **GitHub Releases Enrichment**: For GitHub-hosted repositories, queries `https://api.github.com/repos/{owner}/{repo}/releases` using `env.GITHUB_TOKEN` (with KV caching and rate-limit guards) to extract `.AppImage` assets per architecture (`x86_64`, `aarch64`, `armhf`), file sizes, publication dates, release notes, and multi-version history.
+3. **Strict SHA-256 Verification**: Checks native GitHub release asset digests (`sha256:...`), published `.sha256` / `SHA256SUMS` release assets, or computes SHA-256 via Web Crypto (`crypto.subtle.digest('SHA-256', ...)`). An application is marked **Verified** **only** when a real 64-character hex SHA-256 digest is confirmed.
+4. **Cloudflare D1 + Cron Trigger (`0 */6 * * *`)**: The Worker's `scheduled()` handler runs every 6 hours, idempotently upserting packages into D1 (`catalog_apps`, `catalog_releases`) and logging per-app errors to `catalog_sync_logs` without stopping the batch.
+
+---
+
+## ☁️ Deploying with Cloudflare Wrangler (Workers + D1 + KV + Secrets)
+
+```bash
+# 1. Create the D1 database and apply schema migration
+npx wrangler d1 create niruvi-store-db
+npx wrangler d1 execute niruvi-store-db --remote --file=./migrations/0001_catalog_pipeline.sql
+
+# 2. Provision Worker secrets (never commit secrets to git)
+npx wrangler secret put JWT_SECRET
+npx wrangler secret put GITHUB_TOKEN
+
+# 3. Build static assets + pre-rendered app pages and deploy Worker
+npm run build
+npx wrangler deploy
+```
+
+To test the scheduled Cron Trigger locally with Wrangler:
+```bash
+npx wrangler dev --test-scheduled
+curl "http://localhost:8787/__scheduled?cron=0+*/6+*+*+*"
+```
 
 ---
 

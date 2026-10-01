@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   HelpCircle,
   GitBranch,
@@ -10,6 +10,8 @@ import {
   LogOut,
   Zap,
   Heart,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { NiruviLogo } from './NiruviLogo';
@@ -48,6 +50,24 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSponsor,
 }) => {
   const { user, openAuthModal, openAccountModal, signOut } = useAuth();
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = window.localStorage.getItem('niruvi_theme');
+      if (saved === 'light' || saved === 'dark') return saved;
+    }
+    return 'dark';
+  });
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', theme);
+      try {
+        window.localStorage.setItem('niruvi_theme', theme);
+      } catch {
+        // Ignore storage errors
+      }
+    }
+  }, [theme]);
 
   // Shortcut: '/' key focuses search bar
   useEffect(() => {
@@ -157,6 +177,21 @@ export const Navbar: React.FC<NavbarProps> = ({
               <GitBranch className="w-3.5 h-3.5 text-neutral-300" aria-hidden="true" />
               <span>GitHub Repository</span>
             </a>
+
+            <button
+              id="theme-toggle-btn"
+              type="button"
+              onClick={() => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))}
+              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+              className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-neutral-200 hover:text-white transition-colors cursor-pointer"
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-4 h-4 text-amber-300" aria-hidden="true" />
+              ) : (
+                <Moon className="w-4 h-4 text-sky-400" aria-hidden="true" />
+              )}
+            </button>
 
             {/* Auth Profile / Account Management Button */}
             {user ? (

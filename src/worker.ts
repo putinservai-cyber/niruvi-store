@@ -17,6 +17,18 @@
  */
 
 import { sanitizeText, sanitizeUrl, sanitizeUsername } from './utils/sanitize';
+import { APPS_CATALOG } from './data/apps';
+import { AppMetadata } from './types';
+import { isGenuineSha256 } from './utils/catalogSchema';
+import {
+  APPIMAGEHUB_FEED_URL,
+  RawAppImageHubItem,
+  GitHubReleaseResponse,
+  normalizeAppImageHubItem,
+  extractVersionHistoryFromReleases,
+  buildAppMetadataFromNormalized,
+  mapToSimplifiedCategory,
+} from './utils/appimagehub';
 
 export interface D1PreparedStatement {
   bind(...values: any[]): D1PreparedStatement;
@@ -38,6 +50,7 @@ export interface KVNamespace {
 
 export interface Env {
   JWT_SECRET?: string;
+  GITHUB_TOKEN?: string;
   FIREBASE_PROJECT_ID?: string;
   NIRUVI_AUTH_KV?: KVNamespace;
   DB?: D1Database;
@@ -71,6 +84,17 @@ const RATE_LIMIT_WINDOW_SECONDS = 600; // 10 minutes
 const memoryRateLimits = new Map<string, { count: number; expiresAt: number }>();
 const memoryUsers = new Map<string, WorkerUserRecord>();
 const memoryDevProfiles = new Map<string, Record<string, any>>();
+const memoryCatalogApps = new Map<string, AppMetadata>();
+const memorySyncLogs: Array<{
+  id: string;
+  runId: string;
+  appId: string | null;
+  status: string;
+  message: string;
+  createdAt: string;
+}> = [];
+const memoryReports: Array<Record<string, any>> = [];
+const memorySubmissions: Array<Record<string, any>> = [];
 
 let cachedGoogleCerts: { certs: Record<string, string>; expiresAt: number } | null = null;
 let cachedGoogleJwks: { keys: any[]; expiresAt: number } | null = null;
@@ -173,6 +197,94 @@ async function ensureD1Tables(db?: D1Database): Promise<void> {
           payout_email TEXT NOT NULL,
           verified INTEGER NOT NULL DEFAULT 1,
           created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )`
+      )
+      .run();
+
+    await db
+      .prepare(
+        `CREATE TABLE IF NOT EXISTS catalog_apps (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          tagline TEXT NOT NULL,
+          description TEXT NOT NULL,
+          category TEXT NOT NULL,
+          categories_json TEXT NOT NULL DEFAULT '[]',
+          version TEXT NOT NULL DEFAULT 'latest',
+          release_date TEXT NOT NULL,
+          size TEXT NOT NULL DEFAULT 'Unknown size',
+          architectures_json TEXT NOT NULL DEFAULT '["x86_64"]',
+          license TEXT NOT NULL DEFAULT 'Open Source',
+          license_category TEXT NOT NULL DEFAULT 'Open Source',
+          publisher_name TEXT NOT NULL,
+          publisher_website TEXT,
+          publisher_github TEXT,
+          verified INTEGER NOT NULL DEFAULT 0,
+          sha256 TEXT NOT NULL DEFAULT '',
+          download_url TEXT NOT NULL,
+          download_map_json TEXT NOT NULL DEFAULT '{}',
+          icon_url TEXT,
+          screenshots_json TEXT NOT NULL DEFAULT '[]',
+          homepage_url TEXT,
+          github_repo TEXT,
+          releases_url TEXT,
+          featured INTEGER NOT NULL DEFAULT 0,
+          downloads_count INTEGER NOT NULL DEFAULT 0,
+          rating REAL NOT NULL DEFAULT 0,
+          release_notes TEXT,
+          version_history_json TEXT NOT NULL DEFAULT '[]',
+          source_origin TEXT NOT NULL DEFAULT 'appimagehub',
+          updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )`
+      )
+      .run();
+
+    await db
+      .prepare(
+        `CREATE TABLE IF NOT EXISTS catalog_sync_logs (
+          id TEXT PRIMARY KEY,
+          run_id TEXT NOT NULL,
+          app_id TEXT,
+          status TEXT NOT NULL,
+          message TEXT,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )`
+      )
+      .run();
+
+    await db
+      .prepare(
+        `CREATE TABLE IF NOT EXISTS app_reports (
+          id TEXT PRIMARY KEY,
+          app_id TEXT NOT NULL,
+          app_name TEXT NOT NULL,
+          reason TEXT NOT NULL,
+          details TEXT NOT NULL,
+          distro TEXT,
+          architecture TEXT,
+          reporter_email TEXT,
+          status TEXT NOT NULL DEFAULT 'open',
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )`
+      )
+      .run();
+
+    await db
+      .prepare(
+        `CREATE TABLE IF NOT EXISTS app_submissions (
+          id TEXT PRIMARY KEY,
+          app_id TEXT NOT NULL,
+          name TEXT NOT NULL,
+          description TEXT NOT NULL,
+          category TEXT NOT NULL,
+          homepage_url TEXT,
+          github_repo TEXT NOT NULL,
+          download_url TEXT NOT NULL,
+          sha256 TEXT,
+          license TEXT NOT NULL DEFAULT 'Open Source',
+          submitter_email TEXT,
+          status TEXT NOT NULL DEFAULT 'pending_review',
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         )`
       )
       .run();
@@ -867,9 +979,279 @@ export default {
         );
       }
 
-      // 10. Health check & Admin / Pro gated endpoints — Server-side D1 role/plan enforcement on EVERY request
+      // 10. Health check & Catalog / Reports / Submissions / Admin endpoints
       if (path === '/api/health' && method === 'GET') {
         return jsonResponse({ status: 'ok', runtime: 'cloudflare-workers' }, 200, origin);
+      }
+
+      // 11. GET /api/catalog — Paginated, filterable catalog combining built-in + D1/AppImageHub apps
+      if (path === '/api/catalog' && method === 'GET') {
+        const q = (url.searchParams.get('q') || '').trim().toLowerCase();
+        const category = (url.searchParams.get('category') || 'All').trim();
+        const arch = (url.searchParams.get('arch') || 'All').trim();
+        const verifiedOnly =
+          url.searchParams.get('verified') === 'true' || url.searchParams.get('verified') === '1';
+        const recentlyUpdated =
+          url.searchParams.get('updated') === 'true' || url.searchParams.get('updated') === '1';
+        const sort = (url.searchParams.get('sort') || 'featured').trim();
+        const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10) || 1);
+        const limit = Math.min(
+          200,
+          Math.max(1, parseInt(url.searchParams.get('limit') || '48', 10) || 48)
+        );
+
+        const allApps = await getMergedCatalogApps(env);
+        const filtered = allApps
+          .filter((app) => {
+            if (q) {
+              const hay = `${app.name} ${app.tagline} ${app.description} ${app.publisher.name} ${(app.tags || []).join(' ')}`.toLowerCase();
+              if (!hay.includes(q)) return false;
+            }
+            if (category !== 'All') {
+              const simplified = app.simplifiedCategory || mapToSimplifiedCategory(app.category);
+              if (app.category !== category && simplified !== category) return false;
+            }
+            if (arch !== 'All' && !app.architectures.includes(arch as any)) {
+              return false;
+            }
+            if (verifiedOnly && (!app.publisher.verified || !isGenuineSha256(app.sha256))) {
+              return false;
+            }
+            if (recentlyUpdated) {
+              const cutoff = Date.now() - 180 * 24 * 60 * 60 * 1000;
+              const ts = new Date(app.releaseDate).getTime();
+              if (!Number.isFinite(ts) || ts < cutoff) return false;
+            }
+            return true;
+          })
+          .sort((a, b) => {
+            if (sort === 'popular') return (b.downloadsCount || 0) - (a.downloadsCount || 0);
+            if (sort === 'rating') return (b.rating || 0) - (a.rating || 0);
+            if (sort === 'recent') {
+              return new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime();
+            }
+            if (sort === 'name') return a.name.localeCompare(b.name);
+            if (a.publisher.verified && !b.publisher.verified) return -1;
+            if (!a.publisher.verified && b.publisher.verified) return 1;
+            if (a.featured && !b.featured) return -1;
+            if (!a.featured && b.featured) return 1;
+            return (b.downloadsCount || 0) - (a.downloadsCount || 0);
+          });
+
+        const total = filtered.length;
+        const start = (page - 1) * limit;
+        const items = filtered.slice(start, start + limit);
+
+        return jsonResponse(
+          {
+            items,
+            total,
+            page,
+            limit,
+            totalPages: Math.max(1, Math.ceil(total / limit)),
+          },
+          200,
+          origin
+        );
+      }
+
+      // 12. GET /api/catalog/:id — Single app detail + version history (with on-demand GitHub Releases cache)
+      if (path.startsWith('/api/catalog/') && path !== '/api/catalog/sync' && method === 'GET') {
+        const appId = decodeURIComponent(path.slice('/api/catalog/'.length)).trim().toLowerCase();
+        const allApps = await getMergedCatalogApps(env);
+        const found = allApps.find((a) => a.id.toLowerCase() === appId);
+        if (!found) {
+          return jsonResponse({ error: 'Application not found' }, 404, origin);
+        }
+
+        // Enrich with GitHub Releases history on demand if not yet populated
+        let enriched = found;
+        const repoSlug =
+          found.githubRepo ||
+          (found.repositoryUrl
+            ? found.repositoryUrl.replace(/^https?:\/\/github\.com\//i, '').replace(/\/+$/, '')
+            : '');
+        if (
+          repoSlug &&
+          (!found.versionHistory || found.versionHistory.length === 0)
+        ) {
+          try {
+            const releases = await fetchCachedGitHubReleases(env, repoSlug);
+            const extracted = await extractVersionHistoryFromReleases(releases);
+            if (extracted) {
+              enriched = {
+                ...found,
+                versionHistory: extracted.versionHistory,
+              };
+            }
+          } catch {
+            // Return existing app metadata if GitHub API is rate-limited or offline
+          }
+        }
+
+        return jsonResponse({ app: enriched }, 200, origin);
+      }
+
+      // 13. POST /api/catalog/sync — Idempotent AppImageHub + GitHub Releases batch sync
+      if (path === '/api/catalog/sync' && method === 'POST') {
+        const body = (await request.json().catch(() => ({}))) as Record<string, any>;
+        const maxItems = Math.min(200, Math.max(1, Number(body.maxItems) || 50));
+        const maxGithubEnrich = Math.min(25, Math.max(0, Number(body.maxGithubEnrich) || 5));
+        const summary = await syncAppImageHubCatalogBatch(env, {
+          maxItems,
+          maxGithubEnrich,
+        });
+        return jsonResponse({ success: true, ...summary }, 200, origin);
+      }
+
+      // 14. POST /api/reports — "Report broken app" endpoint
+      if (path === '/api/reports' && method === 'POST') {
+        const body = (await request.json().catch(() => ({}))) as Record<string, any>;
+        const appId = sanitizeText(body.appId || '', 64).toLowerCase();
+        const appName = sanitizeText(body.appName || appId, 100);
+        const reason = sanitizeText(body.reason || '', 80);
+        const details = sanitizeText(body.details || '', 1500);
+        const distro = sanitizeText(body.distro || '', 80);
+        const architecture = sanitizeText(body.architecture || 'x86_64', 20);
+        const reporterEmail =
+          typeof body.reporterEmail === 'string' ? body.reporterEmail.trim().slice(0, 120) : '';
+
+        if (!appId || !reason || details.length < 5) {
+          return jsonResponse(
+            { error: 'Please provide an application ID, issue reason, and brief details.' },
+            400,
+            origin
+          );
+        }
+
+        const reportId = `rep_${crypto.randomUUID()}`;
+        const createdAt = new Date().toISOString();
+
+        if (env?.DB) {
+          await ensureD1Tables(env.DB);
+          await env.DB.prepare(
+            `INSERT INTO app_reports (id, app_id, app_name, reason, details, distro, architecture, reporter_email, status, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'open', ?)`
+          )
+            .bind(
+              reportId,
+              appId,
+              appName,
+              reason,
+              details,
+              distro || null,
+              architecture,
+              reporterEmail || null,
+              createdAt
+            )
+            .run();
+        } else {
+          memoryReports.push({
+            id: reportId,
+            appId,
+            appName,
+            reason,
+            details,
+            distro,
+            architecture,
+            reporterEmail,
+            status: 'open',
+            createdAt,
+          });
+        }
+
+        return jsonResponse(
+          {
+            success: true,
+            reportId,
+            message: 'Thank you. Your broken package report has been logged for maintainer review.',
+          },
+          201,
+          origin
+        );
+      }
+
+      // 15. POST /api/submissions — "Submit an app" endpoint
+      if (path === '/api/submissions' && method === 'POST') {
+        const body = (await request.json().catch(() => ({}))) as Record<string, any>;
+        const name = sanitizeText(body.name || '', 100);
+        const description = sanitizeText(body.description || '', 2000);
+        const category = mapToSimplifiedCategory(body.category || 'System/Utilities');
+        const homepageUrl = body.homepageUrl ? sanitizeUrl(body.homepageUrl) : '';
+        const githubRepo = sanitizeText(body.githubRepo || '', 120);
+        const downloadUrl = sanitizeUrl(body.downloadUrl || '');
+        const sha256Raw = typeof body.sha256 === 'string' ? body.sha256.trim().toLowerCase() : '';
+        const license = sanitizeText(body.license || 'Open Source', 60);
+        const submitterEmail =
+          typeof body.submitterEmail === 'string' ? body.submitterEmail.trim().slice(0, 120) : '';
+
+        if (!name || !description || !downloadUrl.startsWith('https://')) {
+          return jsonResponse(
+            {
+              error:
+                'Application name, description, and a valid https:// AppImage download URL are required.',
+            },
+            400,
+            origin
+          );
+        }
+
+        const verifiedSha = isGenuineSha256(sha256Raw) ? sha256Raw : '';
+        const submissionId = `sub_${crypto.randomUUID()}`;
+        const appId = name
+          .toLowerCase()
+          .replace(/[^a-z0-9._-]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .slice(0, 64);
+
+        if (env?.DB) {
+          await ensureD1Tables(env.DB);
+          await env.DB.prepare(
+            `INSERT INTO app_submissions (id, app_id, name, description, category, homepage_url, github_repo, download_url, sha256, license, submitter_email, status)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending_review')`
+          )
+            .bind(
+              submissionId,
+              appId,
+              name,
+              description,
+              category,
+              homepageUrl || null,
+              githubRepo,
+              downloadUrl,
+              verifiedSha || null,
+              license,
+              submitterEmail || null
+            )
+            .run();
+        } else {
+          memorySubmissions.push({
+            id: submissionId,
+            appId,
+            name,
+            description,
+            category,
+            homepageUrl,
+            githubRepo,
+            downloadUrl,
+            sha256: verifiedSha,
+            verified: Boolean(verifiedSha),
+            license,
+            submitterEmail,
+            status: 'pending_review',
+          });
+        }
+
+        return jsonResponse(
+          {
+            success: true,
+            submissionId,
+            verified: Boolean(verifiedSha),
+            message: 'Application submitted successfully to the Niruvi Store review queue.',
+          },
+          201,
+          origin
+        );
       }
 
       if (path.startsWith('/api/admin/')) {
@@ -908,7 +1290,382 @@ export default {
       return jsonResponse({ error: 'Internal server error' }, 500, origin);
     }
   },
+
+  /**
+   * Cloudflare Cron Trigger Handler (`0 *\/6 * * *`)
+   * Idempotently refreshes the AppImageHub catalog and enriches GitHub-hosted releases.
+   */
+  async scheduled(
+    _event: { cron?: string; scheduledTime?: number },
+    env: Env,
+    ctx?: { waitUntil?: (promise: Promise<any>) => void }
+  ): Promise<void> {
+    const task = syncAppImageHubCatalogBatch(env, {
+      maxItems: 150,
+      maxGithubEnrich: 12,
+    });
+    if (ctx && typeof ctx.waitUntil === 'function') {
+      ctx.waitUntil(task);
+    } else {
+      await task;
+    }
+  },
 };
+
+/**
+ * Fetches GitHub Releases for `owner/repo` with KV caching and GitHub token authentication.
+ */
+export async function fetchCachedGitHubReleases(
+  env: Env,
+  repoSlug: string,
+  fetchImpl: typeof fetch = fetch
+): Promise<GitHubReleaseResponse[]> {
+  const cleanRepo = repoSlug.replace(/^\/+|\/+$/g, '');
+  const cacheKey = `gh_releases:${cleanRepo.toLowerCase()}`;
+
+  if (env?.NIRUVI_AUTH_KV) {
+    try {
+      const cached = await env.NIRUVI_AUTH_KV.get(cacheKey);
+      if (cached) {
+        return JSON.parse(cached) as GitHubReleaseResponse[];
+      }
+    } catch {
+      // Fall through to live GitHub API call
+    }
+  }
+
+  const headers: Record<string, string> = {
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'NiruviStore-CatalogWorker/1.0',
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
+  if (env?.GITHUB_TOKEN) {
+    headers.Authorization = `Bearer ${env.GITHUB_TOKEN}`;
+  }
+
+  const apiUrl = `https://api.github.com/repos/${cleanRepo}/releases?per_page=8`;
+  const res = await fetchImpl(apiUrl, { headers });
+
+  const remainingHeader = res.headers?.get?.('X-RateLimit-Remaining');
+  if (res.status === 403 || res.status === 429 || remainingHeader === '0') {
+    throw new Error(`GitHub API rate limit reached for ${cleanRepo} (status ${res.status})`);
+  }
+  if (!res.ok) {
+    throw new Error(`GitHub Releases API returned ${res.status} for ${cleanRepo}`);
+  }
+
+  const releases = (await res.json()) as GitHubReleaseResponse[];
+  if (env?.NIRUVI_AUTH_KV && Array.isArray(releases)) {
+    try {
+      await env.NIRUVI_AUTH_KV.put(cacheKey, JSON.stringify(releases), {
+        expirationTtl: 6 * 3600,
+      });
+    } catch {
+      // Ignore KV cache write failure
+    }
+  }
+
+  return Array.isArray(releases) ? releases : [];
+}
+
+/**
+ * Idempotent batch sync job that ingests AppImageHub (`https://appimage.github.io/feed.json`),
+ * enriches GitHub-hosted packages with release assets and SHA-256 checksums, stores in D1/memory,
+ * and logs per-app errors without stopping the batch.
+ */
+export async function syncAppImageHubCatalogBatch(
+  env: Env,
+  options: {
+    maxItems?: number;
+    maxGithubEnrich?: number;
+    rawFeedItemsOverride?: RawAppImageHubItem[];
+    fetchImpl?: typeof fetch;
+  } = {}
+): Promise<{
+  runId: string;
+  processed: number;
+  enriched: number;
+  verifiedCount: number;
+  failedCount: number;
+  errors: Array<{ appId: string; message: string }>;
+}> {
+  const runId = `sync_${crypto.randomUUID()}`;
+  const fetchFn = options.fetchImpl || fetch;
+  const maxItems = options.maxItems ?? 100;
+  const maxGithubEnrich = options.maxGithubEnrich ?? 8;
+
+  await ensureD1Tables(env?.DB);
+
+  let rawItems: RawAppImageHubItem[] = [];
+  if (Array.isArray(options.rawFeedItemsOverride)) {
+    rawItems = options.rawFeedItemsOverride;
+  } else {
+    const res = await fetchFn(APPIMAGEHUB_FEED_URL, {
+      headers: { 'User-Agent': 'NiruviStore-CatalogWorker/1.0' },
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to fetch AppImageHub feed: HTTP ${res.status}`);
+    }
+    const payload = (await res.json()) as { items?: RawAppImageHubItem[] };
+    rawItems = Array.isArray(payload.items) ? payload.items : [];
+  }
+
+  let processed = 0;
+  let enriched = 0;
+  let verifiedCount = 0;
+  let failedCount = 0;
+  const errors: Array<{ appId: string; message: string }> = [];
+
+  for (const rawItem of rawItems.slice(0, maxItems)) {
+    const candidateId = typeof rawItem?.name === 'string' ? rawItem.name : 'unknown';
+    try {
+      const normalized = normalizeAppImageHubItem(rawItem);
+      if (!normalized) continue;
+
+      let releaseInfo: Awaited<ReturnType<typeof extractVersionHistoryFromReleases>> = null;
+      if (normalized.github_repo && enriched < maxGithubEnrich) {
+        try {
+          const releases = await fetchCachedGitHubReleases(env, normalized.github_repo, fetchFn);
+          releaseInfo = await extractVersionHistoryFromReleases(releases, fetchFn);
+          if (releaseInfo) {
+            enriched += 1;
+          }
+        } catch (ghErr: any) {
+          // Log GitHub enrichment warning per app but continue syncing normalized entry
+          await recordSyncLog(
+            env,
+            runId,
+            normalized.id,
+            'warning',
+            ghErr?.message || 'GitHub release enrichment skipped'
+          );
+        }
+      }
+
+      const appMeta = buildAppMetadataFromNormalized(normalized, releaseInfo);
+      if (appMeta.publisher.verified && isGenuineSha256(appMeta.sha256)) {
+        verifiedCount += 1;
+      }
+
+      await upsertCatalogAppToD1(env, appMeta);
+      processed += 1;
+    } catch (err: any) {
+      failedCount += 1;
+      const msg = err?.message || 'Unexpected normalization error';
+      errors.push({ appId: candidateId, message: msg });
+      await recordSyncLog(env, runId, candidateId, 'error', msg);
+    }
+  }
+
+  await recordSyncLog(
+    env,
+    runId,
+    null,
+    'completed',
+    `Processed ${processed} apps (${enriched} GitHub-enriched, ${verifiedCount} verified, ${failedCount} failed)`
+  );
+
+  return {
+    runId,
+    processed,
+    enriched,
+    verifiedCount,
+    failedCount,
+    errors,
+  };
+}
+
+async function recordSyncLog(
+  env: Env,
+  runId: string,
+  appId: string | null,
+  status: string,
+  message: string
+): Promise<void> {
+  const id = `log_${crypto.randomUUID()}`;
+  const createdAt = new Date().toISOString();
+  if (env?.DB) {
+    try {
+      await env.DB.prepare(
+        `INSERT INTO catalog_sync_logs (id, run_id, app_id, status, message, created_at)
+         VALUES (?, ?, ?, ?, ?, ?)`
+      )
+        .bind(id, runId, appId, status, message.slice(0, 500), createdAt)
+        .run();
+      return;
+    } catch {
+      // Fallback to memory log
+    }
+  }
+  memorySyncLogs.push({ id, runId, appId, status, message, createdAt });
+}
+
+async function upsertCatalogAppToD1(env: Env, app: AppMetadata): Promise<void> {
+  const isVerified = Boolean(app.publisher.verified && isGenuineSha256(app.sha256));
+  const simplified = app.simplifiedCategory || mapToSimplifiedCategory(app.category);
+
+  if (env?.DB) {
+    try {
+      await env.DB.prepare(
+        `INSERT INTO catalog_apps (
+          id, name, tagline, description, category, categories_json, version, release_date,
+          size, architectures_json, license, license_category, publisher_name, publisher_website,
+          publisher_github, verified, sha256, download_url, download_map_json, icon_url,
+          screenshots_json, homepage_url, github_repo, releases_url, featured, downloads_count,
+          rating, release_notes, version_history_json, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          name = excluded.name,
+          tagline = excluded.tagline,
+          description = excluded.description,
+          category = excluded.category,
+          categories_json = excluded.categories_json,
+          version = excluded.version,
+          release_date = excluded.release_date,
+          size = excluded.size,
+          architectures_json = excluded.architectures_json,
+          license = excluded.license,
+          license_category = excluded.license_category,
+          publisher_name = excluded.publisher_name,
+          publisher_website = excluded.publisher_website,
+          publisher_github = excluded.publisher_github,
+          verified = excluded.verified,
+          sha256 = excluded.sha256,
+          download_url = excluded.download_url,
+          download_map_json = excluded.download_map_json,
+          icon_url = excluded.icon_url,
+          screenshots_json = excluded.screenshots_json,
+          homepage_url = excluded.homepage_url,
+          github_repo = excluded.github_repo,
+          releases_url = excluded.releases_url,
+          version_history_json = excluded.version_history_json,
+          updated_at = excluded.updated_at`
+      )
+        .bind(
+          app.id,
+          app.name,
+          app.tagline,
+          app.description,
+          simplified,
+          JSON.stringify(app.tags || [simplified]),
+          app.version,
+          app.releaseDate,
+          app.size,
+          JSON.stringify(app.architectures || ['x86_64']),
+          app.license,
+          app.licenseCategory,
+          app.publisher.name,
+          app.publisher.website || null,
+          app.publisher.github || null,
+          isVerified ? 1 : 0,
+          isVerified ? app.sha256 : '',
+          app.downloadUrl,
+          JSON.stringify(app.downloadMap || {}),
+          app.icon || null,
+          JSON.stringify(app.screenshots || []),
+          app.homepageUrl || null,
+          app.githubRepo || null,
+          app.releasesUrl || null,
+          app.featured ? 1 : 0,
+          app.downloadsCount || 0,
+          app.rating || 0,
+          app.changelog?.[0] || null,
+          JSON.stringify(app.versionHistory || []),
+          new Date().toISOString()
+        )
+        .run();
+      return;
+    } catch {
+      // Fallback to in-memory catalog store
+    }
+  }
+
+  memoryCatalogApps.set(app.id, {
+    ...app,
+    simplifiedCategory: simplified,
+    publisher: {
+      ...app.publisher,
+      verified: isVerified,
+    },
+    sha256: isVerified ? app.sha256 : '',
+  });
+}
+
+async function getMergedCatalogApps(env: Env): Promise<AppMetadata[]> {
+  const merged = new Map<string, AppMetadata>();
+
+  for (const app of APPS_CATALOG) {
+    const isVerified = Boolean(app.publisher.verified && isGenuineSha256(app.sha256));
+    merged.set(app.id, {
+      ...app,
+      simplifiedCategory: app.simplifiedCategory || mapToSimplifiedCategory(app.category),
+      publisher: {
+        ...app.publisher,
+        verified: isVerified,
+      },
+    });
+  }
+
+  for (const [id, app] of memoryCatalogApps.entries()) {
+    merged.set(id, app);
+  }
+
+  if (env?.DB) {
+    try {
+      await ensureD1Tables(env.DB);
+      const { results } = await env.DB.prepare(
+        `SELECT * FROM catalog_apps ORDER BY verified DESC, release_date DESC LIMIT 2000`
+      ).all<Record<string, any>>();
+
+      for (const row of results || []) {
+        const isVerified = Boolean(row.verified && isGenuineSha256(row.sha256));
+        const existing = merged.get(row.id);
+        merged.set(row.id, {
+          id: row.id,
+          name: row.name,
+          tagline: row.tagline,
+          description: row.description,
+          category: (existing?.category || row.category) as any,
+          simplifiedCategory: mapToSimplifiedCategory(row.category),
+          version: row.version,
+          releaseDate: row.release_date,
+          size: row.size,
+          architectures: JSON.parse(row.architectures_json || '["x86_64"]'),
+          license: row.license,
+          licenseCategory: row.license_category || 'Open Source',
+          publisher: {
+            name: row.publisher_name,
+            website: row.publisher_website || undefined,
+            github: row.publisher_github || undefined,
+            verified: isVerified,
+          },
+          sha256: isVerified ? row.sha256 : '',
+          downloadUrl: row.download_url,
+          downloadMap: JSON.parse(row.download_map_json || '{}'),
+          iconSlug: row.id,
+          icon: row.icon_url || existing?.icon,
+          homepageUrl: row.homepage_url || undefined,
+          sourceUrl: row.publisher_github || row.homepage_url || undefined,
+          repositoryUrl: row.publisher_github || undefined,
+          releasesUrl: row.releases_url || undefined,
+          githubRepo: row.github_repo || undefined,
+          trustTier: isVerified ? 'Official Developer' : 'Unverified Community',
+          officialStatus: isVerified,
+          tags: JSON.parse(row.categories_json || '[]'),
+          featured: Boolean(row.featured && isVerified),
+          downloadsCount: Number(row.downloads_count) || existing?.downloadsCount || 0,
+          rating: Number(row.rating) || existing?.rating || 0,
+          versionHistory: JSON.parse(row.version_history_json || '[]'),
+          screenshots: JSON.parse(row.screenshots_json || '[]'),
+        });
+      }
+    } catch {
+      // Fallback to built-in + memory catalog if D1 query fails
+    }
+  }
+
+  return Array.from(merged.values());
+}
 
 /**
  * Cryptographically verifies a Firebase ID Token (RS256) against Google's public X.509 / JWK certificates

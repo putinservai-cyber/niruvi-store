@@ -41,16 +41,23 @@ import {
   toggleBookmark,
   getCustomApps,
 } from './utils/storage';
-import { validateCatalogAtRuntime } from './utils/catalogSchema';
+import { validateCatalogAtRuntime, isGenuineSha256 } from './utils/catalogSchema';
+import { mapToSimplifiedCategory } from './utils/appimagehub';
 import { updatePageSeo } from './utils/seo';
 import {
   ShieldCheck,
-  Search,
   SearchX,
   Download,
   AlertTriangle,
   RefreshCw,
+  Sparkles,
+  Clock,
+  Flame,
+  PlusCircle,
+  ChevronDown,
 } from 'lucide-react';
+
+const PAGE_SIZE = 24;
 
 function parseInitialFiltersFromUrl(): FilterState {
   if (typeof window === 'undefined') {
@@ -60,6 +67,8 @@ function parseInitialFiltersFromUrl(): FilterState {
       architecture: 'All',
       licenseCategory: 'All',
       trustTier: 'All',
+      verifiedOnly: false,
+      recentlyUpdated: false,
       sortBy: 'featured',
     };
   }
@@ -70,6 +79,8 @@ function parseInitialFiltersFromUrl(): FilterState {
     architecture: (params.get('arch') as Architecture | 'All') || 'All',
     licenseCategory: (params.get('license') as LicenseType) || 'All',
     trustTier: (params.get('trust') as TrustTier | 'All') || 'All',
+    verifiedOnly: params.get('verified') === '1' || params.get('verified') === 'true',
+    recentlyUpdated: params.get('updated') === '1' || params.get('updated') === 'true',
     sortBy: (params.get('sort') as FilterState['sortBy']) || 'featured',
   };
 }
@@ -137,10 +148,12 @@ export const App: React.FC<AppProps> = ({
     return validateCatalogAtRuntime(rawSource);
   }, [initialCatalogOverride]);
 
-  // Persistent user records
+  // Persistent user records & remote D1 synced catalog items
   const [installedRecords, setInstalledRecords] = useState<InstalledAppRecord[]>([]);
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
   const [customApps, setCustomApps] = useState<AppMetadata[]>([]);
+  const [remoteApps, setRemoteApps] = useState<AppMetadata[]>([]);
+  const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
 
   // Modals state
   const [selectedApp, setSelectedApp] = useState<AppMetadata | null>(null);
@@ -158,7 +171,21 @@ export const App: React.FC<AppProps> = ({
     setInstalledRecords(getInstalledApps());
     setBookmarkedIds(getBookmarkedAppIds());
     setCustomApps(getCustomApps());
-  }, []);
+
+    // Fetch live D1/AppImageHub catalog items from Worker when available (skip when initialCatalogOverride is passed in tests)
+    if (initialCatalogOverride === undefined && typeof window !== 'undefined' && typeof fetch === 'function') {
+      fetch('/api/catalog?limit=200')
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && Array.isArray(data.items) && data.items.length > 0) {
+            setRemoteApps(data.items as AppMetadata[]);
+          }
+        })
+        .catch(() => {
+          // Static hosting mode fallback uses built-in catalog
+        });
+    }
+  }, [initialCatalogOverride]);
 
   // Debounce searchInput -> filters.searchQuery (STEP 1)
   useEffect(() => {
@@ -182,6 +209,8 @@ export const App: React.FC<AppProps> = ({
     if (filters.architecture !== 'All') params.set('arch', filters.architecture);
     if (filters.licenseCategory !== 'All') params.set('license', filters.licenseCategory);
     if (filters.trustTier !== 'All') params.set('trust', filters.trustTier);
+    if (filters.verifiedOnly) params.set('verified', '1');
+    if (filters.recentlyUpdated) params.set('updated', '1');
     if (filters.sortBy !== 'featured') params.set('sort', filters.sortBy);
 
     const queryString = params.toString();
@@ -200,13 +229,18 @@ export const App: React.FC<AppProps> = ({
     setCustomApps(getCustomApps());
   }, []);
 
-  // Full unified catalog (validated built-in + user added)
+  // Full unified catalog (validated built-in + D1 synced AppImageHub + user added)
   const fullCatalog = useMemo(() => {
     const map = new Map<string, AppMetadata>();
     catalogValidation.validApps.forEach((app) => map.set(app.id, app));
+    remoteApps.forEach((app) => {
+      if (app && app.id && !map.has(app.id)) {
+        map.set(app.id, app);
+      }
+    });
     customApps.forEach((app) => map.set(app.id, app));
     return Array.from(map.values());
-  }, [catalogValidation.validApps, customApps]);
+  }, [catalogValidation.validApps, remoteApps, customApps]);
 
   // Open deep-linked app (`/app/<id>` or `#/app/<id>`) when catalog is ready
   useEffect(() => {
@@ -263,6 +297,7 @@ export const App: React.FC<AppProps> = ({
     if (newFilters.searchQuery !== undefined) {
       setSearchInput(newFilters.searchQuery);
     }
+    setVisibleCount(PAGE_SIZE);
     setFilters((prev) => ({ ...prev, ...newFilters }));
   };
 
@@ -297,8 +332,11 @@ export const App: React.FC<AppProps> = ({
           }
         }
 
-        if (filters.category !== 'All' && app.category !== filters.category) {
-          return false;
+        if (filters.category !== 'All') {
+          const simplified = app.simplifiedCategory || mapToSimplifiedCategory(app.category);
+          if (app.category !== filters.category && simplified !== filters.category) {
+            return false;
+          }
         }
 
         if (
@@ -313,6 +351,18 @@ export const App: React.FC<AppProps> = ({
           app.licenseCategory !== filters.licenseCategory
         ) {
           return false;
+        }
+
+        if (filters.verifiedOnly && (!app.publisher.verified || !isGenuineSha256(app.sha256))) {
+          return false;
+        }
+
+        if (filters.recentlyUpdated) {
+          const ts = new Date(app.releaseDate).getTime();
+          const sixMonthsAgo = Date.now() - 180 * 24 * 60 * 60 * 1000;
+          if (!Number.isFinite(ts) || ts < sixMonthsAgo) {
+            return false;
+          }
         }
 
         if (filters.trustTier !== 'All') {
@@ -348,15 +398,59 @@ export const App: React.FC<AppProps> = ({
 
   const resetFilters = () => {
     setSearchInput('');
+    setVisibleCount(PAGE_SIZE);
     setFilters({
       searchQuery: '',
       category: 'All',
       architecture: 'All',
       licenseCategory: 'All',
       trustTier: 'All',
+      verifiedOnly: false,
+      recentlyUpdated: false,
       sortBy: 'featured',
     });
   };
+
+  // Curated Home Page discovery shelves (Featured, Recently Updated, New Apps, Popular)
+  const isDefaultStoreBrowse =
+    !filters.searchQuery.trim() &&
+    filters.category === 'All' &&
+    filters.architecture === 'All' &&
+    filters.licenseCategory === 'All' &&
+    !filters.verifiedOnly &&
+    !filters.recentlyUpdated &&
+    filters.sortBy === 'featured';
+
+  const homeFeaturedApps = useMemo(
+    () => fullCatalog.filter((a) => a.featured && a.publisher.verified).slice(0, 3),
+    [fullCatalog]
+  );
+
+  const homeRecentlyUpdatedApps = useMemo(
+    () =>
+      [...fullCatalog]
+        .sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime())
+        .slice(0, 3),
+    [fullCatalog]
+  );
+
+  const homeNewApps = useMemo(
+    () => [...fullCatalog].reverse().slice(0, 3),
+    [fullCatalog]
+  );
+
+  const homePopularApps = useMemo(
+    () =>
+      [...fullCatalog]
+        .sort((a, b) => (b.downloadsCount || 0) - (a.downloadsCount || 0))
+        .slice(0, 3),
+    [fullCatalog]
+  );
+
+  const paginatedApps = useMemo(
+    () => filteredApps.slice(0, visibleCount),
+    [filteredApps, visibleCount]
+  );
 
   const handleNavigateLegal = (route: LegalRoute) => {
     setSelectedApp(null);
@@ -545,25 +639,183 @@ export const App: React.FC<AppProps> = ({
                   totalResults={filteredApps.length}
                 />
 
+                {/* Home Discovery Shelves: Featured, Recently Updated, New Apps, Popular */}
+                {isDefaultStoreBrowse && fullCatalog.length >= 6 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                    <div className="p-4 rounded-2xl bg-neutral-900/50 border border-neutral-800 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+                          <span>Featured</span>
+                        </h2>
+                        <button
+                          type="button"
+                          onClick={() => handleFilterChange({ verifiedOnly: true })}
+                          className="text-[11px] text-neutral-300 hover:text-white cursor-pointer"
+                        >
+                          Verified →
+                        </button>
+                      </div>
+                      <div className="space-y-1.5">
+                        {homeFeaturedApps.map((app) => (
+                          <button
+                            key={`feat-${app.id}`}
+                            type="button"
+                            onClick={() => setSelectedApp(app)}
+                            className="w-full flex items-center justify-between gap-2 p-2 rounded-xl bg-neutral-950/80 hover:bg-neutral-800/80 border border-neutral-800/80 text-left transition-colors cursor-pointer"
+                          >
+                            <span className="text-xs font-semibold text-white truncate">
+                              {app.name}
+                            </span>
+                            <span className="text-[10px] font-mono text-emerald-400 flex-shrink-0">
+                              v{app.version}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-neutral-900/50 border border-neutral-800 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-sky-300 flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5" aria-hidden="true" />
+                          <span>Recently Updated</span>
+                        </h2>
+                        <button
+                          type="button"
+                          onClick={() => handleFilterChange({ sortBy: 'recent' })}
+                          className="text-[11px] text-neutral-300 hover:text-white cursor-pointer"
+                        >
+                          Sort recent →
+                        </button>
+                      </div>
+                      <div className="space-y-1.5">
+                        {homeRecentlyUpdatedApps.map((app) => (
+                          <button
+                            key={`rec-${app.id}`}
+                            type="button"
+                            onClick={() => setSelectedApp(app)}
+                            className="w-full flex items-center justify-between gap-2 p-2 rounded-xl bg-neutral-950/80 hover:bg-neutral-800/80 border border-neutral-800/80 text-left transition-colors cursor-pointer"
+                          >
+                            <span className="text-xs font-semibold text-white truncate">
+                              {app.name}
+                            </span>
+                            <span className="text-[10px] font-mono text-neutral-300 flex-shrink-0">
+                              {app.releaseDate}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-neutral-900/50 border border-neutral-800 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
+                          <PlusCircle className="w-3.5 h-3.5" aria-hidden="true" />
+                          <span>New Apps</span>
+                        </h2>
+                        <button
+                          type="button"
+                          onClick={() => setCurrentView('submit')}
+                          className="text-[11px] text-neutral-300 hover:text-white cursor-pointer"
+                        >
+                          Submit app →
+                        </button>
+                      </div>
+                      <div className="space-y-1.5">
+                        {homeNewApps.map((app) => (
+                          <button
+                            key={`new-${app.id}`}
+                            type="button"
+                            onClick={() => setSelectedApp(app)}
+                            className="w-full flex items-center justify-between gap-2 p-2 rounded-xl bg-neutral-950/80 hover:bg-neutral-800/80 border border-neutral-800/80 text-left transition-colors cursor-pointer"
+                          >
+                            <span className="text-xs font-semibold text-white truncate">
+                              {app.name}
+                            </span>
+                            <span className="text-[10px] font-mono text-neutral-300 flex-shrink-0">
+                              {app.simplifiedCategory || app.category}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-neutral-900/50 border border-neutral-800 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-rose-300 flex items-center gap-1.5">
+                          <Flame className="w-3.5 h-3.5" aria-hidden="true" />
+                          <span>Popular</span>
+                        </h2>
+                        <button
+                          type="button"
+                          onClick={() => handleFilterChange({ sortBy: 'popular' })}
+                          className="text-[11px] text-neutral-300 hover:text-white cursor-pointer"
+                        >
+                          Top downloads →
+                        </button>
+                      </div>
+                      <div className="space-y-1.5">
+                        {homePopularApps.map((app) => (
+                          <button
+                            key={`pop-${app.id}`}
+                            type="button"
+                            onClick={() => setSelectedApp(app)}
+                            className="w-full flex items-center justify-between gap-2 p-2 rounded-xl bg-neutral-950/80 hover:bg-neutral-800/80 border border-neutral-800/80 text-left transition-colors cursor-pointer"
+                          >
+                            <span className="text-xs font-semibold text-white truncate">
+                              {app.name}
+                            </span>
+                            <span className="text-[10px] font-mono text-neutral-300 flex-shrink-0">
+                              {app.downloadsCount.toLocaleString()} dl
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Apps Grid or Empty State */}
                 {filteredApps.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {filteredApps.map((app) => {
-                      const isInstalled = installedRecords.some((r) => r.appId === app.id);
-                      const isBookmarked = bookmarkedIds.includes(app.id);
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {paginatedApps.map((app) => {
+                        const isInstalled = installedRecords.some((r) => r.appId === app.id);
+                        const isBookmarked = bookmarkedIds.includes(app.id);
 
-                      return (
-                        <AppCard
-                          key={app.id}
-                          app={app}
-                          isInstalled={isInstalled}
-                          isBookmarked={isBookmarked}
-                          onSelect={(selected) => setSelectedApp(selected)}
-                          onInstall={(selected) => setInstallingApp(selected)}
-                          onToggleBookmark={handleToggleBookmark}
-                        />
-                      );
-                    })}
+                        return (
+                          <AppCard
+                            key={app.id}
+                            app={app}
+                            isInstalled={isInstalled}
+                            isBookmarked={isBookmarked}
+                            onSelect={(selected) => setSelectedApp(selected)}
+                            onInstall={(selected) => setInstallingApp(selected)}
+                            onToggleBookmark={handleToggleBookmark}
+                          />
+                        );
+                      })}
+                    </div>
+
+                    {/* Pagination / Load More Controls */}
+                    {filteredApps.length > visibleCount && (
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-2xl bg-neutral-900/50 border border-neutral-800">
+                        <span className="text-xs text-neutral-300 font-mono">
+                          Showing <strong className="text-white">{paginatedApps.length}</strong> of{' '}
+                          <strong className="text-white">{filteredApps.length}</strong> Linux AppImage packages
+                        </span>
+                        <button
+                          id="load-more-apps-btn"
+                          type="button"
+                          onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
+                          className="min-h-[44px] px-5 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-xs inline-flex items-center gap-2 transition-colors cursor-pointer"
+                        >
+                          <span>Load More Applications ({filteredApps.length - visibleCount} remaining)</span>
+                          <ChevronDown className="w-4 h-4" aria-hidden="true" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   /* STEP 1: Empty State ("No apps match your filters") */

@@ -8,12 +8,15 @@ const metaEnv =
     ? (import.meta as unknown as { env?: Record<string, string | undefined> }).env
     : undefined;
 
-const rawSiteUrl =
+const rawSiteUrl = (
   (metaEnv && metaEnv.VITE_SITE_URL) ||
   (typeof process !== 'undefined' && process.env && process.env.VITE_SITE_URL) ||
-  'https://niruvi-store.putinservai.workers.dev';
+  'https://niruvi-store.putinservai.workers.dev'
+).trim();
 
-export const SITE_URL = rawSiteUrl.replace(/\/+$/, '');
+const withProtocol = /^https?:\/\//i.test(rawSiteUrl) ? rawSiteUrl : `https://${rawSiteUrl}`;
+
+export const SITE_URL = withProtocol.replace(/\/+$/, '');
 export const SITE_NAME = 'Niruvi Store';
 export const DEFAULT_TITLE = 'Niruvi Store — Verified Linux AppImage Marketplace';
 export const DEFAULT_DESCRIPTION =

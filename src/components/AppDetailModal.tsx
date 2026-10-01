@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { usePreventBodyScroll } from '../hooks/usePreventBodyScroll';
-import { AppMetadata } from '../types';
+import { AppMetadata, ReleaseVersionEntry } from '../types';
 import { AppIcon } from './AppIcon';
 import { generateNiruviProtocolUrl } from '../data/apps';
 import { useAuth } from '../context/AuthContext';
@@ -100,7 +100,20 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
   const [copiedSha, setCopiedSha] = useState(false);
   const [copiedProtocol, setCopiedProtocol] = useState(false);
   const [copiedCli, setCopiedCli] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'security' | 'cli' | 'changelog' | 'reviews'>('overview');
+  const [activeTab, setActiveTab] = useState<
+    'overview' | 'versions' | 'security' | 'cli' | 'changelog' | 'reviews' | 'report'
+  >('overview');
+
+  // Version history state (enriched from Worker /api/catalog/:id or fallback)
+  const [versionHistory, setVersionHistory] = useState<ReleaseVersionEntry[]>([]);
+
+  // Report Broken App form state
+  const [reportReason, setReportReason] = useState('Broken download link (404)');
+  const [reportDetails, setReportDetails] = useState('');
+  const [reportDistro, setReportDistro] = useState('');
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [reportSubmitted, setReportSubmitted] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
 
   // Inline AppImage download & cancellation state
   const [dlPhase, setDlPhase] = useState<'idle' | 'downloading' | 'completed' | 'cancelled'>('idle');
@@ -125,9 +138,58 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
     setDlPhase('idle');
     setDlProgress(0);
     setDlPaused(false);
+    setReportSubmitted(false);
+    setReportError(null);
+    setReportDetails('');
     if (dlTimerRef.current) {
       window.clearInterval(dlTimerRef.current);
       dlTimerRef.current = null;
+    }
+
+    if (!app) {
+      setVersionHistory([]);
+      return;
+    }
+
+    // Build initial version history (current version + previous releases fallback)
+    const fallbackHistory: ReleaseVersionEntry[] =
+      app.versionHistory && app.versionHistory.length > 0
+        ? app.versionHistory
+        : [
+            {
+              version: app.version,
+              tagName: `v${app.version}`,
+              releaseDate: app.releaseDate,
+              releaseNotes:
+                app.changelog && app.changelog.length > 0
+                  ? app.changelog.join('\n')
+                  : `Latest ${app.name} AppImage release (${app.version}).`,
+              htmlUrl: app.releasesUrl || app.repositoryUrl,
+              prerelease: false,
+              assets: app.architectures.map((arch) => ({
+                name: `${app.id}-${app.version}-${arch}.AppImage`,
+                architecture: arch,
+                downloadUrl: app.downloadMap?.[arch] || app.downloadUrl,
+                size: app.size,
+                sha256: arch === 'x86_64' ? app.sha256 : '',
+                verified: Boolean(arch === 'x86_64' && app.publisher.verified && app.sha256),
+              })),
+            },
+          ];
+    setVersionHistory(fallbackHistory);
+
+    // Fetch live GitHub release history from Worker endpoint if available
+    if (typeof window !== 'undefined' && typeof fetch === 'function') {
+      fetch(`/api/catalog/${encodeURIComponent(app.id)}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.app?.versionHistory && Array.isArray(data.app.versionHistory) && data.app.versionHistory.length > 0) {
+            setVersionHistory(data.app.versionHistory);
+          }
+        })
+        .catch(() => {
+          // Keep fallback history
+        });
     }
   }, [app?.id]);
 
@@ -497,21 +559,43 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
                 <span>Support Developer</span>
               </a>
             )}
+            <button
+              id="detail-modal-report-btn"
+              type="button"
+              onClick={() => setActiveTab('report')}
+              className="min-h-[44px] flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold transition-colors cursor-pointer"
+              title={`Report a broken download or issue with ${app.name}`}
+            >
+              <AlertCircle className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
+              <span>Report Broken App</span>
+            </button>
           </div>
         </div>
 
         {/* Modal Navigation Tabs */}
-        <div className="flex items-center gap-6 px-6 pt-3 border-b border-neutral-800 text-xs font-medium text-neutral-400">
+        <div className="flex items-center gap-5 px-6 pt-3 border-b border-neutral-800 text-xs font-medium text-neutral-400 overflow-x-auto no-scrollbar">
           <button
             id="tab-overview"
             onClick={() => setActiveTab('overview')}
-            className={`pb-3 border-b-2 transition-colors ${
+            className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${
               activeTab === 'overview'
                 ? 'border-white text-white font-semibold'
                 : 'border-transparent hover:text-neutral-200'
             }`}
           >
             Overview & Features
+          </button>
+          <button
+            id="tab-versions"
+            onClick={() => setActiveTab('versions')}
+            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'versions'
+                ? 'border-white text-white font-semibold'
+                : 'border-transparent hover:text-neutral-200'
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5 text-sky-400" />
+            <span>Version History ({versionHistory.length})</span>
           </button>
           <button
             id="tab-security"
@@ -553,7 +637,7 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
             <button
               id="tab-changelog"
               onClick={() => setActiveTab('changelog')}
-              className={`pb-3 border-b-2 transition-colors ${
+              className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === 'changelog'
                   ? 'border-white text-white font-semibold'
                   : 'border-transparent hover:text-neutral-200'
@@ -562,6 +646,18 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
               Changelog
             </button>
           )}
+          <button
+            id="tab-report"
+            onClick={() => setActiveTab('report')}
+            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'report'
+                ? 'border-amber-400 text-amber-300 font-semibold'
+                : 'border-transparent hover:text-neutral-200'
+            }`}
+          >
+            <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
+            <span>Report Broken App</span>
+          </button>
         </div>
 
         {/* Modal Body Content */}
@@ -1156,6 +1252,234 @@ chmod +x "${appImageFileName}"
                   ))
                 )}
               </div>
+            </div>
+          )}
+
+          {activeTab === 'versions' && (
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 rounded-xl bg-neutral-950 border border-neutral-800">
+                <div>
+                  <h4 className="text-sm font-bold text-white">
+                    Release &amp; Version History ({versionHistory.length})
+                  </h4>
+                  <p className="text-xs text-neutral-300 mt-0.5">
+                    Download the latest release or roll back to older GitHub Release builds per architecture.
+                  </p>
+                </div>
+                {sanitizeUrl(app.releasesUrl) && (
+                  <a
+                    href={sanitizeUrl(app.releasesUrl)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="min-h-[38px] px-3.5 py-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-xs font-semibold text-sky-400 inline-flex items-center gap-1.5 whitespace-nowrap"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>All GitHub Releases</span>
+                  </a>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                {versionHistory.map((rel, idx) => (
+                  <div
+                    key={`${rel.tagName}-${idx}`}
+                    className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-3"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-sm text-white">
+                          v{rel.version}
+                        </span>
+                        {idx === 0 && (
+                          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                            Latest
+                          </span>
+                        )}
+                        {rel.prerelease && (
+                          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                            Pre-release
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-neutral-400 font-mono">
+                        Published {rel.releaseDate}
+                      </span>
+                    </div>
+
+                    {rel.releaseNotes && (
+                      <p className="text-xs text-neutral-300 whitespace-pre-line leading-relaxed bg-neutral-900/60 p-3 rounded-lg border border-neutral-800/80">
+                        {rel.releaseNotes}
+                      </p>
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                      {rel.assets.map((asset, aIdx) => (
+                        <div
+                          key={`${asset.name}-${aIdx}`}
+                          className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-neutral-900 border border-neutral-800"
+                        >
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-mono font-semibold text-white truncate">
+                                {asset.architecture}
+                              </span>
+                              <span className="text-[11px] text-neutral-400">({asset.size})</span>
+                              {asset.verified && asset.sha256 && (
+                                <span
+                                  className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-medium"
+                                  title={`SHA-256: ${asset.sha256}`}
+                                >
+                                  SHA-256 Verified
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[11px] text-neutral-400 font-mono truncate block">
+                              {asset.name}
+                            </span>
+                          </div>
+                          {isValidHttpsDownloadUrl(asset.downloadUrl) && (
+                            <a
+                              href={sanitizeUrl(asset.downloadUrl)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="min-h-[36px] px-3 py-1.5 rounded-lg bg-white hover:bg-neutral-200 text-black text-xs font-semibold inline-flex items-center gap-1.5 flex-shrink-0"
+                            >
+                              <Download className="w-3.5 h-3.5" aria-hidden="true" />
+                              <span>Download</span>
+                            </a>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'report' && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-1">
+                <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-400" aria-hidden="true" />
+                  <span>Report Broken Package: {app.name}</span>
+                </h4>
+                <p className="text-xs text-neutral-300">
+                  Found a dead download URL, SHA-256 mismatch, or launch failure on your Linux distro? Submit a report so our pipeline can refresh or flag the release.
+                </p>
+              </div>
+
+              {reportSubmitted ? (
+                <div
+                  role="status"
+                  aria-live="polite"
+                  className="p-5 rounded-xl bg-emerald-950/30 border border-emerald-500/40 text-center space-y-2"
+                >
+                  <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" aria-hidden="true" />
+                  <h5 className="text-sm font-bold text-white">Broken Package Report Logged</h5>
+                  <p className="text-xs text-neutral-300">
+                    Thank you! We have queued <strong className="text-white">{app.name}</strong> for an automated GitHub Release &amp; checksum re-check.
+                  </p>
+                </div>
+              ) : (
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    setReportError(null);
+                    if (reportDetails.trim().length < 5) {
+                      setReportError('Please describe the issue (at least 5 characters).');
+                      return;
+                    }
+                    setReportSubmitting(true);
+                    try {
+                      await fetch('/api/reports', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          appId: app.id,
+                          appName: app.name,
+                          reason: reportReason,
+                          details: reportDetails.trim(),
+                          distro: reportDistro.trim(),
+                          architecture: app.architectures[0] || 'x86_64',
+                        }),
+                      });
+                    } catch {
+                      // Local static fallback
+                    } finally {
+                      setReportSubmitting(false);
+                      setReportSubmitted(true);
+                    }
+                  }}
+                  className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-4 text-xs"
+                >
+                  {reportError && (
+                    <p role="alert" className="text-rose-400 font-medium">
+                      {reportError}
+                    </p>
+                  )}
+
+                  <div className="space-y-1.5">
+                    <label htmlFor="report-reason-select" className="font-semibold text-neutral-200 block">
+                      Issue Category
+                    </label>
+                    <select
+                      id="report-reason-select"
+                      value={reportReason}
+                      onChange={(e) => setReportReason(e.target.value)}
+                      className="w-full min-h-[42px] px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-white"
+                    >
+                      <option value="Broken download link (404)">Broken download link (404)</option>
+                      <option value="SHA-256 checksum mismatch">SHA-256 checksum mismatch</option>
+                      <option value="Outdated version (newer GitHub Release exists)">
+                        Outdated version (newer GitHub Release exists)
+                      </option>
+                      <option value="Crashes on launch / missing FUSE or glibc dependency">
+                        Crashes on launch / missing FUSE or glibc dependency
+                      </option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label htmlFor="report-distro-input" className="font-semibold text-neutral-200 block">
+                      Linux Distribution &amp; Version (optional)
+                    </label>
+                    <input
+                      id="report-distro-input"
+                      type="text"
+                      value={reportDistro}
+                      onChange={(e) => setReportDistro(e.target.value)}
+                      placeholder="e.g. Ubuntu 24.04 LTS, Fedora 41, Arch Linux"
+                      className="w-full min-h-[42px] px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-white placeholder-neutral-400"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label htmlFor="report-details-textarea" className="font-semibold text-neutral-200 block">
+                      Issue Details <span className="text-neutral-400">(required)</span>
+                    </label>
+                    <textarea
+                      id="report-details-textarea"
+                      rows={3}
+                      required
+                      value={reportDetails}
+                      onChange={(e) => setReportDetails(e.target.value)}
+                      placeholder="Paste terminal output, HTTP error code, or expected release tag..."
+                      className="w-full px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-700 text-white placeholder-neutral-400 resize-none"
+                    />
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={reportSubmitting}
+                      className="min-h-[42px] px-5 py-2 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-xs cursor-pointer disabled:opacity-50"
+                    >
+                      {reportSubmitting ? 'Submitting Report…' : 'Submit Broken App Report'}
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           )}
 

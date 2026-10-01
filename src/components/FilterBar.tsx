@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Category, Architecture, FilterState, LicenseType, TrustTier } from '../types';
-import { CATEGORIES } from '../data/apps';
-import { Search, SlidersHorizontal, Cpu, Scale, ShieldCheck, X } from 'lucide-react';
+import { SIMPLIFIED_CATEGORIES } from '../utils/appimagehub';
+import { Search, SlidersHorizontal, Cpu, Scale, ShieldCheck, Clock, X } from 'lucide-react';
 
 interface FilterBarProps {
   filters: FilterState;
@@ -35,7 +35,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
       aria-label="Search and filter Linux applications"
       className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-4 sm:p-5 space-y-4 backdrop-blur-sm"
     >
-      {/* Top Row: Search + Architecture + Sort */}
+      {/* Top Row: Search + Architecture + Quick Toggles + Sort */}
       <div className="flex flex-col lg:flex-row gap-3">
         {/* Search Input with explicit label */}
         <div className="relative flex-1">
@@ -89,6 +89,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               <option value="All" className="bg-neutral-900">All (x86_64 &amp; ARM64)</option>
               <option value="x86_64" className="bg-neutral-900">x86_64 (AMD/Intel)</option>
               <option value="aarch64" className="bg-neutral-900">aarch64 (ARM64)</option>
+              <option value="armhf" className="bg-neutral-900">armhf (ARMv7)</option>
             </select>
           </div>
 
@@ -113,26 +114,39 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             </select>
           </div>
 
-          {/* Trust Tier Filter */}
-          <div className="flex items-center gap-2 bg-neutral-950 border border-neutral-700 rounded-xl px-3 min-h-[44px]">
-            <ShieldCheck className="w-4 h-4 text-neutral-300 flex-shrink-0" aria-hidden="true" />
-            <label htmlFor="filter-trust-select" className="text-xs text-neutral-300 font-medium whitespace-nowrap">
-              Trust:
-            </label>
-            <select
-              id="filter-trust-select"
-              value={filters.trustTier}
-              onChange={(e) =>
-                onFilterChange({ trustTier: e.target.value as TrustTier })
-              }
-              className="bg-transparent text-xs text-neutral-100 font-semibold focus:outline-hidden cursor-pointer py-2"
-            >
-              <option value="All" className="bg-neutral-900">All Tiers</option>
-              <option value="Official Developer" className="bg-neutral-900">Official Developer</option>
-              <option value="Verified Community" className="bg-neutral-900">Verified Community</option>
-              <option value="Unverified Community" className="bg-neutral-900">Unverified Community</option>
-            </select>
-          </div>
+          {/* Verified Only Toggle */}
+          <button
+            id="filter-verified-only-btn"
+            type="button"
+            aria-pressed={Boolean(filters.verifiedOnly)}
+            onClick={() => onFilterChange({ verifiedOnly: !filters.verifiedOnly })}
+            className={`min-h-[44px] px-3 rounded-xl border text-xs font-semibold inline-flex items-center gap-1.5 whitespace-nowrap transition-colors cursor-pointer ${
+              filters.verifiedOnly
+                ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300'
+                : 'bg-neutral-950 border-neutral-700 text-neutral-300 hover:text-white hover:bg-neutral-900'
+            }`}
+            title="Show only packages with confirmed SHA-256 checksums"
+          >
+            <ShieldCheck className="w-4 h-4 text-emerald-400" aria-hidden="true" />
+            <span>Verified Only</span>
+          </button>
+
+          {/* Recently Updated Toggle */}
+          <button
+            id="filter-recently-updated-btn"
+            type="button"
+            aria-pressed={Boolean(filters.recentlyUpdated)}
+            onClick={() => onFilterChange({ recentlyUpdated: !filters.recentlyUpdated })}
+            className={`min-h-[44px] px-3 rounded-xl border text-xs font-semibold inline-flex items-center gap-1.5 whitespace-nowrap transition-colors cursor-pointer ${
+              filters.recentlyUpdated
+                ? 'bg-sky-500/20 border-sky-500/50 text-sky-300'
+                : 'bg-neutral-950 border-neutral-700 text-neutral-300 hover:text-white hover:bg-neutral-900'
+            }`}
+            title="Filter packages updated recently"
+          >
+            <Clock className="w-4 h-4 text-sky-400" aria-hidden="true" />
+            <span>Recently Updated</span>
+          </button>
 
           {/* Sort By */}
           <div className="flex items-center gap-2 bg-neutral-950 border border-neutral-700 rounded-xl px-3 min-h-[44px]">
@@ -158,19 +172,19 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         </div>
       </div>
 
-      {/* Bottom Row: Category Pills + Results Counter */}
+      {/* Bottom Row: Simplified Category Pills + Results Counter */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-neutral-800/80">
         <div
           role="group"
           aria-label="Filter by application category"
           className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 no-scrollbar"
         >
-          {CATEGORIES.map((category) => {
+          {SIMPLIFIED_CATEGORIES.map((category) => {
             const isActive = filters.category === category;
             return (
               <button
                 key={category}
-                id={`category-btn-${category.toLowerCase().replace(/\s+/g, '-')}`}
+                id={`category-btn-${category.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
                 type="button"
                 aria-pressed={isActive}
                 onClick={() => onFilterChange({ category: category as Category })}

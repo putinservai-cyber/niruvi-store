@@ -1,17 +1,53 @@
-export type Category = 
+export type Category =
   | 'All'
+  | 'Internet'
+  | 'Games'
+  | 'Graphics'
+  | 'Audio/Video'
+  | 'Office'
+  | 'Development'
+  | 'System/Utilities'
+  | 'Education'
   | 'AI'
   | 'Browser'
-  | 'Development'
   | 'Graphics & Design'
   | 'Audio & Video'
   | 'Productivity'
   | 'Communication'
-  | 'Games'
   | 'System & Security'
   | 'Utilities'
-  | 'Internet & Network'
+  | 'Internet & Network';
+
+export type SimplifiedCategory =
+  | 'All'
+  | 'Internet'
+  | 'Games'
+  | 'Graphics'
+  | 'Audio/Video'
+  | 'Office'
+  | 'Development'
+  | 'System/Utilities'
   | 'Education';
+
+export interface ReleaseAssetEntry {
+  name: string;
+  architecture: Architecture;
+  downloadUrl: string;
+  size: string;
+  sizeBytes?: number;
+  sha256: string;
+  verified: boolean;
+}
+
+export interface ReleaseVersionEntry {
+  version: string;
+  tagName: string;
+  releaseDate: string;
+  releaseNotes?: string;
+  htmlUrl?: string;
+  prerelease?: boolean;
+  assets: ReleaseAssetEntry[];
+}
 
 export type Architecture = 'x86_64' | 'aarch64' | 'armhf';
 
@@ -25,6 +61,7 @@ export interface AppMetadata {
   tagline: string;
   description: string;
   category: Exclude<Category, 'All'>;
+  simplifiedCategory?: Exclude<SimplifiedCategory, 'All'>;
   version: string;
   releaseDate: string;
   size: string;
@@ -49,6 +86,7 @@ export interface AppMetadata {
   sourceUrl?: string;
   repositoryUrl?: string;
   releasesUrl?: string;
+  githubRepo?: string;
   sourceType?: 'Official' | 'Community';
   trustTier?: 'Official Developer' | 'Verified Community' | 'Unverified Community';
   officialStatus?: boolean;
@@ -57,6 +95,7 @@ export interface AppMetadata {
   downloadsCount: number;
   rating: number;
   changelog?: string[];
+  versionHistory?: ReleaseVersionEntry[];
   requirements?: string;
   isUserAdded?: boolean;
   screenshots?: Array<{
@@ -80,6 +119,8 @@ export interface FilterState {
   architecture: Architecture | 'All';
   licenseCategory: LicenseType;
   trustTier: TrustTier;
+  verifiedOnly?: boolean;
+  recentlyUpdated?: boolean;
   sortBy: 'featured' | 'popular' | 'rating' | 'name' | 'recent';
 }
 

@@ -1,10 +1,9 @@
 import { AppMetadata, Category } from '../types';
 import generatedApps from './generated-catalog.json';
-import rawCategories from '../../catalog/categories.json';
 
 export const APPS_CATALOG: AppMetadata[] = generatedApps as unknown as AppMetadata[];
 
-export const CATEGORIES: Category[] = rawCategories as Category[];
+export const CATEGORIES: Category[] = ["All","AI","Browser","Development","Graphics & Design","Audio & Video","Productivity","Communication","Games","System & Security","Utilities","Internet & Network","Education"] as Category[];
 
 /**
  * Generates the official Niruvi desktop application protocol link

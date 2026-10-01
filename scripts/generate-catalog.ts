@@ -1,8 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 
-const SITE_URL = (
+const rawEnvSiteUrl = (
   process.env.VITE_SITE_URL || 'https://niruvi-store.putinservai.workers.dev'
+).trim();
+const SITE_URL = (
+  /^https?:\/\//i.test(rawEnvSiteUrl) ? rawEnvSiteUrl : `https://${rawEnvSiteUrl}`
 ).replace(/\/+$/, '');
 
 const SYNTHETIC_HASH_PATTERNS = [
@@ -185,18 +188,21 @@ function generateCatalog() {
     fs.mkdirSync(outDir, { recursive: true });
   }
 
-  // 1. Write JSON bundle
+  // 1. Write JSON bundle to src/data/generated-catalog.json and public/catalog.json
   const jsonPath = path.join(outDir, 'generated-catalog.json');
-  fs.writeFileSync(jsonPath, JSON.stringify(apps, null, 2), 'utf-8');
+  const serializedApps = JSON.stringify(apps, null, 2);
+  fs.writeFileSync(jsonPath, serializedApps, 'utf-8');
 
-  // 2. Write src/data/apps.ts
+  const publicDir = path.join(process.cwd(), 'public');
+  fs.writeFileSync(path.join(publicDir, 'catalog.json'), serializedApps, 'utf-8');
+
+  // 2. Write src/data/apps.ts (self-contained inside src/ with no relative imports outside src/)
   const tsContent = `import { AppMetadata, Category } from '../types';
 import generatedApps from './generated-catalog.json';
-import rawCategories from '../../catalog/categories.json';
 
 export const APPS_CATALOG: AppMetadata[] = generatedApps as unknown as AppMetadata[];
 
-export const CATEGORIES: Category[] = rawCategories as Category[];
+export const CATEGORIES: Category[] = ${JSON.stringify(categories)} as Category[];
 
 /**
  * Generates the official Niruvi desktop application protocol link
@@ -222,7 +228,6 @@ export function generateNiruviProtocolUrl(app: AppMetadata, selectedArch?: strin
   fs.writeFileSync(path.join(outDir, 'apps.ts'), tsContent, 'utf-8');
 
   // 3. Write public/robots.txt and public/sitemap.xml (including all app detail pages)
-  const publicDir = path.join(process.cwd(), 'public');
   const robotsTxt = `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`;
   fs.writeFileSync(path.join(publicDir, 'robots.txt'), robotsTxt, 'utf-8');
 

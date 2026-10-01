@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: niruvi-store.runs-on.dev/sitemap.xml
+Sitemap: https://niruvi-store.runs-on.dev/sitemap.xml

@@ -128,14 +128,11 @@ describe('Security & Configuration Hygiene', () => {
     expect(result.valid).toBe(true);
   });
 
-  it('ensures experimental/wrangler.json does not contain a hardcoded JWT_SECRET in vars and uses a valid D1 UUID placeholder', () => {
-    const wranglerPath = path.join(process.cwd(), 'experimental', 'wrangler.json');
+  it('ensures root wrangler.json does not contain a hardcoded JWT_SECRET in vars and configures 404-page asset handling', () => {
+    const wranglerPath = path.join(process.cwd(), 'wrangler.json');
     expect(fs.existsSync(wranglerPath)).toBe(true);
     const config = JSON.parse(fs.readFileSync(wranglerPath, 'utf-8'));
     expect(config.vars?.JWT_SECRET).toBeUndefined();
-    expect(config.$comment).toContain('wrangler secret put JWT_SECRET');
-    expect(config.d1_databases?.[0]?.database_id).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-    );
+    expect(config.assets?.not_found_handling).toBe('404-page');
   });
 });

@@ -7,6 +7,7 @@ import axe from 'axe-core';
 import { App } from '../src/App';
 import { AuthProvider } from '../src/context/AuthContext';
 import { APPS_CATALOG } from '../src/data/apps';
+import { SITE_URL } from '../src/config/site';
 import {
   isValidHttpsDownloadUrl,
   isValidNiruviProtocolUrl,
@@ -119,21 +120,17 @@ describe('Niruvi Store — Application Detail Modal & niruvi:// Fallback', () =>
     const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByRole('heading', { name: 'Kdenlive' })).toBeInTheDocument();
 
-    // Verify dynamic SEO canonical URL, og:url, and SoftwareApplication JSON-LD point to niruvi-store.putinservai.workers.dev
+    // Verify dynamic SEO canonical URL, og:url, and SoftwareApplication JSON-LD match SITE_URL
     const canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
-    expect(canonical?.getAttribute('href')).toBe(
-      'https://niruvi-store.putinservai.workers.dev/app/kdenlive',
-    );
+    expect(canonical?.getAttribute('href')).toBe(`${SITE_URL}/app/kdenlive`);
     const ogUrl = document.head.querySelector<HTMLMetaElement>('meta[property="og:url"]');
-    expect(ogUrl?.getAttribute('content')).toBe(
-      'https://niruvi-store.putinservai.workers.dev/app/kdenlive',
-    );
+    expect(ogUrl?.getAttribute('content')).toBe(`${SITE_URL}/app/kdenlive`);
     const jsonLdEl = document.getElementById('dynamic-software-jsonld');
     expect(jsonLdEl).not.toBeNull();
     const parsedSchema = JSON.parse(jsonLdEl?.textContent || '{}');
     expect(parsedSchema['@type']).toBe('SoftwareApplication');
     expect(parsedSchema.name).toBe('Kdenlive');
-    expect(parsedSchema.url).toBe('https://niruvi-store.putinservai.workers.dev/app/kdenlive');
+    expect(parsedSchema.url).toBe(`${SITE_URL}/app/kdenlive`);
 
     expect(
       within(dialog).getByText(/Don’t have the Niruvi desktop app installed\?/i),
