@@ -1,0 +1,49 @@
+{
+  "id": "inkscape",
+  "name": "Inkscape",
+  "tagline": "Professional vector graphics editor for illustration and typography",
+  "description": "Inkscape is a professional quality vector graphics software which runs on Linux. It is used by design professionals and hobbyists worldwide for creating a wide variety of graphics such as illustrations, icons, logos, diagrams, maps, and web graphics.",
+  "version": "1.4.0",
+  "releaseDate": "2024-10-13",
+  "category": "Graphics & Design",
+  "developer": "Inkscape Project",
+  "license": "GPL-3.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://inkscape.org",
+  "repository": "https://gitlab.com/inkscape/inkscape",
+  "icon": "/icons/inkscape.png",
+  "iconSlug": "inkscape",
+  "brandColor": "#000000",
+  "size": "172.4 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://media.inkscape.org/dl/resources/file/Inkscape-e7c3feb-x86_64.AppImage"
+  },
+  "sha256": "bb3c2b87f46ad61517c5eb87a55cbb661cf6a53696f8c79c855a8dc65b4cbf4d",
+  "keywords": [
+    "vector",
+    "svg",
+    "drawing",
+    "illustration",
+    "design",
+    "logo",
+    "typography"
+  ],
+  "featured": false,
+  "features": [
+    "Full SVG format specification compliance",
+    "Advanced Bézier curve and node editing tools",
+    "Flexible text tool with kerning, letter spacing, and line spacing",
+    "Broad format export (PDF, EPS, SVG, PNG, WebP)"
+  ],
+  "requirements": "X11/Wayland desktop environment",
+  "repositoryUrl": "https://gitlab.com/inkscape/inkscape",
+  "releasesUrl": "https://gitlab.com/inkscape/inkscape/releases",
+  "sourceType": "Official",
+  "officialStatus": true
+}

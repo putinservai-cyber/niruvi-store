@@ -1,0 +1,47 @@
+name: 🐛 Bug Report
+description: Report an issue, broken download, or defect in Niruvi Store
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping improve Niruvi Store!
+  - type: input
+    id: os
+    attributes:
+      label: Linux Distribution & Desktop Environment
+      placeholder: e.g. Ubuntu 24.04 (GNOME), Arch Linux (KDE Wayland), Fedora 41
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser / Client
+      placeholder: e.g. Firefox 134, Chromium 132, Niruvi Desktop App
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. Open Niruvi Store
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      placeholder: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      placeholder: What actually happened? (Include error messages or browser console logs)
+    validations:
+      required: true

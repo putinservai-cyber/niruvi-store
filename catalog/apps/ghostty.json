@@ -1,0 +1,32 @@
+{
+  "id": "ghostty",
+  "name": "Ghostty",
+  "tagline": "Fast, native, feature-rich terminal emulator",
+  "description": "Fast, native, feature-rich terminal emulator",
+  "category": "Development",
+  "version": "1.0.0",
+  "releaseDate": "2026-09-07",
+  "size": "100 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "MIT",
+  "licenseCategory": "Open Source",
+  "developer": "Ghostty Org",
+  "homepage": "https://github.com/ghostty-org/ghostty",
+  "repository": "https://github.com/ghostty-org/ghostty",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://example.com/download/ghostty.AppImage"
+  },
+  "brandColor": "#4F46E5",
+  "keywords": [
+    "development",
+    "appimage"
+  ],
+  "featured": false,
+  "formats": [
+    "AppImage"
+  ]
+}

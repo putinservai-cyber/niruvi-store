@@ -1,0 +1,48 @@
+{
+  "id": "gimp",
+  "name": "GIMP",
+  "tagline": "Free & Open Source Image Editor with powerful photo retouching",
+  "description": "GIMP is a cross-platform image editor available for Linux. Whether you are a graphic designer, photographer, illustrator, or scientist, GIMP provides you with sophisticated tools to get your job done with high quality photo manipulation and original artwork creation.",
+  "version": "2.10.38",
+  "releaseDate": "2024-05-05",
+  "category": "Graphics & Design",
+  "developer": "The GIMP Development Team",
+  "license": "GPL-3.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://www.gimp.org",
+  "repository": "https://gitlab.gnome.org/GNOME/gimp",
+  "icon": "/icons/gimp.png",
+  "iconSlug": "gimp",
+  "brandColor": "#5C5543",
+  "size": "156.8 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/aferrero2707/gimp-appimage/releases/download/continuous/GIMP_AppImage-release-2.10.38-withplugins-x86_64.AppImage"
+  },
+  "sha256": "16ce6f112e4be8c642646ea8c857732adfb2a3449303666d403efcce360dbbcf",
+  "keywords": [
+    "photo",
+    "image",
+    "editor",
+    "retouching",
+    "raster",
+    "photoshop-alternative"
+  ],
+  "featured": false,
+  "features": [
+    "High quality photo retouching and digital restoration",
+    "GEGL 32-bit floating point color processing engine",
+    "Full color management with ICC profile workflows",
+    "Broad format support (XCF, PSD, TIFF, PNG, JPEG, WebP)"
+  ],
+  "requirements": "Linux 64-bit desktop environment",
+  "repositoryUrl": "https://gitlab.gnome.org/GNOME/gimp",
+  "releasesUrl": "https://gitlab.gnome.org/GNOME/gimp/releases",
+  "sourceType": "Official",
+  "officialStatus": true
+}

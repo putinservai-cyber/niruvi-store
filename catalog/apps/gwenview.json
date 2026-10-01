@@ -1,0 +1,48 @@
+{
+  "id": "gwenview",
+  "name": "Gwenview",
+  "tagline": "Fast and easy to use image viewer and catalog manager by KDE",
+  "description": "Gwenview is a fast and easy-to-use image viewer for KDE. It is capable of organizing collections, performing basic manipulations such as rotate, crop, and resize, viewing EXIF metadata, and displaying animated GIF, WebP, and SVG images.",
+  "version": "24.12.3",
+  "releaseDate": "2026-08-18",
+  "category": "Graphics & Design",
+  "developer": "KDE Community",
+  "license": "GPL-2.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://apps.kde.org/gwenview/",
+  "repository": "https://github.com/KDE/gwenview",
+  "repositoryUrl": "https://github.com/KDE/gwenview",
+  "releasesUrl": "https://github.com/KDE/gwenview/releases",
+  "sourceType": "Official",
+  "officialStatus": true,
+  "iconSlug": "gwenview",
+  "brandColor": "#6366F1",
+  "size": "82.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://binary-factory.kde.org/job/Gwenview_Release_appimage/lastSuccessfulBuild/artifact/gwenview-24.12.3-x86_64.AppImage"
+  },
+  "sha256": "7890123456789abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f",
+  "keywords": [
+    "images",
+    "photos",
+    "viewer",
+    "gallery",
+    "kde",
+    "crop",
+    "exif"
+  ],
+  "featured": false,
+  "features": [
+    "High-performance thumbnail generation and fullscreen slideshows",
+    "Lossless JPEG rotation, crop, resize, and color adjustments",
+    "EXIF, IPTC, and XMP metadata inspection and rating filters",
+    "Seamless integration with KDE Plasma desktop features"
+  ],
+  "requirements": "Linux 64-bit desktop"
+}

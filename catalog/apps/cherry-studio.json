@@ -1,0 +1,45 @@
+{
+  "id": "cherry-studio",
+  "name": "Cherry Studio",
+  "tagline": "Desktop client for multiple AI models supporting DeepSeek, Claude, and GPT",
+  "description": "Cherry Studio is an open-source desktop AI client supporting multiple LLM providers (DeepSeek, OpenAI, Anthropic Claude, Google Gemini, Ollama) with knowledge bases, prompt templates, and conversation branch management.",
+  "category": "AI",
+  "version": "2.0.12",
+  "releaseDate": "2025-02-15",
+  "size": "98.5 MB",
+  "architectures": [
+    "x86_64",
+    "aarch64"
+  ],
+  "license": "Apache-2.0",
+  "licenseCategory": "Permissive",
+  "developer": "CherryHQ",
+  "homepage": "https://cherry-ai.com",
+  "repository": "https://github.com/CherryHQ/cherry-studio",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://github.com/CherryHQ/cherry-studio/releases/download/v2.0.12/Cherry-Studio-2.0.12-linux-x64.AppImage",
+    "aarch64": "https://github.com/CherryHQ/cherry-studio/releases/download/v2.0.12/Cherry-Studio-2.0.12-linux-arm64.AppImage"
+  },
+  "formats": [
+    "AppImage"
+  ],
+  "brandColor": "#F43F5E",
+  "keywords": [
+    "deepseek",
+    "ai",
+    "chatgpt",
+    "claude",
+    "gemini",
+    "llm-client"
+  ],
+  "featured": true,
+  "features": [
+    "Direct integration with DeepSeek-R1, OpenAI, Claude 3.5, and local Ollama",
+    "Local document knowledge base with vector search",
+    "Conversation branching and side-by-side model comparison",
+    "Multi-language translation and code execution blocks"
+  ],
+  "requirements": "Linux x86_64 or aarch64"
+}

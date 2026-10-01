@@ -32,8 +32,6 @@ export const InstallModal: React.FC<InstallModalProps> = ({
   isInstalled = false,
   onInstalledChange,
 }) => {
-  if (!isOpen || !app) return null;
-
   const [installMethod, setInstallMethod] = useState<'protocol' | 'direct' | 'cli'>('protocol');
   const [targetDir, setTargetDir] = useState<'~/.local/bin' | '~/Applications' | '~/Applications/AppImages' | '/opt/appimages'>('~/.local/bin');
   const [cliTool, setCliTool] = useState<'curl' | 'wget'>('curl');
@@ -41,6 +39,8 @@ export const InstallModal: React.FC<InstallModalProps> = ({
   const [copiedProtocol, setCopiedProtocol] = useState(false);
   const [protocolTriggered, setProtocolTriggered] = useState(false);
   const [installedStatus, setInstalledStatus] = useState(isInstalled);
+
+  if (!isOpen || !app) return null;
 
   const protocolUrl = generateNiruviProtocolUrl(app);
   const cleanFileName = `${app.id}-${app.version}-x86_64.AppImage`;
@@ -119,14 +119,14 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
     setInstalledStatus(true);
     onInstalledChange?.();
 
-    // Trigger direct download link
-    const a = document.createElement('a');
-    a.href = app.downloadUrl;
-    a.download = cleanFileName;
-    a.target = '_blank';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    // Trigger direct download without opening a blank tab or navigating away
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = app.downloadUrl;
+    document.body.appendChild(iframe);
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+    }, 6000);
   };
 
   const handleMarkAsInstalled = () => {
@@ -143,24 +143,34 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-150">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-neutral-950/80 backdrop-blur-sm animate-in fade-in duration-150"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="install-modal-title"
+    >
       <div 
         id="install-modal-container"
-        className="relative w-full max-w-2xl bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="relative w-full max-w-2xl bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
       >
         {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b border-slate-800 bg-slate-850">
+        <div className="flex items-start justify-between p-6 border-b border-neutral-800 bg-neutral-900/50">
           <div className="flex items-center gap-4">
             <div 
-              className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md flex-shrink-0"
-              style={{ backgroundColor: `${app.brandColor || '#3B82F6'}20`, border: `1px solid ${app.brandColor || '#3B82F6'}40` }}
+              className="w-12 h-12 rounded-xl flex items-center justify-center bg-neutral-800/80 border border-neutral-700/60 p-1.5 shadow-md flex-shrink-0 overflow-hidden"
             >
-              <AppIcon slug={app.iconSlug} className="w-6 h-6" />
+              <AppIcon 
+                slug={app.iconSlug} 
+                iconUrl={app.icon} 
+                name={app.name} 
+                brandColor={app.brandColor} 
+                className="w-9 h-9" 
+              />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold text-white tracking-tight">Install {app.name}</h3>
-                <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono border border-slate-700">
+                <h3 id="install-modal-title" className="text-lg font-bold text-white tracking-tight">Install {app.name}</h3>
+                <span className="text-xs px-2 py-0.5 rounded bg-neutral-800 text-neutral-300 font-mono border border-neutral-700">
                   v{app.version}
                 </span>
                 {installedStatus && (
@@ -170,7 +180,7 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-neutral-400 mt-0.5">
                 Size: {app.size} • Format: Standalone Linux .AppImage • {app.license}
               </p>
             </div>
@@ -179,24 +189,24 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
           <button
             id="close-install-modal-btn"
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 transition-colors"
+            className="text-neutral-400 hover:text-white p-2 rounded-lg bg-neutral-800/80 hover:bg-neutral-700 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Method Selector Tabs */}
-        <div className="grid grid-cols-3 border-b border-slate-800 bg-slate-900/50 text-xs font-medium text-slate-400">
+        <div className="grid grid-cols-3 border-b border-neutral-800 bg-neutral-950 text-xs font-medium text-neutral-400">
           <button
             id="tab-method-protocol"
             onClick={() => setInstallMethod('protocol')}
             className={`py-3 px-4 flex items-center justify-center gap-2 border-b-2 transition-colors ${
               installMethod === 'protocol'
-                ? 'border-blue-500 text-blue-400 bg-blue-500/5 font-semibold'
-                : 'border-transparent hover:text-slate-200'
+                ? 'border-white text-white bg-neutral-900 font-semibold'
+                : 'border-transparent hover:text-neutral-200'
             }`}
           >
-            <Sparkles className="w-4 h-4 text-blue-400" />
+            <Sparkles className="w-4 h-4 text-amber-400" />
             <span>Niruvi Client</span>
           </button>
 
@@ -205,8 +215,8 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
             onClick={() => setInstallMethod('direct')}
             className={`py-3 px-4 flex items-center justify-center gap-2 border-b-2 transition-colors ${
               installMethod === 'direct'
-                ? 'border-blue-500 text-blue-400 bg-blue-500/5 font-semibold'
-                : 'border-transparent hover:text-slate-200'
+                ? 'border-white text-white bg-neutral-900 font-semibold'
+                : 'border-transparent hover:text-neutral-200'
             }`}
           >
             <Download className="w-4 h-4 text-emerald-400" />
@@ -218,27 +228,27 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
             onClick={() => setInstallMethod('cli')}
             className={`py-3 px-4 flex items-center justify-center gap-2 border-b-2 transition-colors ${
               installMethod === 'cli'
-                ? 'border-blue-500 text-blue-400 bg-blue-500/5 font-semibold'
-                : 'border-transparent hover:text-slate-200'
+                ? 'border-white text-white bg-neutral-900 font-semibold'
+                : 'border-transparent hover:text-neutral-200'
             }`}
           >
-            <Terminal className="w-4 h-4 text-indigo-400" />
+            <Terminal className="w-4 h-4 text-neutral-300" />
             <span>Terminal Script</span>
           </button>
         </div>
 
         {/* Tab Body */}
-        <div className="p-6 space-y-5 overflow-y-auto flex-1 text-xs text-slate-300">
+        <div className="p-6 space-y-5 overflow-y-auto flex-1 text-xs text-neutral-300">
           {/* Method 1: Niruvi Client One-Click */}
           {installMethod === 'protocol' && (
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-blue-950/20 border border-blue-800/40 space-y-2">
-                <div className="flex items-center gap-2 text-blue-300 font-semibold text-sm">
-                  <ShieldCheck className="w-4 h-4 text-blue-400" />
+              <div className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-2">
+                <div className="flex items-center gap-2 text-white font-semibold text-sm">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
                   <span>One-Click Desktop Integration</span>
                 </div>
-                <p className="text-slate-300 leading-relaxed">
-                  Sends an installation request directly to your installed Niruvi desktop manager using the registered <code className="text-blue-300 font-mono">niruvi://</code> URI handler. Niruvi verifies the cryptographic SHA-256 hash before placing the AppImage into your desktop menu.
+                <p className="text-neutral-300 leading-relaxed">
+                  Sends an installation request directly to your installed Niruvi desktop manager using the registered <code className="text-neutral-200 bg-neutral-900 px-1.5 py-0.5 rounded border border-neutral-800 font-mono">niruvi://</code> URI handler. Niruvi verifies the cryptographic SHA-256 hash before placing the AppImage into your desktop menu.
                 </p>
               </div>
 
@@ -246,7 +256,7 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
                 <button
                   id="trigger-protocol-install-btn"
                   onClick={handleLaunchProtocol}
-                  className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm shadow-md shadow-blue-600/20 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                  className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-sm shadow-md transition-all hover:scale-[1.01] active:scale-[0.99]"
                 >
                   <Download className="w-4 h-4" />
                   <span>Launch Niruvi Installer</span>
@@ -255,7 +265,7 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
                 <button
                   id="copy-protocol-btn"
                   onClick={copyProtocol}
-                  className="w-full sm:w-auto px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center justify-center gap-2 transition-colors"
+                  className="w-full sm:w-auto px-4 py-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 flex items-center justify-center gap-2 transition-colors"
                   title="Copy full niruvi://install URL"
                 >
                   {copiedProtocol ? (
@@ -265,7 +275,7 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
                     </>
                   ) : (
                     <>
-                      <Copy className="w-4 h-4 text-slate-400" />
+                      <Copy className="w-4 h-4 text-neutral-400" />
                       <span>Copy Link</span>
                     </>
                   )}
@@ -278,13 +288,13 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
                     <Check className="w-4 h-4 text-emerald-400" />
                     <span>Protocol Handshake Dispatched</span>
                   </div>
-                  <p className="text-slate-300 text-[11px]">
+                  <p className="text-neutral-300 text-[11px]">
                     If your browser prompted to open Niruvi, click Allow. We have also registered <strong>{app.name}</strong> in your local store library!
                   </p>
                 </div>
               )}
 
-              <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 font-mono text-[11px] text-slate-400 break-all select-all">
+              <div className="p-3 bg-neutral-950 rounded-lg border border-neutral-800 font-mono text-[11px] text-neutral-400 break-all select-all">
                 {protocolUrl}
               </div>
             </div>
@@ -293,15 +303,15 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
           {/* Method 2: Direct File Download */}
           {installMethod === 'direct' && (
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-slate-800/40 border border-slate-800 space-y-2">
+              <div className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-2">
                 <h4 className="text-white font-semibold text-sm flex items-center gap-2">
                   <HardDrive className="w-4 h-4 text-emerald-400" />
                   <span>Direct Binary Download</span>
                 </h4>
-                <p className="text-slate-300 leading-relaxed">
+                <p className="text-neutral-300 leading-relaxed">
                   Download the standalone <code className="text-emerald-300 font-mono">{cleanFileName}</code> directly from the official upstream release. After downloading, grant executable permissions to run it:
                 </p>
-                <pre className="p-2.5 bg-slate-950 rounded border border-slate-800 font-mono text-xs text-slate-300">
+                <pre className="p-2.5 bg-black rounded border border-neutral-800 font-mono text-xs text-neutral-300">
 {`chmod +x ${cleanFileName}
 ./${cleanFileName}`}
                 </pre>
@@ -311,7 +321,7 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
                 <button
                   id="trigger-direct-download-btn"
                   onClick={handleDirectDownload}
-                  className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-md shadow-emerald-600/20 transition-all hover:scale-[1.01]"
+                  className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-sm shadow-md transition-all hover:scale-[1.01]"
                 >
                   <Download className="w-4 h-4" />
                   <span>Download .AppImage ({app.size})</span>
@@ -321,15 +331,15 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
                   href={app.downloadUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full sm:w-auto px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center justify-center gap-1.5 transition-colors"
+                  className="w-full sm:w-auto px-4 py-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <ExternalLink className="w-4 h-4" />
                   <span>Direct URL</span>
                 </a>
               </div>
 
-              <div className="p-3 rounded-lg bg-slate-800/40 border border-slate-800 space-y-1">
-                <span className="text-slate-400 font-medium">Verified Publisher Checksum (SHA-256):</span>
+              <div className="p-3 rounded-lg bg-neutral-950 border border-neutral-800 space-y-1">
+                <span className="text-neutral-400 font-medium">Verified Publisher Checksum (SHA-256):</span>
                 <div className="font-mono text-emerald-400 text-[11px] break-all select-all">
                   {app.sha256}
                 </div>
@@ -340,14 +350,14 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
           {/* Method 3: Terminal Script */}
           {installMethod === 'cli' && (
             <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-800">
+              <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-neutral-950 border border-neutral-800">
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-400 font-medium">Target Directory:</span>
+                  <span className="text-neutral-400 font-medium">Target Directory:</span>
                   <select
                     id="install-target-dir-select"
                     value={targetDir}
                     onChange={(e) => setTargetDir(e.target.value as any)}
-                    className="bg-slate-800 text-slate-200 border border-slate-700 rounded px-2.5 py-1 text-xs focus:ring-1 focus:ring-blue-500"
+                    className="bg-neutral-900 text-neutral-200 border border-neutral-700 rounded px-2.5 py-1 text-xs focus:ring-1 focus:ring-white transition-colors"
                   >
                     <option value="~/.local/bin">~/.local/bin (Standard PATH)</option>
                     <option value="~/Applications">~/Applications (Standard AppImages)</option>
@@ -357,12 +367,12 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-400 font-medium">Downloader:</span>
-                  <div className="flex rounded border border-slate-700 overflow-hidden">
+                  <span className="text-neutral-400 font-medium">Downloader:</span>
+                  <div className="flex rounded border border-neutral-700 overflow-hidden">
                     <button
                       onClick={() => setCliTool('curl')}
                       className={`px-2.5 py-1 text-xs transition-colors ${
-                        cliTool === 'curl' ? 'bg-blue-600 text-white font-medium' : 'bg-slate-800 text-slate-400 hover:text-white'
+                        cliTool === 'curl' ? 'bg-white text-black font-semibold' : 'bg-neutral-900 text-neutral-400 hover:text-white'
                       }`}
                     >
                       curl
@@ -370,7 +380,7 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
                     <button
                       onClick={() => setCliTool('wget')}
                       className={`px-2.5 py-1 text-xs transition-colors ${
-                        cliTool === 'wget' ? 'bg-blue-600 text-white font-medium' : 'bg-slate-800 text-slate-400 hover:text-white'
+                        cliTool === 'wget' ? 'bg-white text-black font-semibold' : 'bg-neutral-900 text-neutral-400 hover:text-white'
                       }`}
                     >
                       wget
@@ -381,11 +391,11 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-slate-200">Terminal Command:</span>
+                  <span className="font-semibold text-neutral-200">Terminal Command:</span>
                   <button
                     id="copy-terminal-script-btn"
                     onClick={copyCli}
-                    className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 font-medium"
+                    className="flex items-center gap-1.5 text-xs text-neutral-300 hover:text-white font-medium"
                   >
                     {copiedCli ? (
                       <>
@@ -401,17 +411,17 @@ echo "✓ ${app.name} installed successfully! Run with: ${targetFile}"`;
                   </button>
                 </div>
 
-                <pre className="p-3 bg-slate-950 rounded-xl border border-slate-800 font-mono text-[11px] text-blue-300 select-all overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                <pre className="p-3 bg-neutral-950 rounded-xl border border-neutral-800 font-mono text-[11px] text-neutral-200 select-all overflow-x-auto whitespace-pre-wrap leading-relaxed">
 {generateCliScript()}
                 </pre>
               </div>
 
               <div className="flex items-center justify-between pt-2">
-                <span className="text-slate-400">Done executing this command?</span>
+                <span className="text-neutral-400">Done executing this command?</span>
                 <button
                   id="mark-installed-cli-btn"
                   onClick={handleMarkAsInstalled}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 text-xs font-medium transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 text-xs font-medium transition-colors"
                 >
                   <FolderCheck className="w-3.5 h-3.5 text-emerald-400" />
                   <span>{installedStatus ? 'Already in Library' : 'Mark as Installed in Library'}</span>

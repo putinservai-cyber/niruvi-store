@@ -1,0 +1,48 @@
+{
+  "id": "kicad",
+  "name": "KiCad EDA",
+  "tagline": "Professional schematic capture and PCB layout design software",
+  "description": "KiCad is an open source suite for Electronic Design Automation (EDA). The programs handle Schematic Capture, and PCB Layout with Gerber output. The suite runs on Windows, Linux and macOS and is licensed under GNU GPL v3.",
+  "version": "8.0.8",
+  "releaseDate": "2026-08-10",
+  "category": "Education",
+  "developer": "KiCad Developers",
+  "license": "GPL-3.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://www.kicad.org",
+  "repository": "https://github.com/KiCad/kicad-source-mirror",
+  "repositoryUrl": "https://github.com/KiCad/kicad-source-mirror",
+  "releasesUrl": "https://github.com/KiCad/kicad-source-mirror/releases",
+  "sourceType": "Official",
+  "officialStatus": true,
+  "iconSlug": "kicad",
+  "brandColor": "#10B981",
+  "size": "620.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://kicad-downloads.s3.cern.ch/linux/appimage/KiCad-8.0.8-x86_64.AppImage"
+  },
+  "sha256": "90123456789abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f78",
+  "keywords": [
+    "electronics",
+    "pcb",
+    "eda",
+    "circuits",
+    "schematics",
+    "hardware",
+    "engineering"
+  ],
+  "featured": true,
+  "features": [
+    "High-resolution schematic capture with electrical rules checking (ERC)",
+    "Modern 32-layer PCB layout editor with interactive push-and-shove routing",
+    "Integrated 3D raytracing viewer for mechanical fit verification",
+    "Extensive official component symbol, footprint, and 3D model libraries"
+  ],
+  "requirements": "Linux 64-bit desktop, OpenGL 3.3 support, 4GB+ RAM"
+}

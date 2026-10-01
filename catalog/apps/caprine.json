@@ -1,0 +1,42 @@
+{
+  "id": "caprine",
+  "name": "Caprine",
+  "tagline": "Privacy-focused and elegant desktop client for Messenger",
+  "description": "Caprine is an open-source Facebook Messenger desktop app packed with useful features, dark mode themes, privacy toggles (hide read receipts and typing status), and native Linux notifications.",
+  "category": "Communication",
+  "version": "2.61.0",
+  "releaseDate": "2025-01-08",
+  "size": "79.2 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "MIT",
+  "licenseCategory": "Permissive",
+  "developer": "Sindre Sorhus",
+  "homepage": "https://sindresorhus.com/caprine",
+  "repository": "https://github.com/sindresorhus/caprine",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://github.com/sindresorhus/caprine/releases/download/v2.61.0/Caprine-2.61.0.AppImage"
+  },
+  "formats": [
+    "AppImage"
+  ],
+  "brandColor": "#0084FF",
+  "keywords": [
+    "messenger",
+    "chat",
+    "communication",
+    "facebook",
+    "messaging"
+  ],
+  "featured": false,
+  "features": [
+    "Privacy controls: prevent read receipts and typing indicator indicators",
+    "Elegant dark and vibrant themes with auto system theme sync",
+    "System tray minimization and unread message counter badge",
+    "Keyboard shortcuts for fast chat switching and navigation"
+  ],
+  "requirements": "Linux x86_64, Facebook or Messenger account"
+}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { usePreventBodyScroll } from '../hooks/usePreventBodyScroll';
 import { X, Copy, Check, Download, Code } from 'lucide-react';
 import { APPS_CATALOG } from '../data/apps';
 
@@ -8,9 +9,11 @@ interface JsonExportModalProps {
 }
 
 export const JsonExportModal: React.FC<JsonExportModalProps> = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-
   const [copied, setCopied] = useState(false);
+
+  usePreventBodyScroll(isOpen);
+
+  if (!isOpen) return null;
 
   const jsonString = JSON.stringify(
     {
@@ -43,17 +46,17 @@ export const JsonExportModal: React.FC<JsonExportModalProps> = ({ isOpen, onClos
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="relative w-full max-w-3xl bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-neutral-950/80 backdrop-blur-sm animate-in fade-in duration-150">
+      <div className="relative w-full max-w-3xl bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-slate-800 bg-slate-850/60">
+        <div className="flex items-center justify-between p-5 border-b border-neutral-800 bg-neutral-900/50">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <div className="p-2 rounded-lg bg-neutral-800 text-white border border-neutral-700">
               <Code className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-base font-bold text-white">Static Application Catalog (JSON)</h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-neutral-400">
                 Machine-readable catalog consumed by the Niruvi AppImage client
               </p>
             </div>
@@ -61,14 +64,14 @@ export const JsonExportModal: React.FC<JsonExportModalProps> = ({ isOpen, onClos
           <div className="flex items-center gap-2">
             <button
               onClick={handleDownload}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-sm transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-neutral-200 text-black text-xs font-semibold shadow-sm transition-colors"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Download catalog.json</span>
             </button>
             <button
               onClick={handleCopy}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 text-xs font-medium transition-colors"
             >
               {copied ? (
                 <>
@@ -84,7 +87,7 @@ export const JsonExportModal: React.FC<JsonExportModalProps> = ({ isOpen, onClos
             </button>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 transition-colors"
+              className="text-neutral-400 hover:text-white p-1.5 rounded-lg bg-neutral-800/80 hover:bg-neutral-700 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -92,7 +95,7 @@ export const JsonExportModal: React.FC<JsonExportModalProps> = ({ isOpen, onClos
         </div>
 
         {/* JSON Preview */}
-        <div className="p-4 bg-slate-950 overflow-y-auto flex-1 font-mono text-xs text-slate-300">
+        <div className="p-4 bg-neutral-950 overflow-y-auto flex-1 font-mono text-xs text-neutral-300">
           <pre className="select-all">{jsonString}</pre>
         </div>
       </div>

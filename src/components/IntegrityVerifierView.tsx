@@ -111,16 +111,16 @@ export const IntegrityVerifierView: React.FC<IntegrityVerifierViewProps> = ({
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
       {/* Title & Introduction */}
-      <div className="bg-slate-800/40 border border-slate-800 rounded-2xl p-6 md:p-8">
+      <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 md:p-8">
         <div className="max-w-3xl">
           <div className="flex items-center gap-2 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-2">
-            <ShieldCheck className="w-4 h-4" />
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
             <span>Cryptographic Verification Engine</span>
           </div>
           <h2 className="text-2xl font-bold text-white tracking-tight">
             AppImage SHA-256 Integrity Verifier
           </h2>
-          <p className="text-sm text-slate-300 mt-2 leading-relaxed">
+          <p className="text-sm text-neutral-300 mt-2 leading-relaxed">
             Verify that your downloaded Linux AppImages are 100% authentic and unaltered. This tool uses your browser's native Web Crypto API to calculate the SHA-256 checksum locally—your files never leave your computer.
           </p>
         </div>
@@ -137,10 +137,10 @@ export const IntegrityVerifierView: React.FC<IntegrityVerifierViewProps> = ({
             onClick={() => fileInputRef.current?.click()}
             className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${
               isCalculating 
-                ? 'border-blue-500 bg-blue-500/5' 
+                ? 'border-white bg-white/5' 
                 : file 
                   ? 'border-emerald-500/60 bg-emerald-500/5' 
-                  : 'border-slate-700 hover:border-slate-600 bg-slate-800/30 hover:bg-slate-800/50'
+                  : 'border-neutral-750 hover:border-neutral-600 bg-neutral-900/40 hover:bg-neutral-900/70'
             }`}
           >
             <input
@@ -152,39 +152,39 @@ export const IntegrityVerifierView: React.FC<IntegrityVerifierViewProps> = ({
             />
 
             <div className="max-w-md mx-auto flex flex-col items-center">
-              <div className="w-14 h-14 rounded-2xl bg-slate-800 flex items-center justify-center text-slate-300 mb-4 shadow-inner">
+              <div className="w-14 h-14 rounded-2xl bg-neutral-900 border border-neutral-800 flex items-center justify-center text-neutral-300 mb-4 shadow-inner">
                 {isCalculating ? (
-                  <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : file ? (
                   <FileCheck className="w-7 h-7 text-emerald-400" />
                 ) : (
-                  <Upload className="w-7 h-7 text-blue-400" />
+                  <Upload className="w-7 h-7 text-neutral-300" />
                 )}
               </div>
 
               {isCalculating ? (
                 <div>
                   <h3 className="text-base font-semibold text-white">Computing SHA-256 Checksum...</h3>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-neutral-400 mt-1">
                     Processing {file?.name} ({((file?.size || 0) / (1024 * 1024)).toFixed(1)} MB)
                   </p>
                 </div>
               ) : file ? (
                 <div>
                   <h3 className="text-base font-semibold text-white">{file.name}</h3>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-neutral-400 mt-1">
                     {((file.size || 0) / (1024 * 1024)).toFixed(2)} MB • Click or drop another file to replace
                   </p>
                 </div>
               ) : (
                 <div>
                   <h3 className="text-base font-semibold text-white">Choose or drop any .AppImage file</h3>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-neutral-400 mt-1">
                     Supports any local Linux executable, AppImage, or archive
                   </p>
                   <button
                     type="button"
-                    className="mt-4 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold shadow transition-colors"
+                    className="mt-4 px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-750 text-neutral-200 border border-neutral-700 text-xs font-semibold shadow transition-colors"
                   >
                     Select File from Disk
                   </button>
@@ -195,7 +195,7 @@ export const IntegrityVerifierView: React.FC<IntegrityVerifierViewProps> = ({
 
           {/* Computed Results Panel */}
           {calculatedHash && (
-            <div className="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-6 space-y-5">
+            <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 space-y-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <FileCheck className="w-5 h-5 text-emerald-400" />
@@ -203,7 +203,7 @@ export const IntegrityVerifierView: React.FC<IntegrityVerifierViewProps> = ({
                 </div>
                 <button
                   onClick={resetFile}
-                  className="flex items-center gap-1 text-xs text-slate-400 hover:text-white"
+                  className="flex items-center gap-1 text-xs text-neutral-400 hover:text-white"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   <span>Reset</span>
@@ -211,11 +211,11 @@ export const IntegrityVerifierView: React.FC<IntegrityVerifierViewProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs text-slate-400">
+                <div className="flex items-center justify-between text-xs text-neutral-400">
                   <span>SHA-256 (64 hex characters)</span>
                   <button
                     onClick={copyCalculated}
-                    className="flex items-center gap-1 text-blue-400 hover:text-blue-300 font-medium"
+                    className="flex items-center gap-1 text-neutral-300 hover:text-white font-medium"
                   >
                     {copiedHash ? (
                       <>
@@ -231,70 +231,77 @@ export const IntegrityVerifierView: React.FC<IntegrityVerifierViewProps> = ({
                   </button>
                 </div>
 
-                <div className="p-3.5 bg-slate-950 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 break-all select-all">
+                <div className="p-3.5 bg-neutral-950 rounded-xl border border-neutral-800 font-mono text-xs text-emerald-400 break-all select-all">
                   {calculatedHash}
                 </div>
               </div>
 
               {/* Automatic Catalog Match Result */}
               {matchedApp ? (
-                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 space-y-3">
+                <div className="p-4 rounded-xl bg-neutral-900 border border-neutral-700 space-y-3">
                   <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-6 h-6 text-emerald-400 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-6 h-6 text-neutral-400 flex-shrink-0 mt-0.5" />
                     <div className="space-y-1">
-                      <h5 className="text-sm font-bold text-emerald-200">
+                      <h5 className="text-sm font-bold text-neutral-200">
                         Official Store Catalog Match Verified!
                       </h5>
-                      <p className="text-xs text-slate-300">
+                      <p className="text-xs text-neutral-300">
                         This file exactly matches the official publisher release of{' '}
                         <strong className="text-white">{matchedApp.name} v{matchedApp.version}</strong> published by{' '}
-                        <span className="text-emerald-300 font-medium">{matchedApp.publisher.name}</span>.
+                        <span className="text-neutral-200 font-medium">{matchedApp.publisher.name}</span>.
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between pt-2 border-t border-emerald-500/20 text-xs">
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded bg-slate-800 flex items-center justify-center">
-                        <AppIcon slug={matchedApp.iconSlug} className="w-4 h-4" />
+                      <div className="w-6 h-6 rounded bg-neutral-800/80 border border-neutral-700/60 p-0.5 flex items-center justify-center overflow-hidden">
+                        <AppIcon 
+                          slug={matchedApp.iconSlug} 
+                          iconUrl={matchedApp.icon} 
+                          name={matchedApp.name} 
+                          brandColor={matchedApp.brandColor} 
+                          className="w-5 h-5" 
+                        />
                       </div>
                       <span className="font-semibold text-white">{matchedApp.name}</span>
-                      <span className="text-slate-400">({matchedApp.size})</span>
+                      <span className="text-neutral-400">({matchedApp.size})</span>
                     </div>
 
                     <button
                       onClick={() => onSelectApp(matchedApp)}
-                      className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs shadow-sm transition-colors"
+                      className="px-3 py-1.5 rounded-lg bg-white hover:bg-neutral-200 text-black font-semibold text-xs shadow-sm transition-colors"
                     >
                       View App Details
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-3">
+                <div className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-3">
                   <div className="flex items-start gap-3">
                     <HelpCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                     <div className="space-y-1">
-                      <h5 className="text-xs font-semibold text-slate-200">
+                      <h5 className="text-xs font-semibold text-neutral-200">
                         No Automatic Catalog Match Found
                       </h5>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-neutral-400">
                         This file does not match any existing official package in the current store catalog. You can paste an expected SHA-256 hash below to verify it against a custom publisher source.
                       </p>
                     </div>
                   </div>
 
                   {/* Compare with Expected Hash */}
-                  <div className="space-y-1.5 pt-2 border-t border-slate-800">
-                    <label className="text-xs font-medium text-slate-300">
+                  <div className="space-y-1.5 pt-2 border-t border-neutral-800">
+                    <label className="text-xs font-medium text-neutral-300">
                       Compare with Expected Hash:
                     </label>
                     <input
+                      id="expected-hash-input"
                       type="text"
                       value={expectedHash}
                       onChange={(e) => setExpectedHash(e.target.value)}
                       placeholder="Paste 64-character SHA-256 hash here..."
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg font-mono text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded-lg font-mono text-xs text-neutral-200 placeholder-neutral-500 focus:outline-hidden focus:border-white"
                     />
 
                     {isCustomMatch && (
@@ -320,26 +327,28 @@ export const IntegrityVerifierView: React.FC<IntegrityVerifierViewProps> = ({
         {/* Right Col: Quick Hash Comparator & Linux CLI Instructions */}
         <div className="space-y-6">
           {/* Compare Two Hashes Tool */}
-          <div className="bg-slate-800/40 border border-slate-800 rounded-2xl p-5 space-y-4">
+          <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-5 space-y-4">
             <h4 className="text-sm font-semibold text-white">Compare Two Hashes</h4>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-neutral-400">
               Quickly compare any two checksum strings to see if they are identical.
             </p>
 
             <div className="space-y-2">
               <input
+                id="manual-hash-a-input"
                 type="text"
                 value={manualHashA}
                 onChange={(e) => setManualHashA(e.target.value)}
                 placeholder="Hash A (e.g. from website)"
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg font-mono text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-neutral-950 border border-neutral-800 rounded-lg font-mono text-xs text-neutral-200 placeholder-neutral-500 focus:outline-hidden focus:border-white"
               />
               <input
+                id="manual-hash-b-input"
                 type="text"
                 value={manualHashB}
                 onChange={(e) => setManualHashB(e.target.value)}
                 placeholder="Hash B (e.g. from sha256sum)"
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg font-mono text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-neutral-950 border border-neutral-800 rounded-lg font-mono text-xs text-neutral-200 placeholder-neutral-500 focus:outline-hidden focus:border-white"
               />
             </div>
 
@@ -367,21 +376,21 @@ export const IntegrityVerifierView: React.FC<IntegrityVerifierViewProps> = ({
           </div>
 
           {/* Linux Terminal Verification Command Guide */}
-          <div className="bg-slate-800/40 border border-slate-800 rounded-2xl p-5 space-y-3 text-xs">
+          <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-5 space-y-3 text-xs">
             <div className="flex items-center gap-2 text-white font-semibold">
-              <Terminal className="w-4 h-4 text-blue-400" />
+              <Terminal className="w-4 h-4 text-neutral-300" />
               <span>Verify in Linux Terminal</span>
             </div>
-            <p className="text-slate-400 leading-relaxed">
+            <p className="text-neutral-400 leading-relaxed">
               You can also compute the SHA-256 checksum natively on any Linux terminal:
             </p>
-            <pre className="p-2.5 bg-slate-950 rounded-lg border border-slate-800 font-mono text-[11px] text-blue-300 overflow-x-auto">
+            <pre className="p-2.5 bg-neutral-950 rounded-lg border border-neutral-800 font-mono text-[11px] text-neutral-300 overflow-x-auto">
 sha256sum application.AppImage
             </pre>
-            <p className="text-slate-400 leading-relaxed">
+            <p className="text-neutral-400 leading-relaxed">
               Or verify against an expected hash automatically:
             </p>
-            <pre className="p-2.5 bg-slate-950 rounded-lg border border-slate-800 font-mono text-[11px] text-slate-300 overflow-x-auto">
+            <pre className="p-2.5 bg-neutral-950 rounded-lg border border-neutral-800 font-mono text-[11px] text-neutral-400 overflow-x-auto">
 {`echo "<hash>  application.AppImage" | sha256sum --check`}
             </pre>
           </div>

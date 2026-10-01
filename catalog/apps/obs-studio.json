@@ -1,0 +1,49 @@
+{
+  "id": "obs-studio",
+  "name": "OBS Studio",
+  "tagline": "High-performance video recording and live broadcasting software",
+  "description": "OBS Studio is the gold standard for live streaming and offline screen recording on Linux. It provides low-latency capture via PipeWire and X11, multi-view production monitors, hardware-accelerated video encoding (NVENC, VA-API, QuickSync), and modular scene composition.",
+  "version": "31.0.1",
+  "releaseDate": "2025-01-08",
+  "category": "Audio & Video",
+  "developer": "OBS Project",
+  "license": "GPL-2.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://obsproject.com",
+  "repository": "https://github.com/obsproject/obs-studio",
+  "icon": "/icons/obs-studio.png",
+  "iconSlug": "obs-studio",
+  "brandColor": "#475569",
+  "size": "188.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/obsproject/obs-studio/releases/download/31.0.1/OBS-Studio-31.0.1-Ubuntu-x86_64.AppImage"
+  },
+  "sha256": "c3d9a11fa3571d796791c530bb1507f352136067727e4c30c806509f6f663d12",
+  "keywords": [
+    "streaming",
+    "recording",
+    "video",
+    "broadcast",
+    "screen-recorder",
+    "twitch",
+    "youtube"
+  ],
+  "featured": true,
+  "features": [
+    "Real-time audio & video capture via PipeWire and V4L2",
+    "Hardware-accelerated NVENC, VA-API, and SVT-AV1 encoders",
+    "Audio mixer with noise gate, suppression, and gain filters",
+    "Modular Dock UI with custom web browser source plugins"
+  ],
+  "requirements": "OpenGL 3.3 compatible GPU, PipeWire or PulseAudio",
+  "repositoryUrl": "https://github.com/obsproject/obs-studio",
+  "releasesUrl": "https://github.com/obsproject/obs-studio/releases",
+  "sourceType": "Official",
+  "officialStatus": true
+}

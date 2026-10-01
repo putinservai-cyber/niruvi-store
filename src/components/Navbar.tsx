@@ -11,12 +11,14 @@ import {
   User, 
   LogOut,
   Zap,
-  Heart
+  Heart,
+  Sparkles,
+  Activity
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { NiruviLogo } from './NiruviLogo';
 
-export type NavView = 'store' | 'library' | 'verifier' | 'submit' | 'admin';
+export type NavView = 'store' | 'library' | 'verifier' | 'submit' | 'admin' | 'security';
 
 interface NavbarProps {
   currentView: NavView;
@@ -28,6 +30,7 @@ interface NavbarProps {
   onOpenExport: () => void;
   onOpenBridge: () => void;
   onOpenSponsor?: () => void;
+  onOpenPricing?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -40,8 +43,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenExport,
   onOpenBridge,
   onOpenSponsor,
+  onOpenPricing,
 }) => {
-  const { user, openAuthModal, signOut } = useAuth();
+  const { user, openAuthModal, openAccountModal, signOut } = useAuth();
   const [dbStatus, setDbStatus] = useState<'connected' | 'checking' | 'error'>('checking');
 
   useEffect(() => {
@@ -99,52 +103,24 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* Global Search Bar */}
-          <div className="flex-1 max-w-md mx-2 hidden sm:block">
-            <div className="relative">
-              <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                id="app-search-input"
-                type="text"
-                value={searchQuery}
-                onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Search apps, utilities, IDEs, tags... (Press '/' to focus)"
-                className="w-full pl-9 pr-8 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-white placeholder-neutral-500 focus:outline-hidden focus:border-white focus:ring-1 focus:ring-white transition-colors"
-              />
-              {searchQuery ? (
-                <button
-                  id="clear-search-btn"
-                  onClick={() => onSearchChange('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-neutral-400 hover:text-white px-1.5 py-0.5 rounded bg-neutral-800"
-                >
-                  esc
-                </button>
-              ) : (
-                <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-neutral-400 px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-700 font-mono">
-                  /
-                </kbd>
-              )}
-            </div>
-          </div>
-
           {/* Quick Utility Actions & Auth */}
           <div className="flex items-center gap-2">
             {onOpenSponsor && (
               <button
                 id="open-sponsor-btn"
                 onClick={onOpenSponsor}
-                className="flex items-center gap-1.5 text-xs font-semibold text-rose-300 hover:text-rose-200 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-3 py-2 rounded-lg transition-colors shadow-sm"
-                title="Support developer via Ko-fi (@putinservai) or Indian UPI"
+                className="flex items-center gap-1.5 text-xs font-semibold text-rose-300 hover:text-rose-200 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-3.5 py-2 rounded-lg transition-colors shadow-sm cursor-pointer"
+                title="Support Open-Source Store & Linux App Developers (Ko-fi / UPI)"
               >
                 <Heart className="w-3.5 h-3.5 fill-rose-400/30 text-rose-400" />
-                <span className="hidden sm:inline">Support (Ko-fi)</span>
+                <span>Donate & Support</span>
               </button>
             )}
 
             <button
               id="open-bridge-btn"
               onClick={onOpenBridge}
-              className="flex items-center gap-1.5 text-xs font-semibold text-neutral-200 hover:text-white bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 px-3 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 text-xs font-semibold text-neutral-200 hover:text-white bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 px-3 py-2 rounded-lg transition-colors cursor-pointer"
               title="Connect and test Niruvi Desktop App (niruvi://)"
             >
               <Zap className="w-3.5 h-3.5 text-neutral-300" />
@@ -154,21 +130,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="open-info-modal-btn"
               onClick={onOpenInfo}
-              className="hidden lg:flex items-center gap-1.5 text-xs font-medium text-neutral-300 hover:text-white bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 px-3 py-2 rounded-lg transition-colors"
+              className="hidden lg:flex items-center gap-1.5 text-xs font-medium text-neutral-300 hover:text-white bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 px-3 py-2 rounded-lg transition-colors cursor-pointer"
               title="How niruvi:// desktop protocol integration works"
             >
               <HelpCircle className="w-3.5 h-3.5 text-neutral-400" />
               <span>Protocol</span>
-            </button>
-
-            <button
-              id="open-export-modal-btn"
-              onClick={onOpenExport}
-              className="hidden md:flex items-center gap-1.5 text-xs font-medium text-neutral-300 hover:text-white bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 px-3 py-2 rounded-lg transition-colors"
-              title="Export Machine-Readable Catalog JSON"
-            >
-              <Code className="w-3.5 h-3.5 text-neutral-400" />
-              <span>JSON</span>
             </button>
 
             <a
@@ -183,10 +149,14 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>GitHub</span>
             </a>
 
-            {/* Auth Profile / Login Button */}
+            {/* Auth Profile / Account Management Button */}
             {user ? (
-              <div className="flex items-center gap-2 bg-neutral-900 border border-neutral-800 pl-2.5 pr-1.5 py-1 rounded-xl">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 bg-neutral-900 border border-neutral-800 p-1 rounded-xl">
+                <button
+                  onClick={openAccountModal}
+                  className="flex items-center gap-2 pl-2 pr-2 py-1 rounded-lg hover:bg-neutral-800 transition text-left"
+                  title="Open Account Management"
+                >
                   {user.avatarUrl ? (
                     <img
                       src={user.avatarUrl}
@@ -198,18 +168,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                       {user.displayName.slice(0, 2).toUpperCase()}
                     </div>
                   )}
-                  <div className="text-left hidden sm:block">
+                  <div className="hidden sm:block">
                     <div className="text-xs font-semibold text-white leading-tight max-w-[100px] truncate">
                       {user.displayName}
                     </div>
                     <span className="text-[9px] uppercase tracking-wider font-mono text-neutral-400">
-                      {user.role}
+                      Account
                     </span>
                   </div>
-                </div>
+                </button>
                 <button
                   onClick={signOut}
-                  className="p-1 text-neutral-400 hover:text-white rounded-lg hover:bg-neutral-800 transition"
+                  className="p-1.5 text-neutral-400 hover:text-white rounded-lg hover:bg-neutral-800 transition"
                   title="Sign out"
                 >
                   <LogOut className="w-3.5 h-3.5" />

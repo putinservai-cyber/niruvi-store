@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Navbar, NavView } from './components/Navbar';
 import { FilterBar } from './components/FilterBar';
 import { AppCard } from './components/AppCard';
@@ -10,9 +10,13 @@ import { SubmitAppView } from './components/SubmitAppView';
 import { NiruviInfoModal } from './components/NiruviInfoModal';
 import { JsonExportModal } from './components/JsonExportModal';
 import { AuthModal } from './components/AuthModal';
+import { AccountManagementModal } from './components/AccountManagementModal';
 import { AdminDashboard } from './components/AdminDashboard';
+import { SecurityPlatformView } from './components/SecurityPlatformView';
 import { NiruviBridgeModal } from './components/NiruviBridgeModal';
 import { SponsorModal } from './components/SponsorModal';
+import { PaymentModal } from './components/PaymentModal';
+import { PricingModal } from './components/PricingModal';
 import { APPS_CATALOG } from './data/apps';
 import { AppMetadata, FilterState, InstalledAppRecord } from './types';
 import { AppIcon } from './components/AppIcon';
@@ -24,11 +28,13 @@ import {
   toggleBookmark, 
   getCustomApps 
 } from './utils/storage';
+import { useBackgroundWorker } from './hooks/useBackgroundWorker';
 import { 
   ShieldCheck, 
   Cpu, 
   Sparkles, 
   Terminal, 
+  Search,
   SearchX, 
   ExternalLink,
   Download,
@@ -47,6 +53,7 @@ export const App: React.FC = () => {
     category: 'All',
     architecture: 'All',
     licenseCategory: 'All',
+    trustTier: 'All',
     sortBy: 'featured',
   });
 
@@ -59,31 +66,62 @@ export const App: React.FC = () => {
   // Modals state
   const [selectedApp, setSelectedApp] = useState<AppMetadata | null>(null);
   const [installingApp, setInstallingApp] = useState<AppMetadata | null>(null);
+  const [payingApp, setPayingApp] = useState<AppMetadata | null>(null);
+  const [isPricingOpen, setIsPricingOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isBridgeOpen, setIsBridgeOpen] = useState(false);
   const [isSponsorOpen, setIsSponsorOpen] = useState(false);
   const [sponsorApp, setSponsorApp] = useState<AppMetadata | null>(null);
 
-  const fetchCatalogApps = () => {
+  const fetchCatalogApps = useCallback(() => {
     fetch('/api/apps')
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((data) => {
         const list = Array.isArray(data) ? data : (data?.apps || []);
         if (Array.isArray(list) && list.length > 0) {
           setServerApps(list);
         }
       })
-      .catch((err) => console.debug('Cloud SQL apps sync:', err));
-  };
+      .catch((err) => {
+        console.debug('Cloud SQL catalog sync offline/fallback mode active:', err?.message || err);
+        // Fallback to built-in local catalog seamlessly without error noise
+      });
+  }, []);
 
   // Load from local storage and Cloud SQL backend on startup
+  const { lastFetched } = useBackgroundWorker(fetchCatalogApps);
+  const [timeSinceUpdate, setTimeSinceUpdate] = useState('Just now');
+
   useEffect(() => {
     setInstalledRecords(getInstalledApps());
     setBookmarkedIds(getBookmarkedAppIds());
     setCustomApps(getCustomApps());
     fetchCatalogApps();
   }, []);
+
+  useEffect(() => {
+    const updateText = () => {
+      const diffMs = new Date().getTime() - lastFetched.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 1) {
+        setTimeSinceUpdate('Just now');
+      } else if (diffMins === 1) {
+        setTimeSinceUpdate('1 min ago');
+      } else {
+        setTimeSinceUpdate(`${diffMins} mins ago`);
+      }
+    };
+
+    updateText();
+    const ticker = setInterval(updateText, 10000); // Check every 10 seconds
+    return () => clearInterval(ticker);
+  }, [lastFetched]);
 
   const refreshUserData = () => {
     setInstalledRecords(getInstalledApps());
@@ -156,6 +194,14 @@ export const App: React.FC = () => {
         return false;
       }
 
+      // Trust Tier
+      if (filters.trustTier !== 'All') {
+        const tier = app.trustTier || (app.sourceType === 'Official' ? 'Official Developer' : 'Verified Community');
+        if (tier !== filters.trustTier) {
+          return false;
+        }
+      }
+
       return true;
     }).sort((a, b) => {
       switch (filters.sortBy) {
@@ -183,6 +229,7 @@ export const App: React.FC = () => {
       category: 'All',
       architecture: 'All',
       licenseCategory: 'All',
+      trustTier: 'All',
       sortBy: 'featured',
     });
   };
@@ -210,6 +257,10 @@ export const App: React.FC = () => {
         onOpenInfo={() => setIsInfoOpen(true)}
         onOpenExport={() => setIsExportOpen(true)}
         onOpenBridge={() => setIsBridgeOpen(true)}
+        onOpenPricing={() => {
+          setSponsorApp(null);
+          setIsSponsorOpen(true);
+        }}
         onOpenSponsor={() => {
           setSponsorApp(null);
           setIsSponsorOpen(true);
@@ -221,15 +272,49 @@ export const App: React.FC = () => {
         {/* VIEW 1: STORE BROWSE */}
         {currentView === 'store' && (
           <div className="space-y-8 animate-in fade-in duration-150">
+            {/* Store Browser Local Search & Live Updated Status */}
+            <div className="flex flex-col sm:flex-row items-center gap-3.5 max-w-2xl mx-auto w-full">
+              <div className="relative flex-1 w-full">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-neutral-400" />
+                </div>
+                <input
+                  id="store-browser-search"
+                  type="text"
+                  value={filters.searchQuery}
+                  onChange={(e) => handleFilterChange({ searchQuery: e.target.value })}
+                  placeholder="Search Linux AppImages, CLI utilities, developer IDEs, tags..."
+                  className="block w-full pl-11 pr-12 py-3.5 bg-neutral-900/80 border border-neutral-800 rounded-2xl text-sm text-white placeholder-neutral-500 focus:outline-hidden focus:border-white focus:ring-1 focus:ring-white transition shadow-md font-sans"
+                />
+                {filters.searchQuery && (
+                  <button
+                    onClick={() => handleFilterChange({ searchQuery: '' })}
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-xs font-semibold text-neutral-400 hover:text-white transition cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <div className="text-[11px] text-neutral-500 flex items-center gap-1.5 whitespace-nowrap self-end sm:self-center mr-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Last updated: {timeSinceUpdate}</span>
+              </div>
+            </div>
+
             {/* Spotlight Editor's Choice Header */}
             {spotlightApp && !filters.searchQuery && filters.category === 'All' && (
               <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div className="flex items-start gap-4 sm:gap-5 max-w-2xl">
                   <div 
-                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center text-white shadow-md flex-shrink-0"
-                    style={{ backgroundColor: `${spotlightApp.brandColor || '#ffffff'}15`, border: `1px solid ${spotlightApp.brandColor || '#ffffff'}30` }}
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center bg-neutral-800/80 border border-neutral-700/60 p-2 sm:p-2.5 shadow-xl flex-shrink-0 overflow-hidden"
                   >
-                    <AppIcon slug={spotlightApp.iconSlug} className="w-9 h-9 sm:w-11 sm:h-11" />
+                    <AppIcon 
+                      slug={spotlightApp.iconSlug} 
+                      iconUrl={spotlightApp.icon} 
+                      name={spotlightApp.name} 
+                      brandColor={spotlightApp.brandColor} 
+                      className="w-12 h-12 sm:w-15 sm:h-15" 
+                    />
                   </div>
                   <div>
                     <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -251,7 +336,7 @@ export const App: React.FC = () => {
                       <span>•</span>
                       <span>{spotlightApp.size}</span>
                       <span>•</span>
-                      <span className="text-emerald-400">Verified SHA-256</span>
+                      <span className="text-neutral-400">Verified SHA-256</span>
                     </div>
                   </div>
                 </div>
@@ -380,6 +465,11 @@ export const App: React.FC = () => {
             </div>
           )
         )}
+
+        {/* VIEW 6: CYBERSECURITY ANALYTICS & SECURITY MONITORING PLATFORM */}
+        {currentView === 'security' && (
+          <SecurityPlatformView />
+        )}
       </main>
 
       {/* Footer */}
@@ -426,6 +516,15 @@ export const App: React.FC = () => {
               <ExternalLink className="w-3 h-3" />
             </a>
             <button
+              onClick={() => {
+                setSponsorApp(null);
+                setIsSponsorOpen(true);
+              }}
+              className="text-rose-300 hover:text-rose-200 transition-colors"
+            >
+              Support (Ko-fi / UPI)
+            </button>
+            <button
               onClick={() => setIsExportOpen(true)}
               className="hover:text-white transition-colors"
             >
@@ -460,6 +559,9 @@ export const App: React.FC = () => {
           setSponsorApp(app);
           setIsSponsorOpen(true);
         }}
+        onOpenPayment={(app) => {
+          setPayingApp(app);
+        }}
       />
 
       <InstallModal
@@ -468,6 +570,20 @@ export const App: React.FC = () => {
         onClose={() => setInstallingApp(null)}
         isInstalled={installingApp ? installedRecords.some((r) => r.appId === installingApp.id) : false}
         onInstalledChange={refreshUserData}
+      />
+
+      <PaymentModal
+        app={payingApp}
+        isOpen={!!payingApp}
+        onClose={() => setPayingApp(null)}
+        onSuccess={() => {
+          refreshUserData();
+        }}
+      />
+
+      <PricingModal
+        isOpen={isPricingOpen}
+        onClose={() => setIsPricingOpen(false)}
       />
 
       <NiruviInfoModal
@@ -492,6 +608,7 @@ export const App: React.FC = () => {
       />
 
       <AuthModal />
+      <AccountManagementModal />
     </div>
   );
 };

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { usePreventBodyScroll } from '../hooks/usePreventBodyScroll';
 import {
   X,
   Heart,
@@ -14,6 +15,26 @@ import {
 } from 'lucide-react';
 import { AppMetadata } from '../types';
 
+const RazorpayButtonContainer = () => {
+  return (
+    <div className="w-full flex flex-col items-center justify-center py-4 space-y-3">
+      <a
+        href="https://rzp.io/i/TZNgHZXLYAe1Sv"
+        target="_blank"
+        rel="noreferrer"
+        className="w-full py-4 px-5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-blue-950/50 transition"
+      >
+        <CreditCard className="w-5 h-5 text-blue-200" />
+        <span>Pay Securely via Razorpay (UPI, Cards, NetBanking)</span>
+        <ExternalLink className="w-4 h-4 text-blue-200" />
+      </a>
+      <p className="text-[11px] text-neutral-400 text-center">
+        Opens official Razorpay secure checkout in a new window.
+      </p>
+    </div>
+  );
+};
+
 interface SponsorModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -21,19 +42,22 @@ interface SponsorModalProps {
 }
 
 export const SponsorModal: React.FC<SponsorModalProps> = ({ isOpen, onClose, app }) => {
-  if (!isOpen) return null;
-
   const [activeTab, setActiveTab] = useState<'kofi' | 'upi' | 'gateways'>('kofi');
-  const [upiAmount, setUpiAmount] = useState<number>(99);
-  const [customUpiId, setCustomUpiId] = useState<string>('putinservai@oksbi');
+  const [upiAmount, setUpiAmount] = useState<number | string>(99);
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [copiedUpiLink, setCopiedUpiLink] = useState(false);
   const [copiedKofi, setCopiedKofi] = useState(false);
 
+  usePreventBodyScroll(isOpen);
+
+  if (!isOpen) return null;
+
+  const upiId = 'putinservai-1@okhdfcbank';
   const kofiUrl = 'https://ko-fi.com/putinservai';
   const payeeName = encodeURIComponent(app ? `${app.name} Publisher` : 'Niruvi Store');
   const transactionNote = encodeURIComponent(app ? `Support ${app.name} on Niruvi` : 'Niruvi Store Contribution');
-  const upiIntentUri = `upi://pay?pa=${encodeURIComponent(customUpiId)}&pn=${payeeName}&am=${upiAmount}&cu=INR&tn=${transactionNote}`;
+  const numericAmount = typeof upiAmount === 'string' ? parseFloat(upiAmount) || 0 : upiAmount;
+  const upiIntentUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${payeeName}&am=${numericAmount}&cu=INR&tn=${transactionNote}`;
   
   // Safe QR server rendering for instant scanning with PhonePe / GPay / Paytm / BHIM
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiIntentUri)}&bgcolor=0a0a0c&color=ffffff&margin=10`;
@@ -45,8 +69,8 @@ export const SponsorModal: React.FC<SponsorModalProps> = ({ isOpen, onClose, app
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="relative w-full max-w-xl bg-[#0e0e11] border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden text-neutral-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-neutral-950/80 backdrop-blur-sm animate-in fade-in duration-150">
+      <div className="relative w-full max-w-xl bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden text-neutral-200">
         {/* Header */}
         <div className="flex items-center justify-between p-5 sm:p-6 border-b border-neutral-800 bg-neutral-900/50">
           <div className="flex items-center gap-3">
@@ -86,6 +110,7 @@ export const SponsorModal: React.FC<SponsorModalProps> = ({ isOpen, onClose, app
 
           <button
             onClick={() => setActiveTab('upi')}
+            data-tab="upi"
             className={`py-3 px-3.5 text-xs font-semibold border-b-2 flex items-center gap-2 transition whitespace-nowrap ${
               activeTab === 'upi'
                 ? 'border-emerald-500 text-emerald-300'
@@ -105,7 +130,7 @@ export const SponsorModal: React.FC<SponsorModalProps> = ({ isOpen, onClose, app
             }`}
           >
             <CreditCard className="w-3.5 h-3.5 text-blue-400" />
-            <span>Other Gateways</span>
+            <span>Razorpay Gateway</span>
           </button>
         </div>
 
@@ -204,11 +229,11 @@ export const SponsorModal: React.FC<SponsorModalProps> = ({ isOpen, onClose, app
           {/* TAB 2: UPI INSTANT (INDIA) */}
           {activeTab === 'upi' && (
             <div className="space-y-5">
-              <div className="p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-800/50 flex items-start gap-3 text-xs text-emerald-300">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+              <div className="p-3.5 rounded-xl bg-neutral-900 border border-neutral-700 flex items-start gap-3 text-xs text-neutral-300">
+                <CheckCircle2 className="w-4 h-4 text-neutral-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-emerald-200">Zero API Keys or Gateway Fees Required</p>
-                  <p className="text-[11px] text-emerald-400/80 mt-0.5">
+                  <p className="font-semibold text-neutral-200">Zero API Keys or Gateway Fees Required</p>
+                  <p className="text-[11px] text-neutral-400 mt-0.5">
                     UPI works directly between bank accounts using Google Pay, PhonePe, Paytm, BHIM, Navi, or any Indian banking app.
                   </p>
                 </div>
@@ -221,12 +246,12 @@ export const SponsorModal: React.FC<SponsorModalProps> = ({ isOpen, onClose, app
                   <span className="text-neutral-400 text-[11px]">Direct transfer to developer</span>
                 </label>
                 <div className="grid grid-cols-4 gap-2">
-                  {[49, 99, 199, 499].map((amt) => (
+                  {[49, 99, 199].map((amt) => (
                     <button
                       key={amt}
                       onClick={() => setUpiAmount(amt)}
                       className={`py-2 rounded-xl text-xs font-bold border transition ${
-                        upiAmount === amt
+                        numericAmount === amt
                           ? 'bg-white text-black border-white shadow-sm'
                           : 'bg-neutral-900 text-neutral-300 border-neutral-800 hover:border-neutral-700'
                       }`}
@@ -234,6 +259,16 @@ export const SponsorModal: React.FC<SponsorModalProps> = ({ isOpen, onClose, app
                       ₹{amt}
                     </button>
                   ))}
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-500 font-bold text-xs">₹</span>
+                    <input
+                      type="number"
+                      value={upiAmount}
+                      onChange={(e) => setUpiAmount(e.target.value)}
+                      placeholder="Custom"
+                      className="w-full h-full py-2 pl-6 pr-2 rounded-xl text-xs font-bold border bg-neutral-900 text-neutral-200 border-neutral-800 hover:border-neutral-700 focus:border-emerald-500/50 focus:outline-none transition appearance-none"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -254,16 +289,11 @@ export const SponsorModal: React.FC<SponsorModalProps> = ({ isOpen, onClose, app
                       Receiving UPI ID / VPA
                     </span>
                     <div className="flex items-center gap-2 mt-1">
-                      <input
-                        type="text"
-                        value={customUpiId}
-                        onChange={(e) => setCustomUpiId(e.target.value)}
-                        className="w-full text-xs font-mono bg-black border border-neutral-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-neutral-500"
-                        placeholder="yourname@upi"
-                        title="Enter your custom UPI ID or use default"
-                      />
+                      <div className="w-full text-xs font-mono bg-black border border-neutral-700 rounded-lg px-3 py-2 text-neutral-300 cursor-not-allowed">
+                        {upiId}
+                      </div>
                       <button
-                        onClick={() => copyToClipboard(customUpiId, setCopiedUpi)}
+                        onClick={() => copyToClipboard(upiId, setCopiedUpi)}
                         className="px-3 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-xs font-medium text-white border border-neutral-700 flex items-center gap-1"
                         title="Copy UPI ID"
                       >
@@ -278,9 +308,8 @@ export const SponsorModal: React.FC<SponsorModalProps> = ({ isOpen, onClose, app
                       className="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs flex items-center justify-center gap-2 transition shadow-md shadow-emerald-500/10"
                     >
                       <Smartphone className="w-3.5 h-3.5" />
-                      <span>Pay ₹{upiAmount} via UPI App</span>
+                      <span>Pay ₹{numericAmount} via UPI App</span>
                     </a>
-
                     <button
                       onClick={() => copyToClipboard(upiIntentUri, setCopiedUpiLink)}
                       className="w-full py-2 px-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-xs flex items-center justify-center gap-1.5 transition"
@@ -304,55 +333,45 @@ export const SponsorModal: React.FC<SponsorModalProps> = ({ isOpen, onClose, app
             </div>
           )}
 
-          {/* TAB 3: OTHER GATEWAYS & GITHUB */}
+          {/* TAB 3: RAZORPAY GATEWAY */}
           {activeTab === 'gateways' && (
             <div className="space-y-4 text-xs">
               <div className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-white text-sm flex items-center gap-2">
-                    <Heart className="w-4 h-4 text-pink-400" />
-                    <span>GitHub Sponsors</span>
-                  </span>
-                  <span className="px-2 py-0.5 rounded bg-pink-950/60 text-pink-300 text-[10px] font-semibold border border-pink-800/60">
-                    0% Platform Fee
-                  </span>
-                </div>
-                <p className="text-neutral-400 leading-relaxed text-[11px]">
-                  GitHub Sponsors supports direct recurring sponsorship from developers worldwide.
-                </p>
-                <a
-                  href="https://github.com/sponsors"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white font-semibold text-xs border border-neutral-700 transition"
-                >
-                  <span>Explore GitHub Sponsors</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              </div>
-
-              <div className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 space-y-3">
-                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 font-bold text-white text-sm">
                     <CreditCard className="w-4 h-4 text-blue-400" />
-                    <span>Razorpay (India Gateway)</span>
+                    <span>Razorpay Official Payment Button</span>
                   </div>
                   <span className="px-2 py-0.5 rounded bg-blue-900/40 text-blue-300 text-[10px] font-semibold border border-blue-800">
-                    India Standard
+                    UPI / Cards / NetBanking
                   </span>
                 </div>
                 <p className="text-neutral-400 leading-relaxed text-[11px]">
-                  For merchants requiring full invoice generation and recurring auto-debit in India.
+                  Secure Indian payment gateway supporting all domestic UPI apps, RuPay/Visa/Mastercard cards, and 50+ NetBanking portals with instant automated verification.
                 </p>
-                <a
-                  href="https://razorpay.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition"
-                >
-                  <span>Visit Razorpay</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
+                <div className="p-4 bg-black/50 rounded-xl border border-neutral-800 flex flex-col items-center justify-center">
+                  <RazorpayButtonContainer />
+                </div>
+                <div className="flex items-center gap-2 flex-wrap pt-1">
+                  <button
+                    onClick={() => {
+                      setActiveTab('upi');
+                    }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 font-semibold text-xs transition border border-neutral-700"
+                  >
+                    <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Switch to UPI QR (0% Fee)</span>
+                  </button>
+                  <a
+                    href="https://ko-fi.com/putinservai"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 font-semibold text-xs transition border border-neutral-700"
+                  >
+                    <span>Switch to Ko-fi (PayPal/Cards)</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
               </div>
             </div>
           )}

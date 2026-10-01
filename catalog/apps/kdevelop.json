@@ -1,0 +1,48 @@
+{
+  "id": "kdevelop",
+  "name": "KDevelop",
+  "tagline": "Feature-rich, plugin-extensible IDE for C, C++, Python, and PHP",
+  "description": "KDevelop is a free, open source IDE for Linux, Solaris, FreeBSD, macOS and Windows. It provides advanced code completion, semantic code analysis, navigation, Git version control, and deep integration with CMake and Clang compilers.",
+  "version": "24.12.3",
+  "releaseDate": "2026-08-25",
+  "category": "Development",
+  "developer": "KDE Community",
+  "license": "GPL-2.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://kdevelop.org",
+  "repository": "https://github.com/KDE/kdevelop",
+  "repositoryUrl": "https://github.com/KDE/kdevelop",
+  "releasesUrl": "https://github.com/KDE/kdevelop/releases",
+  "sourceType": "Official",
+  "officialStatus": true,
+  "iconSlug": "kdevelop",
+  "brandColor": "#0EA5E9",
+  "size": "145.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://download.kde.org/stable/kdevelop/24.12.3/bin/linux/KDevelop-24.12.3-x86_64.AppImage"
+  },
+  "sha256": "e5f67890123456789abcdef0123456789abcdef0123456789abcdef01a2b3c4d",
+  "keywords": [
+    "ide",
+    "c++",
+    "clang",
+    "cmake",
+    "python",
+    "debugger",
+    "kde"
+  ],
+  "featured": false,
+  "features": [
+    "Clang-backed C and C++ semantic parsing and error highlighting",
+    "Integrated graphical GDB/LLDB debugger with watchpoints",
+    "First-class CMake, Meson, and QMake project manager support",
+    "Interactive Git history browser and code review annotations"
+  ],
+  "requirements": "Linux 64-bit desktop, 4GB RAM"
+}

@@ -1,0 +1,49 @@
+{
+  "id": "audacity",
+  "name": "Audacity",
+  "tagline": "Open-source, multi-track audio editor and recorder",
+  "description": "Audacity is an easy-to-use, multi-track audio editor and recorder for Linux. Record live audio through a microphone or mixer, import sound files, edit them, combine them with other tracks, and apply extensive DSP audio effects.",
+  "version": "3.7.1",
+  "releaseDate": "2024-12-10",
+  "category": "Audio & Video",
+  "developer": "Audacity Team / Muse Group",
+  "license": "GPL-3.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://www.audacityteam.org",
+  "repository": "https://github.com/audacity/audacity",
+  "icon": "/icons/audacity.png",
+  "iconSlug": "audacity",
+  "brandColor": "#0000EB",
+  "size": "68.5 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/audacity/audacity/releases/download/Audacity-3.7.1/audacity-linux-3.7.1-x64.AppImage"
+  },
+  "sha256": "4b68e919864ca078f44ff94d455ec3533ecf5ef7497d52f6bfa79f0ce6f66aa6",
+  "keywords": [
+    "audio",
+    "sound",
+    "music",
+    "recording",
+    "podcast",
+    "dsp",
+    "effects"
+  ],
+  "featured": false,
+  "features": [
+    "Multi-track audio waveform and spectral editing",
+    "Real-time VST3, LV2, and LADSPA plugin support",
+    "Noise reduction, equalization, and dynamic compression",
+    "Export to MP3, WAV, FLAC, Ogg Vorbis, and Opus"
+  ],
+  "requirements": "ALSA or PulseAudio / PipeWire",
+  "repositoryUrl": "https://github.com/audacity/audacity",
+  "releasesUrl": "https://github.com/audacity/audacity/releases",
+  "sourceType": "Official",
+  "officialStatus": true
+}

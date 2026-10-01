@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { usePreventBodyScroll } from '../hooks/usePreventBodyScroll';
 import { 
   X, 
   Terminal, 
@@ -21,10 +22,12 @@ interface NiruviBridgeModalProps {
 }
 
 export const NiruviBridgeModal: React.FC<NiruviBridgeModalProps> = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-
   const [copiedCmd, setCopiedCmd] = useState<string | null>(null);
   const [pingStatus, setPingStatus] = useState<'idle' | 'pinging' | 'sent'>('idle');
+
+  usePreventBodyScroll(isOpen);
+
+  if (!isOpen) return null;
 
   const copyText = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -129,7 +132,7 @@ update-desktop-database ~/.local/share/applications`;
                   </>
                 ) : pingStatus === 'sent' ? (
                   <>
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-neutral-700" />
                     <span>Ping Dispatched!</span>
                   </>
                 ) : (

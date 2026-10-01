@@ -1,0 +1,48 @@
+{
+  "id": "ktube",
+  "name": "Ktube Media Downloader",
+  "tagline": "Browse and download multimedia videos and audio with ease",
+  "description": "Ktube Media Downloader is a desktop application by Keshav Bhatt for browsing, streaming, and downloading video and audio from popular media websites. Features include multi-threaded downloads, queueing, audio extraction (MP3), and playlist management.",
+  "version": "1.0.0",
+  "releaseDate": "2026-08-01",
+  "category": "Audio & Video",
+  "developer": "Keshav Bhatt",
+  "license": "MIT",
+  "licenseCategory": "Permissive",
+  "homepage": "https://github.com/keshavbhatt/Ktube-media-downloader",
+  "repository": "https://github.com/keshavbhatt/Ktube-media-downloader",
+  "repositoryUrl": "https://github.com/keshavbhatt/Ktube-media-downloader",
+  "releasesUrl": "https://github.com/keshavbhatt/Ktube-media-downloader/releases",
+  "sourceType": "Community",
+  "officialStatus": false,
+  "iconSlug": "ktube",
+  "brandColor": "#EF4444",
+  "size": "58.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/keshavbhatt/Ktube-media-downloader/releases/download/1.0/Ktube_Media_Downloader-x86_64.AppImage"
+  },
+  "sha256": "a555555555555555555555555555555555555555555555555555555555555555",
+  "keywords": [
+    "youtube",
+    "downloader",
+    "video",
+    "audio",
+    "mp3",
+    "media",
+    "streams"
+  ],
+  "featured": false,
+  "features": [
+    "Multi-threaded downloading engine with bandwidth rate limiting",
+    "Extract pristine audio tracks directly to MP3, AAC, and FLAC formats",
+    "Batch download entire channels, playlists, and user collections",
+    "Built-in video preview player and resolution selector up to 4K"
+  ],
+  "requirements": "Linux 64-bit desktop"
+}

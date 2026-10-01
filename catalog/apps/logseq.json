@@ -1,0 +1,45 @@
+{
+  "id": "logseq",
+  "name": "Logseq",
+  "tagline": "Privacy-first, open-source outliner and interconnected knowledge graph",
+  "description": "Logseq is a privacy-first, local-only knowledge management and outliner tool. It works on top of local plain-text Markdown and Org-mode files, organizing notes into a navigable bi-directional knowledge graph.",
+  "category": "Productivity",
+  "version": "2.0.1",
+  "releaseDate": "2025-01-18",
+  "size": "145.0 MB",
+  "architectures": [
+    "x86_64",
+    "aarch64"
+  ],
+  "license": "AGPL-3.0",
+  "licenseCategory": "Open Source",
+  "developer": "Logseq Community",
+  "homepage": "https://logseq.com",
+  "repository": "https://github.com/logseq/logseq",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://github.com/logseq/logseq/releases/download/2.0.1/Logseq-linux-x86_64-2.0.1.AppImage",
+    "aarch64": "https://github.com/logseq/logseq/releases/download/2.0.1/Logseq-linux-arm64-2.0.1.AppImage"
+  },
+  "formats": [
+    "AppImage"
+  ],
+  "brandColor": "#14B8A6",
+  "keywords": [
+    "outliner",
+    "graph",
+    "markdown",
+    "pkm",
+    "zettelkasten",
+    "notes"
+  ],
+  "featured": true,
+  "features": [
+    "Bi-directional page and block linking with 2D visual graph view",
+    "Flashcards and spaced repetition built directly into bullet points",
+    "PDF annotation and quote referencing tools",
+    "Saves directly to local plain text Markdown and Org files"
+  ],
+  "requirements": "Linux x86_64 or aarch64"
+}

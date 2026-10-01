@@ -1,0 +1,48 @@
+{
+  "id": "portable-linux-apps",
+  "name": "Linux AppImage Collection",
+  "tagline": "Massive catalog and distribution registry of portable apps and AppImages",
+  "description": "The largest curated census and distribution registry of AppImages and portable applications for GNU/Linux, maintained by the Portable-Linux-Apps initiative and the AM application manager. Provides automated installation scripts, update checking, and verification for hundreds of Linux desktop applications.",
+  "version": "10.5",
+  "releaseDate": "2026-08-15",
+  "category": "Utilities",
+  "developer": "Portable-Linux-Apps Community",
+  "license": "GPL-3.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://portable-linux-apps.github.io/",
+  "repository": "https://github.com/Portable-Linux-Apps/Portable-Linux-Apps.github.io",
+  "repositoryUrl": "https://github.com/Portable-Linux-Apps/Portable-Linux-Apps.github.io",
+  "releasesUrl": "https://github.com/ivan-hc/AM/releases",
+  "sourceType": "Community",
+  "officialStatus": false,
+  "iconSlug": "portable-linux-apps",
+  "brandColor": "#059669",
+  "size": "6.5 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/ivan-hc/AM/releases/download/10.5/AM-INSTALLER"
+  },
+  "sha256": "a999999999999999999999999999999999999999999999999999999999999999",
+  "keywords": [
+    "portable",
+    "catalog",
+    "collection",
+    "am",
+    "appimage",
+    "repository",
+    "utilities"
+  ],
+  "featured": true,
+  "features": [
+    "Access to an index of over 2,000 Linux portable applications and AppImages",
+    "Integrated with AM CLI package manager for one-liner app installations",
+    "Automated checksum validation and upstream release mirror verification",
+    "Sandboxing and desktop launcher generation out of the box"
+  ],
+  "requirements": "Linux 64-bit desktop or server"
+}

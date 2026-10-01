@@ -1,0 +1,43 @@
+{
+  "id": "marktext",
+  "name": "MarkText",
+  "tagline": "Simple and elegant real-time preview Markdown editor",
+  "description": "MarkText is a free and open-source Markdown editor focused on speed and usability, featuring seamless real-time preview, math formulas (KaTeX), code blocks with syntax highlighting, and multiple view modes.",
+  "category": "Productivity",
+  "version": "0.19.1",
+  "releaseDate": "2025-01-05",
+  "size": "89.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "MIT",
+  "licenseCategory": "Permissive",
+  "developer": "MarkText Team",
+  "homepage": "https://marktext.app",
+  "repository": "https://github.com/marktext/marktext",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://github.com/marktext/marktext/releases/download/v0.19.1/marktext-linux-0.19.1.AppImage"
+  },
+  "formats": [
+    "AppImage"
+  ],
+  "brandColor": "#6B7280",
+  "keywords": [
+    "markdown",
+    "editor",
+    "writing",
+    "typora",
+    "katex",
+    "preview"
+  ],
+  "featured": false,
+  "features": [
+    "Real-time live preview (WYSIWYG Markdown)",
+    "Multiple themes: Cadmium Light, Dark, Graphite, Material Dark",
+    "Export to HTML and styled PDF",
+    "Focus mode, typewriter mode, and source code mode"
+  ],
+  "requirements": "Linux x86_64"
+}

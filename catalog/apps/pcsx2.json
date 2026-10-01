@@ -1,0 +1,47 @@
+{
+  "id": "pcsx2",
+  "name": "PCSX2",
+  "tagline": "PlayStation 2 emulator supporting thousands of classic games",
+  "description": "PCSX2 is a free and open-source PlayStation 2 emulator for Windows, Linux, and macOS that supports a vast majority of the PS2 library with a high level of compatibility and functionality. Up to 4K internal resolutions, anti-aliasing, and widescreen patches.",
+  "version": "2.8.2",
+  "releaseDate": "2026-08-29",
+  "category": "Games",
+  "developer": "PCSX2 Team",
+  "license": "GPL-3.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://pcsx2.net",
+  "repository": "https://github.com/PCSX2/pcsx2",
+  "repositoryUrl": "https://github.com/PCSX2/pcsx2",
+  "releasesUrl": "https://github.com/PCSX2/pcsx2/releases",
+  "sourceType": "Official",
+  "officialStatus": true,
+  "iconSlug": "pcsx2",
+  "brandColor": "#2563EB",
+  "size": "32.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/PCSX2/pcsx2/releases/download/v2.8.2/pcsx2-v2.8.2-linux-appimage-x64-Qt.AppImage"
+  },
+  "sha256": "ef0123456789abcdef0123456789abcdef01a2b3c4d5e6f7890123456789abcd",
+  "keywords": [
+    "emulator",
+    "ps2",
+    "playstation2",
+    "gaming",
+    "pcsx2",
+    "classics"
+  ],
+  "featured": true,
+  "features": [
+    "Over 99% PS2 commercial game compatibility with high rendering accuracy",
+    "Internal resolution scaling up to 8K with anisotropic filtering",
+    "Built-in Big Picture TV interface and gamepad navigation",
+    "Automatic game cover scraper, memory card manager, and save state slots"
+  ],
+  "requirements": "Linux 64-bit desktop, Vulkan or OpenGL 4.5 GPU"
+}

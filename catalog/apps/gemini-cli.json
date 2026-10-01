@@ -1,0 +1,32 @@
+{
+  "id": "gemini-cli",
+  "name": "Google Gemini CLI",
+  "tagline": "Command-line interface for Google Gemini API",
+  "description": "Command-line interface for Google Gemini API",
+  "category": "AI",
+  "version": "1.0.0",
+  "releaseDate": "2026-09-07",
+  "size": "100 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "MIT",
+  "licenseCategory": "Open Source",
+  "developer": "Google",
+  "homepage": "https://github.com/google-gemini/gemini-cli",
+  "repository": "https://github.com/google-gemini/gemini-cli",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://example.com/download/gemini-cli.AppImage"
+  },
+  "brandColor": "#4F46E5",
+  "keywords": [
+    "ai",
+    "appimage"
+  ],
+  "featured": false,
+  "formats": [
+    "AppImage"
+  ]
+}

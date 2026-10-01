@@ -1,0 +1,41 @@
+{
+  "id": "claude-desktop-extra",
+  "name": "Claude Desktop Extra",
+  "tagline": "Community Linux desktop client wrapper for Anthropic Claude",
+  "description": "Claude Desktop Extra is an open community Linux desktop wrapper package providing system tray integration, keyboard shortcuts, and desktop notifications for Claude AI.",
+  "category": "AI",
+  "version": "1.2.0",
+  "releaseDate": "2025-01-28",
+  "size": "84.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "MIT",
+  "licenseCategory": "Permissive",
+  "developer": "Community Wrapper",
+  "homepage": "https://github.com/claude-desktop-extra/claude-desktop-extra",
+  "repository": "https://github.com/claude-desktop-extra/claude-desktop-extra",
+  "sourceType": "Community",
+  "trustTier": "Unverified Community",
+  "download": {
+    "x86_64": "https://github.com/claude-desktop-extra/claude-desktop-extra/releases/download/v1.2.0/Claude-Desktop-x86_64.AppImage"
+  },
+  "brandColor": "#D97706",
+  "keywords": [
+    "claude",
+    "anthropic",
+    "ai",
+    "wrapper",
+    "desktop-client"
+  ],
+  "featured": false,
+  "features": [
+    "System tray minimization and global hotkey summoning",
+    "Native desktop notifications and file drag-and-drop",
+    "Custom theme toggle and CSS injection options"
+  ],
+  "requirements": "Linux 64-bit, Claude AI account",
+  "formats": [
+    "AppImage"
+  ]
+}

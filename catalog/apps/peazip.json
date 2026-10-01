@@ -1,0 +1,49 @@
+{
+  "id": "peazip",
+  "name": "PeaZip",
+  "tagline": "Free file archiver and encryption utility supporting 200+ formats",
+  "description": "PeaZip is a free file archiver utility, based on open source technologies of 7-Zip, p7zip, FreeArc, PAQ, and PEA projects. It provides a powerful file manager with two-factor authentication, secure deletion, and strong AES-256 encryption.",
+  "version": "10.1.0",
+  "releaseDate": "2024-11-20",
+  "category": "Utilities",
+  "developer": "Giorgio Tani",
+  "license": "LGPL-3.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://peazip.github.io",
+  "repository": "https://github.com/peazip/PeaZip",
+  "icon": "/icons/peazip.png",
+  "iconSlug": "peazip",
+  "brandColor": "#2C753A",
+  "size": "26.4 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/peazip/PeaZip/releases/download/10.1.0/peazip-10.1.0.LINUX.x86_64.GTK2.AppImage"
+  },
+  "sha256": "4b2e84c4e7fae29f8f4a13d80cb5f19001a1db6c1e345cb5774a38a9a202bc51",
+  "keywords": [
+    "archive",
+    "zip",
+    "7z",
+    "tar",
+    "compression",
+    "encryption",
+    "file-manager"
+  ],
+  "featured": false,
+  "features": [
+    "Open, create, and extract 200+ archive formats (7Z, TAR, ZIP, RAR)",
+    "Strong AES-256 encryption with two-factor keyfile authentication",
+    "Built-in file checksum and hash calculator (CRC, MD5, SHA-256)",
+    "Secure file shredder and duplicate file finder"
+  ],
+  "requirements": "Linux 64-bit desktop with GTK or Qt",
+  "repositoryUrl": "https://github.com/peazip/PeaZip",
+  "releasesUrl": "https://github.com/peazip/PeaZip/releases",
+  "sourceType": "Official",
+  "officialStatus": true
+}

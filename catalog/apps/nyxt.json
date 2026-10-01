@@ -1,0 +1,32 @@
+{
+  "id": "nyxt",
+  "name": "Nyxt",
+  "tagline": "The hacker's power-browser",
+  "description": "The hacker's power-browser",
+  "category": "Browser",
+  "version": "1.0.0",
+  "releaseDate": "2026-09-07",
+  "size": "100 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "MIT",
+  "licenseCategory": "Open Source",
+  "developer": "Atlas Engineer",
+  "homepage": "https://github.com/atlas-engineer/nyxt",
+  "repository": "https://github.com/atlas-engineer/nyxt",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://example.com/download/nyxt.AppImage"
+  },
+  "brandColor": "#4F46E5",
+  "keywords": [
+    "browser",
+    "appimage"
+  ],
+  "featured": false,
+  "formats": [
+    "AppImage"
+  ]
+}

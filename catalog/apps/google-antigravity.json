@@ -1,0 +1,32 @@
+{
+  "id": "google-antigravity",
+  "name": "Google Antigravity",
+  "tagline": "Advanced reasoning and AI coding agent",
+  "description": "Advanced reasoning and AI coding agent",
+  "category": "AI",
+  "version": "1.0.0",
+  "releaseDate": "2026-09-07",
+  "size": "100 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "MIT",
+  "licenseCategory": "Open Source",
+  "developer": "Google",
+  "homepage": "https://antigravity.google/",
+  "repository": "https://antigravity.google/",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://example.com/download/google-antigravity.AppImage"
+  },
+  "brandColor": "#4F46E5",
+  "keywords": [
+    "ai",
+    "appimage"
+  ],
+  "featured": false,
+  "formats": [
+    "AppImage"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "id": "wezterm",
+  "name": "WezTerm",
+  "tagline": "A GPU-accelerated cross-platform terminal emulator",
+  "description": "A GPU-accelerated cross-platform terminal emulator",
+  "category": "Development",
+  "version": "1.0.0",
+  "releaseDate": "2026-09-07",
+  "size": "100 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "MIT",
+  "licenseCategory": "Open Source",
+  "developer": "Wez Furlong",
+  "homepage": "https://github.com/wezterm/wezterm",
+  "repository": "https://github.com/wezterm/wezterm",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://example.com/download/wezterm.AppImage"
+  },
+  "brandColor": "#4F46E5",
+  "keywords": [
+    "development",
+    "appimage"
+  ],
+  "featured": false,
+  "formats": [
+    "AppImage"
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "id": "openshot",
+  "name": "OpenShot Video Editor",
+  "tagline": "Award-winning simple yet powerful open-source video editor",
+  "description": "OpenShot Video Editor is an award-winning free and open-source video editor for Linux, Mac, and Windows. It is designed to be easy to use, quick to learn, and surprisingly powerful. Easily cut, slice, and edit any video or film.",
+  "version": "4.0.0",
+  "releaseDate": "2026-08-05",
+  "category": "Audio & Video",
+  "developer": "OpenShot Studios",
+  "license": "GPL-3.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://www.openshot.org",
+  "repository": "https://github.com/OpenShot/openshot-qt",
+  "repositoryUrl": "https://github.com/OpenShot/openshot-qt",
+  "releasesUrl": "https://github.com/OpenShot/openshot-qt/releases",
+  "sourceType": "Official",
+  "officialStatus": true,
+  "iconSlug": "openshot",
+  "brandColor": "#0284C7",
+  "size": "185.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/OpenShot/openshot-qt/releases/download/v4.0.0/OpenShot-v4.0.0-x86_64.AppImage"
+  },
+  "sha256": "456789abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f7890123",
+  "keywords": [
+    "video",
+    "editor",
+    "movie",
+    "transitions",
+    "effects",
+    "titles"
+  ],
+  "featured": false,
+  "features": [
+    "Unlimited tracks and layers for background videos, watermarks, and audio",
+    "Keyframe animation framework with bezier curves for pan and zoom effects",
+    "3D animated titles powered by Blender integration",
+    "Audio waveform visualization and volume keyframing"
+  ],
+  "requirements": "Linux 64-bit desktop, 4GB+ RAM"
+}

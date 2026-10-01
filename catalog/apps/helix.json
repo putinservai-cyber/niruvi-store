@@ -1,0 +1,43 @@
+{
+  "id": "helix",
+  "name": "Helix",
+  "tagline": "A post-modern modal text editor built in Rust with tree-sitter & LSP",
+  "description": "Helix is a modern, terminal-based modal text editor inspired by Kakoune and Neovim. It features multiple selections, built-in language server (LSP) support, and tree-sitter syntax highlighting out of the box with zero configuration.",
+  "category": "Development",
+  "version": "25.07.1",
+  "releaseDate": "2025-01-15",
+  "size": "24.6 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "MPL-2.0",
+  "licenseCategory": "Open Source",
+  "developer": "Helix Contributors",
+  "homepage": "https://helix-editor.com",
+  "repository": "https://github.com/helix-editor/helix",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://github.com/helix-editor/helix/releases/download/25.07.1/helix-25.07.1-x86_64.AppImage"
+  },
+  "brandColor": "#A855F7",
+  "keywords": [
+    "editor",
+    "rust",
+    "modal",
+    "lsp",
+    "treesitter",
+    "terminal"
+  ],
+  "featured": false,
+  "features": [
+    "Kakoune-style selection-first modal editing",
+    "Built-in Language Server Protocol (LSP) client without plugins",
+    "Tree-sitter syntax highlighting and structural code navigation",
+    "Modern terminal GUI themes and lightning-fast Rust core"
+  ],
+  "requirements": "Linux x86_64, modern terminal with truecolor support",
+  "formats": [
+    "AppImage"
+  ]
+}

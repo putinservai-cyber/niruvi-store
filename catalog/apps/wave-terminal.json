@@ -1,0 +1,32 @@
+{
+  "id": "wave-terminal",
+  "name": "Wave Terminal",
+  "tagline": "Open-source, cross-platform terminal for seamless workflows",
+  "description": "Open-source, cross-platform terminal for seamless workflows",
+  "category": "Development",
+  "version": "1.0.0",
+  "releaseDate": "2026-09-07",
+  "size": "100 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "MIT",
+  "licenseCategory": "Open Source",
+  "developer": "WaveTerm",
+  "homepage": "https://github.com/wavetermdev/waveterm",
+  "repository": "https://github.com/wavetermdev/waveterm",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://example.com/download/wave-terminal.AppImage"
+  },
+  "brandColor": "#4F46E5",
+  "keywords": [
+    "development",
+    "appimage"
+  ],
+  "featured": false,
+  "formats": [
+    "AppImage"
+  ]
+}

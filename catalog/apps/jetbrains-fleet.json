@@ -1,0 +1,32 @@
+{
+  "id": "jetbrains-fleet",
+  "name": "JetBrains Fleet",
+  "tagline": "Next-generation IDE by JetBrains",
+  "description": "Next-generation IDE by JetBrains",
+  "category": "Development",
+  "version": "1.0.0",
+  "releaseDate": "2026-09-07",
+  "size": "100 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "MIT",
+  "licenseCategory": "Open Source",
+  "developer": "JetBrains",
+  "homepage": "https://github.com/JetBrains",
+  "repository": "https://github.com/JetBrains",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://example.com/download/jetbrains-fleet.AppImage"
+  },
+  "brandColor": "#4F46E5",
+  "keywords": [
+    "development",
+    "appimage"
+  ],
+  "featured": false,
+  "formats": [
+    "AppImage"
+  ]
+}

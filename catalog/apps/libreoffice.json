@@ -1,0 +1,48 @@
+{
+  "id": "libreoffice",
+  "name": "LibreOffice",
+  "tagline": "Clean, feature-rich office productivity suite for documents and data",
+  "description": "LibreOffice is a free and powerful office suite, and a successor to OpenOffice(.org). Its clean interface and feature-rich tools unleash your creativity and enhance your productivity. It includes Writer (word processor), Calc (spreadsheets), Impress (presentations), Draw (vector graphics), and Math (formulas).",
+  "version": "24.8.5",
+  "releaseDate": "2026-08-30",
+  "category": "Productivity",
+  "developer": "The Document Foundation",
+  "license": "MPL-2.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://www.libreoffice.org",
+  "repository": "https://github.com/LibreOffice/core",
+  "repositoryUrl": "https://github.com/LibreOffice/core",
+  "releasesUrl": "https://github.com/LibreOffice/core/releases",
+  "sourceType": "Official",
+  "officialStatus": true,
+  "iconSlug": "libreoffice",
+  "brandColor": "#16A34A",
+  "size": "265.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://download.documentfoundation.org/libreoffice/stable/24.8.5/deb/x86_64/LibreOffice-24.8.5.2.basic-x86_64.AppImage"
+  },
+  "sha256": "b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef01a",
+  "keywords": [
+    "office",
+    "word",
+    "calc",
+    "excel",
+    "powerpoint",
+    "documents",
+    "writer"
+  ],
+  "featured": true,
+  "features": [
+    "Full compatibility with Microsoft Office (.docx, .xlsx, .pptx) files",
+    "Comprehensive suite: Writer, Calc, Impress, Draw, and Math",
+    "Native PDF export with digital signing and form fill support",
+    "Extensible with thousands of community templates and plugins"
+  ],
+  "requirements": "Linux 64-bit desktop, 2GB RAM"
+}

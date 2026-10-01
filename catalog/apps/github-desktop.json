@@ -1,0 +1,32 @@
+{
+  "id": "github-desktop",
+  "name": "GitHub Desktop",
+  "tagline": "Simple collaboration from your desktop",
+  "description": "Simple collaboration from your desktop",
+  "category": "Development",
+  "version": "1.0.0",
+  "releaseDate": "2026-09-07",
+  "size": "100 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "MIT",
+  "licenseCategory": "Open Source",
+  "developer": "GitHub",
+  "homepage": "https://github.com/desktop/desktop",
+  "repository": "https://github.com/desktop/desktop",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://example.com/download/github-desktop.AppImage"
+  },
+  "brandColor": "#4F46E5",
+  "keywords": [
+    "development",
+    "appimage"
+  ],
+  "featured": false,
+  "formats": [
+    "AppImage"
+  ]
+}

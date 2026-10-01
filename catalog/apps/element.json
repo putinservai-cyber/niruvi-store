@@ -1,0 +1,47 @@
+{
+  "id": "element",
+  "name": "Element",
+  "tagline": "Decentralized, encrypted messaging and collaboration on Matrix",
+  "description": "Element is an open source chat app and secure collaboration platform based on the Matrix open standard. It offers end-to-end encryption by default, group voice & video rooms, file sharing, and bridges to Slack, Discord, and Telegram.",
+  "version": "1.11.89",
+  "releaseDate": "2026-08-19",
+  "category": "Internet & Network",
+  "developer": "Element Community",
+  "license": "Apache-2.0",
+  "licenseCategory": "Permissive",
+  "homepage": "https://element.io",
+  "repository": "https://github.com/element-hq/element-desktop",
+  "repositoryUrl": "https://github.com/element-hq/element-desktop",
+  "releasesUrl": "https://github.com/element-hq/element-desktop/releases",
+  "sourceType": "Official",
+  "officialStatus": true,
+  "iconSlug": "element",
+  "brandColor": "#0DBD8B",
+  "size": "115.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://packages.element.io/desktop/install/linux/Element-1.11.89-x86_64.AppImage"
+  },
+  "sha256": "6789abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f789012345",
+  "keywords": [
+    "chat",
+    "matrix",
+    "encrypted",
+    "messaging",
+    "e2ee",
+    "collaboration"
+  ],
+  "featured": false,
+  "features": [
+    "Decentralized communication on Matrix with custom homeserver selection",
+    "Cross-signing end-to-end encryption for 1:1 and group chats",
+    "Native Voice over IP (VoIP) and encrypted group video conferencing",
+    "Extensible bridging to IRC, Slack, WhatsApp, and Telegram"
+  ],
+  "requirements": "Linux 64-bit desktop"
+}

@@ -1,0 +1,43 @@
+{
+  "id": "spotify-appimage",
+  "name": "Spotify AppImage",
+  "tagline": "Unofficial standalone AppImage repackaging of the official Spotify Linux build",
+  "description": "An unofficial, community-maintained AppImage for Spotify, packaged directly from the official Spotify snap/deb releases with wide Linux distribution compatibility and no sandboxing bottlenecks.",
+  "category": "Audio & Video",
+  "version": "1.2.95.453",
+  "releaseDate": "2025-02-12",
+  "size": "185.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "Proprietary",
+  "licenseCategory": "Proprietary",
+  "developer": "Ivan-hc & Spotify Technology",
+  "homepage": "https://github.com/ivan-hc/Spotify-appimage",
+  "repository": "https://github.com/ivan-hc/Spotify-appimage",
+  "sourceType": "Community",
+  "trustTier": "Unverified Community",
+  "download": {
+    "x86_64": "https://github.com/ivan-hc/Spotify-appimage/releases/download/continuous/Spotify-stable-1.2.95.453.g0eeebbed-x86_64.AppImage"
+  },
+  "formats": [
+    "AppImage"
+  ],
+  "brandColor": "#1DB954",
+  "keywords": [
+    "spotify",
+    "music",
+    "streaming",
+    "audio",
+    "podcast",
+    "media"
+  ],
+  "featured": true,
+  "features": [
+    "Streams millions of songs, albums, and original podcasts",
+    "System tray integration and MPRIS media player controls",
+    "No Snap or Flatpak runtime overhead required",
+    "Continuous automated upstream sync pipeline"
+  ],
+  "requirements": "Linux x86_64, Spotify Free or Premium account"
+}

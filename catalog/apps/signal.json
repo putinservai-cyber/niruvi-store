@@ -1,0 +1,47 @@
+{
+  "id": "signal",
+  "name": "Signal Desktop",
+  "tagline": "Private, end-to-end encrypted messaging, voice, and video calling",
+  "description": "Signal is a messaging app with privacy at its core. It is free and open-source, allowing anyone to verify its security by auditing the code. Signal messages and calls are always end-to-end encrypted and painstakingly engineered to keep your communication safe.",
+  "version": "7.39.0",
+  "releaseDate": "2026-08-27",
+  "category": "Communication",
+  "developer": "Signal Messenger, LLC",
+  "license": "AGPL-3.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://signal.org",
+  "repository": "https://github.com/signalapp/Signal-Desktop",
+  "repositoryUrl": "https://github.com/signalapp/Signal-Desktop",
+  "releasesUrl": "https://github.com/signalapp/Signal-Desktop/releases",
+  "sourceType": "Official",
+  "officialStatus": true,
+  "iconSlug": "signal",
+  "brandColor": "#3A76F0",
+  "size": "140.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://updates.signal.org/desktop/apt/pool/s/signal-desktop/Signal-7.39.0-x86_64.AppImage"
+  },
+  "sha256": "789abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f7890123456",
+  "keywords": [
+    "chat",
+    "signal",
+    "privacy",
+    "encrypted",
+    "secure",
+    "messaging"
+  ],
+  "featured": true,
+  "features": [
+    "Industry standard Signal Protocol with zero server-side metadata logging",
+    "Encrypted 1:1 and group audio/video calling with screen sharing",
+    "Disappearing messages with customizable expiration timers",
+    "Direct secure syncing with Signal iOS and Android mobile clients"
+  ],
+  "requirements": "Linux 64-bit desktop"
+}

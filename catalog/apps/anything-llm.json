@@ -1,0 +1,45 @@
+{
+  "id": "anything-llm",
+  "name": "AnythingLLM",
+  "tagline": "All-in-one desktop AI application with RAG, agents, and vector storage",
+  "description": "AnythingLLM Desktop is the full-stack AI application that lets you turn documents, PDFs, GitHub repositories, and websites into conversational knowledge bases with zero setup.",
+  "category": "AI",
+  "version": "1.16.1",
+  "releaseDate": "2025-02-10",
+  "size": "142.2 MB",
+  "architectures": [
+    "x86_64",
+    "aarch64"
+  ],
+  "license": "MIT",
+  "licenseCategory": "Permissive",
+  "developer": "Mintplex Labs",
+  "homepage": "https://anythingllm.com",
+  "repository": "https://github.com/Mintplex-Labs/anything-llm",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://github.com/Mintplex-Labs/anything-llm/releases/download/v1.16.1/AnythingLLMDesktop.AppImage",
+    "aarch64": "https://github.com/Mintplex-Labs/anything-llm/releases/download/v1.16.1/AnythingLLMDesktop-Arm64.AppImage"
+  },
+  "brandColor": "#0EA5E9",
+  "keywords": [
+    "ai",
+    "rag",
+    "llm",
+    "vector-db",
+    "documents",
+    "agents"
+  ],
+  "featured": true,
+  "features": [
+    "Complete Retrieval-Augmented Generation (RAG) pipeline built-in",
+    "Supports LanceDB embedded vector storage with zero cloud dependencies",
+    "Multi-modal and web scraping tools for automated agentic workflows",
+    "Works with Ollama, LocalAI, vLLM, LMStudio, and commercial APIs"
+  ],
+  "requirements": "Linux x86_64 or aarch64, 4GB+ RAM",
+  "formats": [
+    "AppImage"
+  ]
+}

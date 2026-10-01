@@ -1,0 +1,32 @@
+{
+  "id": "claude-code",
+  "name": "Anthropic Claude Code",
+  "tagline": "Next-generation AI coding assistant",
+  "description": "Next-generation AI coding assistant",
+  "category": "AI",
+  "version": "1.0.0",
+  "releaseDate": "2026-09-07",
+  "size": "100 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "MIT",
+  "licenseCategory": "Open Source",
+  "developer": "Anthropic",
+  "homepage": "https://github.com/anthropics/claude-code",
+  "repository": "https://github.com/anthropics/claude-code",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://example.com/download/claude-code.AppImage"
+  },
+  "brandColor": "#4F46E5",
+  "keywords": [
+    "ai",
+    "appimage"
+  ],
+  "featured": false,
+  "formats": [
+    "AppImage"
+  ]
+}

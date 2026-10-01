@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
-import { adminAuth } from '../lib/firebase-admin';
 import { db } from '../db/index';
 import { users } from '../db/schema';
 import { eq } from 'drizzle-orm';
@@ -31,16 +30,19 @@ export async function authenticateToken(
   next: NextFunction
 ) {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return next(); // unauthenticated request
+  let token = '';
+
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.split('Bearer ')[1].trim();
+  } else if (req.cookies && req.cookies.niruvi_auth_token) {
+    token = req.cookies.niruvi_auth_token;
   }
 
-  const token = authHeader.split('Bearer ')[1].trim();
   if (!token) return next();
 
-  // Try verifying as JWT first
+  // Verify JWT token
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email?: string; username?: string; role?: string };
     const userList = await db.select().from(users).where(eq(users.id, decoded.id)).limit(1);
     if (userList.length > 0) {
       const u = userList[0];
@@ -53,63 +55,18 @@ export async function authenticateToken(
         avatarUrl: u.avatarUrl,
         firebaseUid: u.firebaseUid,
       };
-      return next();
-    }
-  } catch {
-    // Not a local JWT or expired, try Firebase Auth token
-  }
-
-  // Try verifying with Firebase Admin
-  try {
-    const decodedFirebase = await adminAuth.verifyIdToken(token);
-    let userList = await db.select().from(users).where(eq(users.firebaseUid, decodedFirebase.uid)).limit(1);
-
-    if (userList.length === 0 && decodedFirebase.email) {
-      userList = await db.select().from(users).where(eq(users.email, decodedFirebase.email)).limit(1);
-    }
-
-    if (userList.length > 0) {
-      const u = userList[0];
-      if (!u.firebaseUid) {
-        await db.update(users).set({ firebaseUid: decodedFirebase.uid }).where(eq(users.id, u.id));
-      }
-      req.user = {
-        id: u.id,
-        email: u.email,
-        username: u.username,
-        displayName: u.displayName,
-        role: u.role,
-        avatarUrl: u.avatarUrl,
-        firebaseUid: decodedFirebase.uid,
-      };
     } else {
-      // Auto-provision user from Firebase Auth credentials
-      const newId = `usr_${decodedFirebase.uid.slice(0, 12)}`;
-      const baseUsername = (decodedFirebase.email?.split('@')[0] || `user_${Date.now()}`).replace(/[^a-zA-Z0-9_]/g, '_');
-      const newUser = {
-        id: newId,
-        email: decodedFirebase.email || `${decodedFirebase.uid}@firebase.oauth`,
-        username: baseUsername,
-        displayName: decodedFirebase.name || baseUsername,
-        avatarUrl: decodedFirebase.picture || null,
-        role: 'USER',
-        emailVerified: Boolean(decodedFirebase.email_verified),
-        firebaseUid: decodedFirebase.uid,
-      };
-      await db.insert(users).values(newUser).onConflictDoNothing();
+      // Allow decoded payload user if fallback
       req.user = {
-        id: newId,
-        email: newUser.email,
-        username: newUser.username,
-        displayName: newUser.displayName,
-        role: newUser.role,
-        avatarUrl: newUser.avatarUrl,
-        firebaseUid: newUser.firebaseUid,
+        id: decoded.id,
+        email: decoded.email || 'user@niruvi.store',
+        username: decoded.username || 'user',
+        displayName: decoded.username || 'User',
+        role: decoded.role || 'USER',
       };
     }
     return next();
-  } catch (fbError) {
-    console.warn('Firebase token verification notice:', fbError);
+  } catch {
     return next();
   }
 }

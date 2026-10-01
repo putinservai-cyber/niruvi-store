@@ -1,0 +1,48 @@
+{
+  "id": "freetube",
+  "name": "FreeTube",
+  "tagline": "An open source desktop YouTube player built with privacy in mind.",
+  "description": "FreeTube is a YouTube client for Windows, Mac, and Linux built to let you use YouTube more privately. You can subscribe to creators without an account, block ads, and prevent Google from tracking you with cookies and JavaScript.",
+  "version": "0.25.3",
+  "releaseDate": "2025-01-10",
+  "category": "Audio & Video",
+  "developer": "FreeTube Project",
+  "license": "GPL-3.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://freetubeapp.io",
+  "repository": "https://github.com/FreeTubeApp/FreeTube",
+  "icon": "/icons/freetube.png",
+  "iconSlug": "freetube",
+  "brandColor": "#FF3E3E",
+  "size": "85.2 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/FreeTubeApp/FreeTube/releases/download/v0.25.3-beta/freetube_0.25.3_amd64.AppImage"
+  },
+  "sha256": "38a16dbb7c0ceefbc1c7ce6ad260c675ef7a02c3efc1746c1a1fa930fc495632",
+  "keywords": [
+    "youtube",
+    "video",
+    "player",
+    "privacy",
+    "client",
+    "media"
+  ],
+  "featured": false,
+  "features": [
+    "Watch YouTube videos without Google user tracking",
+    "Block ads, sponsor segments (SponsorBlock integration), and popups",
+    "Import/Export subscriptions completely locally",
+    "Custom playlists and local channel subscriptions"
+  ],
+  "requirements": "Linux 64-bit, ALSA or PulseAudio / PipeWire",
+  "repositoryUrl": "https://github.com/FreeTubeApp/FreeTube",
+  "releasesUrl": "https://github.com/FreeTubeApp/FreeTube/releases",
+  "sourceType": "Official",
+  "officialStatus": true
+}

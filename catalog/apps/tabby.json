@@ -1,0 +1,32 @@
+{
+  "id": "tabby",
+  "name": "Tabby",
+  "tagline": "A terminal for a more modern age",
+  "description": "A terminal for a more modern age",
+  "category": "Development",
+  "version": "1.0.0",
+  "releaseDate": "2026-09-07",
+  "size": "100 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "MIT",
+  "licenseCategory": "Open Source",
+  "developer": "Eugeny",
+  "homepage": "https://github.com/Eugeny/tabby",
+  "repository": "https://github.com/Eugeny/tabby",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://example.com/download/tabby.AppImage"
+  },
+  "brandColor": "#4F46E5",
+  "keywords": [
+    "development",
+    "appimage"
+  ],
+  "featured": false,
+  "formats": [
+    "AppImage"
+  ]
+}

@@ -132,6 +132,69 @@ export const auditLogs = pgTable('audit_logs', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
+export const vulnerabilities = pgTable('vulnerabilities', {
+  id: text('id').primaryKey(),
+  findingId: text('finding_id').notNull().unique(),
+  title: text('title').notNull(),
+  severity: text('severity').notNull(), // 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFO'
+  cvssScore: text('cvss_score').notNull().default('0.0'),
+  affectedComponent: text('affected_component').notNull(),
+  affectedEndpoint: text('affected_endpoint').notNull(),
+  description: text('description').notNull(),
+  impact: text('impact').notNull(),
+  evidence: text('evidence').notNull(),
+  remediation: text('remediation').notNull(),
+  status: text('status').notNull().default('OPEN'), // 'OPEN' | 'CONFIRMED' | 'IN_PROGRESS' | 'RESOLVED' | 'ACCEPTED_RISK' | 'FALSE_POSITIVE'
+  firstDetected: timestamp('first_detected').defaultNow(),
+  lastDetected: timestamp('last_detected').defaultNow(),
+  fixedDate: timestamp('fixed_date'),
+  references: jsonb('references').default([]),
+});
+
+export const securityAlerts = pgTable('security_alerts', {
+  id: text('id').primaryKey(),
+  alertId: text('alert_id').notNull().unique(),
+  title: text('title').notNull(),
+  severity: text('severity').notNull(), // 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW'
+  category: text('category').notNull(), // 'BRUTE_FORCE' | 'RATE_LIMIT' | 'XSS_ATTEMPT' | 'SQLI_ATTEMPT' | 'UNAUTHORIZED_ACCESS' | 'PRIVILEGE_ESCALATION' | 'ANOMALOUS_TRAFFIC'
+  description: text('description').notNull(),
+  evidence: jsonb('evidence'),
+  status: text('status').notNull().default('UNREAD'), // 'UNREAD' | 'ACKNOWLEDGED' | 'RESOLVED'
+  triggerCount: integer('trigger_count').notNull().default(1),
+  lastTriggeredAt: timestamp('last_triggered_at').defaultNow(),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const securityEvents = pgTable('security_events', {
+  id: text('id').primaryKey(),
+  eventType: text('event_type').notNull(),
+  category: text('category').notNull(), // 'AUTH' | 'API' | 'WAF' | 'RATE_LIMIT' | 'SYSTEM' | 'ANOMALY' | 'SCAN'
+  severity: text('severity').notNull(), // 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFO'
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  path: text('path'),
+  userId: text('user_id'),
+  details: jsonb('details'),
+  riskScore: integer('risk_score').notNull().default(0),
+  timestamp: timestamp('timestamp').defaultNow(),
+});
+
+export const securityScans = pgTable('security_scans', {
+  id: text('id').primaryKey(),
+  scanType: text('scan_type').notNull(), // 'FULL_SAST_DAST' | 'HEADERS' | 'DEPENDENCIES' | 'SECRETS' | 'API_PERMISSIONS'
+  target: text('target').notNull(),
+  profile: text('profile').notNull().default('SAFE_DEFAULT'),
+  status: text('status').notNull().default('COMPLETED'), // 'COMPLETED' | 'RUNNING' | 'FAILED'
+  findingsCount: integer('findings_count').notNull().default(0),
+  criticalCount: integer('critical_count').notNull().default(0),
+  highCount: integer('high_count').notNull().default(0),
+  mediumCount: integer('medium_count').notNull().default(0),
+  lowCount: integer('low_count').notNull().default(0),
+  startedAt: timestamp('started_at').defaultNow(),
+  completedAt: timestamp('completed_at').defaultNow(),
+  summary: jsonb('summary'),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ one, many }) => ({
   developerProfile: one(developerProfiles, {
@@ -164,3 +227,4 @@ export const reviewsRelations = relations(reviews, ({ one, many }) => ({
   }),
   votes: many(reviewVotes),
 }));
+

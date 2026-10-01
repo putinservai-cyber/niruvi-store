@@ -1,0 +1,159 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile records containing access levels and system permissions.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique user identifier."
+        },
+        "email": {
+          "type": "string",
+          "description": "Primary user email address."
+        },
+        "username": {
+          "type": "string",
+          "description": "Unique alphanumeric username handle."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Public screen name."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["USER", "DEVELOPER", "ADMIN"],
+          "description": "System access level."
+        },
+        "avatarUrl": {
+          "type": "string",
+          "description": "Profile picture URL."
+        },
+        "firebaseUid": {
+          "type": "string",
+          "description": "Firebase authentication UID reference."
+        }
+      },
+      "required": ["id", "email", "username", "role"]
+    },
+    "App": {
+      "title": "App",
+      "description": "AppImage metadata software entries catalog.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique registry ID."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the software package."
+        },
+        "tagline": {
+          "type": "string",
+          "description": "Short summary tagline description."
+        },
+        "description": {
+          "type": "string",
+          "description": "Full markdown-rich explanation text."
+        },
+        "version": {
+          "type": "string",
+          "description": "Semantic release version tag."
+        },
+        "size": {
+          "type": "string",
+          "description": "Volumetric download size."
+        },
+        "downloadUrl": {
+          "type": "string",
+          "description": "AppImage download binary URL link."
+        },
+        "sha256": {
+          "type": "string",
+          "description": "Cryptographic checksum validation block."
+        },
+        "license": {
+          "type": "string",
+          "description": "Standard SPDX open source license."
+        },
+        "homepageUrl": {
+          "type": "string",
+          "description": "Upstream website homepage URL."
+        },
+        "sourceUrl": {
+          "type": "string",
+          "description": "Open source code repository link."
+        },
+        "category": {
+          "type": "string",
+          "description": "General application classification category."
+        },
+        "publisherName": {
+          "type": "string",
+          "description": "Developer organization or publisher name."
+        },
+        "iconUrl": {
+          "type": "string",
+          "description": "Software brand logo icon URL."
+        }
+      },
+      "required": ["id", "name", "version", "downloadUrl", "sha256"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "User feedback reviews on AppImage directory packages.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique review identifier."
+        },
+        "appId": {
+          "type": "string",
+          "description": "Reference identifier of the targeted App."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference identifier of the writing User."
+        },
+        "rating": {
+          "type": "number",
+          "description": "App score rating from 1 to 5 stars."
+        },
+        "title": {
+          "type": "string",
+          "description": "Short header title of review comment."
+        },
+        "body": {
+          "type": "string",
+          "description": "Full detailed review comment body."
+        },
+        "isVerifiedPurchase": {
+          "type": "boolean",
+          "description": "True if user installed this AppImage via Niruvi Client."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when this review was logged."
+        }
+      },
+      "required": ["id", "appId", "userId", "rating", "title", "body"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Primary user profiles collection."
+    },
+    "/apps/{appId}": {
+      "schema": "App",
+      "description": "Software catalog database."
+    },
+    "/apps/{appId}/reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Hierarchical user software feedback."
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "id": "qgis",
+  "name": "QGIS",
+  "tagline": "Leading open source Geographic Information System (GIS) application",
+  "description": "QGIS is a user friendly Open Source Geographic Information System (GIS) licensed under the GNU General Public License. QGIS is an official project of the Open Source Geospatial Foundation (OSGeo). It allows you to create, edit, visualize, analyze and publish geospatial information.",
+  "version": "3.38.3",
+  "releaseDate": "2026-08-01",
+  "category": "Education",
+  "developer": "QGIS Project",
+  "license": "GPL-2.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://qgis.org",
+  "repository": "https://github.com/qgis/QGIS",
+  "repositoryUrl": "https://github.com/qgis/QGIS",
+  "releasesUrl": "https://github.com/qgis/QGIS/releases",
+  "sourceType": "Official",
+  "officialStatus": true,
+  "iconSlug": "qgis",
+  "brandColor": "#588100",
+  "size": "410.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://qgis.org/downloads/QGIS-3.38.3-x86_64.AppImage"
+  },
+  "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f789",
+  "keywords": [
+    "gis",
+    "maps",
+    "geography",
+    "spatial",
+    "cartography",
+    "shapefile",
+    "data"
+  ],
+  "featured": false,
+  "features": [
+    "View, edit, and analyze vector and raster spatial formats (GeoTIFF, Shapefile, PostGIS)",
+    "Advanced cartographic map composer with atlas print generation",
+    "Geoprocessing toolbox integrating GRASS GIS, SAGA, and GDAL",
+    "Python scripting console and plugin manager for custom geospatial workflows"
+  ],
+  "requirements": "Linux 64-bit desktop, 4GB+ RAM"
+}

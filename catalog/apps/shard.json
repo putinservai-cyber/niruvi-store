@@ -1,0 +1,49 @@
+{
+  "id": "shard",
+  "name": "Shard",
+  "tagline": "Minecraft launcher with deduplicated mod storage and profile management",
+  "description": "Shard is a modern Minecraft launcher featuring a deduplicated mod storage engine. Its content-addressed library stores mods once and seamlessly shares them across profiles. It features full CLI and desktop GUI interfaces with out-of-the-box support for Fabric, Forge, Quilt, NeoForge, and instant Modrinth & CurseForge integrations.",
+  "version": "0.1.25",
+  "releaseDate": "2026-08-20",
+  "category": "Games",
+  "developer": "Th0rgal",
+  "license": "MIT",
+  "licenseCategory": "Permissive",
+  "homepage": "https://github.com/Th0rgal/shard",
+  "repository": "https://github.com/Th0rgal/shard",
+  "repositoryUrl": "https://github.com/Th0rgal/shard",
+  "releasesUrl": "https://github.com/Th0rgal/shard/releases",
+  "sourceType": "Official",
+  "officialStatus": true,
+  "iconSlug": "shard",
+  "brandColor": "#10B981",
+  "size": "42.5 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/Th0rgal/shard/releases/download/v0.1.25/shard-launcher-linux-x64.AppImage"
+  },
+  "sha256": "a111111111111111111111111111111111111111111111111111111111111111",
+  "keywords": [
+    "minecraft",
+    "launcher",
+    "mods",
+    "fabric",
+    "forge",
+    "modrinth",
+    "curseforge",
+    "games"
+  ],
+  "featured": true,
+  "features": [
+    "Content-addressed mod storage deduplicating shared files across profiles",
+    "Unified mod search and installation from Modrinth and CurseForge",
+    "Compatible with Fabric, NeoForge, Forge, and Quilt mod loaders",
+    "Native desktop UI with fast command-line terminal control"
+  ],
+  "requirements": "Linux 64-bit desktop, Java runtime 17+"
+}

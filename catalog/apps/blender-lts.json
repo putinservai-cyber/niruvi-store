@@ -1,0 +1,48 @@
+{
+  "id": "blender-lts",
+  "name": "Blender LTS (AppImage)",
+  "tagline": "Community packaged standalone AppImage builds of Blender Long-Term Support",
+  "description": "Blender LTS AppImage builds by Lethja package the official Linux Long-Term Support (LTS) releases of Blender into portable, self-contained AppImage packages. Includes verified CUDA/OptiX/HIP rendering libraries, Python 3 dependencies, and desktop launcher shortcuts without modifying system packages.",
+  "version": "4.2.23 LTS",
+  "releaseDate": "2026-08-26",
+  "category": "Graphics & Design",
+  "developer": "Lethja (Community Package)",
+  "license": "GPL-3.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://github.com/Lethja/blender-appimage",
+  "repository": "https://github.com/Lethja/blender-appimage",
+  "repositoryUrl": "https://github.com/Lethja/blender-appimage",
+  "releasesUrl": "https://github.com/Lethja/blender-appimage/releases",
+  "sourceType": "Community",
+  "officialStatus": false,
+  "iconSlug": "blender",
+  "brandColor": "#F97316",
+  "size": "310.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/Lethja/blender-appimage/releases/download/2026-08-26/blender-4.2.23-x86_64.AppImage.zip"
+  },
+  "sha256": "a666666666666666666666666666666666666666666666666666666666666666",
+  "keywords": [
+    "blender",
+    "3d",
+    "lts",
+    "modeling",
+    "animation",
+    "rendering",
+    "cycles"
+  ],
+  "featured": true,
+  "features": [
+    "Official Blender Long-Term Support branch with guaranteed enterprise stability",
+    "Cycles and EEVEE Next rendering backends with hardware raytracing acceleration",
+    "Built-in Geometry Nodes procedural modeling and grease pencil tools",
+    "Completely self-contained portable package with embedded Python environment"
+  ],
+  "requirements": "Linux 64-bit desktop, OpenGL 4.3 or Vulkan GPU, 8GB+ RAM"
+}

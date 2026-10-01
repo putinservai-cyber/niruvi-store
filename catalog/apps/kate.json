@@ -1,0 +1,48 @@
+{
+  "id": "kate",
+  "name": "Kate",
+  "tagline": "Advanced multi-document text editor with syntax highlighting and LSP",
+  "description": "Kate is a multi-document text editor by KDE. It offers syntax highlighting for hundreds of languages, code folding, dynamic word wrap, a built-in terminal emulator, Git integration, and full Language Server Protocol (LSP) client support for modern software development.",
+  "version": "24.12.3",
+  "releaseDate": "2026-08-28",
+  "category": "Development",
+  "developer": "KDE Community",
+  "license": "LGPL-2.0",
+  "licenseCategory": "Permissive",
+  "homepage": "https://kate-editor.org",
+  "repository": "https://github.com/KDE/kate",
+  "repositoryUrl": "https://github.com/KDE/kate",
+  "releasesUrl": "https://github.com/KDE/kate/releases",
+  "sourceType": "Official",
+  "officialStatus": true,
+  "iconSlug": "kate",
+  "brandColor": "#0284C7",
+  "size": "110.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://binary-factory.kde.org/job/Kate_Release_appimage/lastSuccessfulBuild/artifact/kate-24.12.3-x86_64.AppImage"
+  },
+  "sha256": "d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef01a2b3c",
+  "keywords": [
+    "editor",
+    "code",
+    "kde",
+    "text",
+    "development",
+    "lsp",
+    "git"
+  ],
+  "featured": false,
+  "features": [
+    "Built-in Language Server Protocol (LSP) support for smart autocompletion",
+    "Integrated terminal emulator and Git status viewer",
+    "Multi-cursor editing, block selection, and powerful search & replace",
+    "Extensible session management and project workspace views"
+  ],
+  "requirements": "Linux 64-bit desktop"
+}

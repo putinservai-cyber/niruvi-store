@@ -1,0 +1,49 @@
+{
+  "id": "freecad",
+  "name": "FreeCAD",
+  "tagline": "Parametric 3D CAD modeler for mechanical engineering and product design",
+  "description": "FreeCAD is an open-source parametric 3D modeler made primarily to design real-life objects of any size. Parametric modeling allows you to easily modify your design by going back into your model history and changing its parameters.",
+  "version": "1.0.0",
+  "releaseDate": "2024-11-18",
+  "category": "Graphics & Design",
+  "developer": "FreeCAD Community",
+  "license": "LGPL-2.1",
+  "licenseCategory": "Open Source",
+  "homepage": "https://www.freecad.org",
+  "repository": "https://github.com/FreeCAD/FreeCAD",
+  "icon": "/icons/freecad.png",
+  "iconSlug": "freecad",
+  "brandColor": "#CB2027",
+  "size": "485.6 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/FreeCAD/FreeCAD/releases/download/1.0.0/FreeCAD_1.0.0-conda-Linux-x86_64-py311.AppImage"
+  },
+  "sha256": "7a35e80f930ad178229ef9fa48419615a97dd5f76b5cf849a9ea43a1a681ce4e",
+  "keywords": [
+    "cad",
+    "3d",
+    "parametric",
+    "engineering",
+    "modeling",
+    "architecture",
+    "mechanical"
+  ],
+  "featured": false,
+  "features": [
+    "Complete Open CASCADE Technology geometry kernel",
+    "Modular architecture with dedicated Workbenches",
+    "Technical drawing generation (TechDraw workbench)",
+    "Comprehensive Python scripting API"
+  ],
+  "requirements": "64-bit Linux with OpenGL 3.0+",
+  "repositoryUrl": "https://github.com/FreeCAD/FreeCAD",
+  "releasesUrl": "https://github.com/FreeCAD/FreeCAD/releases",
+  "sourceType": "Community",
+  "officialStatus": false
+}

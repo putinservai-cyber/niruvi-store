@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Niruvi Desktop Repository
+    url: https://github.com/putinservai-cyber/niruvi
+    about: For questions regarding the Niruvi AppImage desktop manager & installer.
+  - name: Ko-fi / Support
+    url: https://ko-fi.com/putinservai
+    about: Support developer maintenance of the open-source Niruvi Store.

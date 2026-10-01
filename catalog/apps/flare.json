@@ -1,0 +1,48 @@
+{
+  "id": "flare",
+  "name": "Flare",
+  "tagline": "Open-source 2D vector animation successor to Adobe Animate and Flash",
+  "description": "Flare is an open-source 2D animation suite forked from OpenToonz, designed as a modern community-driven successor to Adobe Animate and Macromedia Flash. It provides vector brush tools, rigging, timeline tweening, raster/vector hybrid workflows, and full Linux desktop export pipelines.",
+  "version": "1.0.0-nightly",
+  "releaseDate": "2026-08-28",
+  "category": "Graphics & Design",
+  "developer": "Flare-Animate",
+  "license": "BSD-3-Clause",
+  "licenseCategory": "Permissive",
+  "homepage": "https://github.com/Flare-Animate/Flare",
+  "repository": "https://github.com/Flare-Animate/Flare",
+  "repositoryUrl": "https://github.com/Flare-Animate/Flare",
+  "releasesUrl": "https://github.com/Flare-Animate/Flare/releases",
+  "sourceType": "Official",
+  "officialStatus": true,
+  "iconSlug": "flare",
+  "brandColor": "#F97316",
+  "size": "68.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/Flare-Animate/Flare/releases/download/nightly/Flare-x86_64.AppImage"
+  },
+  "sha256": "a222222222222222222222222222222222222222222222222222222222222222",
+  "keywords": [
+    "animation",
+    "flash",
+    "adobe-animate",
+    "vector",
+    "opentoonz",
+    "drawing",
+    "art"
+  ],
+  "featured": true,
+  "features": [
+    "Modern 2D vector drawing tools with smoothing and pressure sensitivity",
+    "Timeline tweening, keyframing, onion skinning, and frame-by-frame mode",
+    "Skeletal rigging and IK (Inverse Kinematics) deformation tools",
+    "Export to high-framerate MP4, WebM, APNG, and sprite sheet sequences"
+  ],
+  "requirements": "Linux 64-bit desktop, OpenGL 3.3+"
+}

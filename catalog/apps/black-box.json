@@ -1,0 +1,32 @@
+{
+  "id": "black-box",
+  "name": "Black Box",
+  "tagline": "A beautiful GTK 4 terminal",
+  "description": "A beautiful GTK 4 terminal",
+  "category": "Development",
+  "version": "1.0.0",
+  "releaseDate": "2026-09-07",
+  "size": "100 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "MIT",
+  "licenseCategory": "Open Source",
+  "developer": "Raggesilver",
+  "homepage": "https://gitlab.gnome.org/raggesilver/blackbox",
+  "repository": "https://gitlab.gnome.org/raggesilver/blackbox",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://example.com/download/black-box.AppImage"
+  },
+  "brandColor": "#4F46E5",
+  "keywords": [
+    "development",
+    "appimage"
+  ],
+  "featured": false,
+  "formats": [
+    "AppImage"
+  ]
+}

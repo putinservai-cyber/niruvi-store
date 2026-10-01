@@ -1,0 +1,104 @@
+name: 📦 App Submission
+description: Submit a new open-source Linux AppImage to Niruvi Store
+title: "[App]: "
+labels: ["app-submission", "catalog"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for submitting an application to Niruvi Store!
+        Please fill in the fields below. You can also submit directly via a Pull Request adding `catalog/apps/<app-id>.json`.
+  - type: input
+    id: app_name
+    attributes:
+      label: Application Name
+      placeholder: e.g. VSCodium
+    validations:
+      required: true
+  - type: input
+    id: app_id
+    attributes:
+      label: Application Slug / ID
+      placeholder: e.g. vscodium (lowercase, alphanumeric, hyphens only)
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description & Tagline
+      placeholder: Describe the application and its main capabilities.
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Development
+        - Graphics & Design
+        - Audio & Video
+        - Productivity
+        - Utilities
+        - Internet & Network
+        - Games
+        - System & Security
+        - Education
+    validations:
+      required: true
+  - type: input
+    id: developer
+    attributes:
+      label: Developer / Organization Name
+      placeholder: e.g. Blender Foundation
+    validations:
+      required: true
+  - type: input
+    id: license
+    attributes:
+      label: Software License
+      placeholder: e.g. MIT, GPL-3.0, Apache-2.0
+    validations:
+      required: true
+  - type: input
+    id: homepage
+    attributes:
+      label: Official Homepage URL
+      placeholder: https://example.org
+  - type: input
+    id: repository
+    attributes:
+      label: Source Code Repository
+      placeholder: https://github.com/example/example
+    validations:
+      required: true
+  - type: checkboxes
+    id: architectures
+    attributes:
+      label: Supported Architectures
+      options:
+        - label: x86_64 (64-bit Intel / AMD)
+          required: true
+        - label: aarch64 (64-bit ARM)
+        - label: armhf (32-bit ARM)
+  - type: input
+    id: download_url_x86_64
+    attributes:
+      label: Official AppImage Release URL (x86_64)
+      placeholder: https://github.com/example/example/releases/download/v1.0/example.AppImage
+    validations:
+      required: true
+  - type: input
+    id: download_url_aarch64
+    attributes:
+      label: Official AppImage Release URL (aarch64, optional)
+      placeholder: https://github.com/example/example/releases/download/v1.0/example-arm64.AppImage
+  - type: input
+    id: sha256
+    attributes:
+      label: SHA-256 Checksum (Optional but recommended)
+      placeholder: 64-character hexadecimal SHA-256 hash of the AppImage
+  - type: input
+    id: icon_url
+    attributes:
+      label: Application Icon (PNG/SVG URL or attached image)
+      placeholder: https://example.org/logo.png

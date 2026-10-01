@@ -1,0 +1,32 @@
+{
+  "id": "alacritty",
+  "name": "Alacritty",
+  "tagline": "A cross-platform, OpenGL terminal emulator",
+  "description": "A cross-platform, OpenGL terminal emulator",
+  "category": "Development",
+  "version": "1.0.0",
+  "releaseDate": "2026-09-07",
+  "size": "100 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "MIT",
+  "licenseCategory": "Open Source",
+  "developer": "Alacritty",
+  "homepage": "https://github.com/alacritty/alacritty",
+  "repository": "https://github.com/alacritty/alacritty",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://example.com/download/alacritty.AppImage"
+  },
+  "brandColor": "#4F46E5",
+  "keywords": [
+    "development",
+    "appimage"
+  ],
+  "featured": false,
+  "formats": [
+    "AppImage"
+  ]
+}

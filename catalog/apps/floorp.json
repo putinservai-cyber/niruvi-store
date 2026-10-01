@@ -1,0 +1,32 @@
+{
+  "id": "floorp",
+  "name": "Floorp",
+  "tagline": "A fast and privacy-focused Firefox-based browser",
+  "description": "A fast and privacy-focused Firefox-based browser",
+  "category": "Browser",
+  "version": "1.0.0",
+  "releaseDate": "2026-09-07",
+  "size": "100 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "MIT",
+  "licenseCategory": "Open Source",
+  "developer": "Floorp Projects",
+  "homepage": "https://github.com/Floorp-Projects/Floorp",
+  "repository": "https://github.com/Floorp-Projects/Floorp",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://example.com/download/floorp.AppImage"
+  },
+  "brandColor": "#4F46E5",
+  "keywords": [
+    "browser",
+    "appimage"
+  ],
+  "featured": false,
+  "formats": [
+    "AppImage"
+  ]
+}

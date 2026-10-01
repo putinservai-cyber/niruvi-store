@@ -1,0 +1,43 @@
+{
+  "id": "anytype",
+  "name": "Anytype",
+  "tagline": "Local-first, encrypted knowledge base and operating environment",
+  "description": "Anytype is an open, private, and peer-to-peer workspace for notes, tasks, documents, and bookmarks. Built on an encrypted local-first graph database with IPFS and p2p sync.",
+  "category": "Productivity",
+  "version": "0.56.9",
+  "releaseDate": "2025-01-30",
+  "size": "138.6 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "Open Source",
+  "licenseCategory": "Open Source",
+  "developer": "Any Association",
+  "homepage": "https://anytype.io",
+  "repository": "https://github.com/anyproto/anytype-ts",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://github.com/anyproto/anytype-ts/releases/download/v0.56.9-alpha/Anytype-0.56.9-alpha.AppImage"
+  },
+  "formats": [
+    "AppImage"
+  ],
+  "brandColor": "#F97316",
+  "keywords": [
+    "p2p",
+    "encrypted",
+    "knowledge-base",
+    "notion",
+    "graph",
+    "notes"
+  ],
+  "featured": true,
+  "features": [
+    "Zero-knowledge client-side encryption",
+    "Peer-to-peer syncing across devices without centralized servers",
+    "Object-based graph architecture connecting notes and ideas",
+    "Offline-first with fast local search"
+  ],
+  "requirements": "Linux x86_64"
+}

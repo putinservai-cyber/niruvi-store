@@ -1,0 +1,47 @@
+{
+  "id": "cemu",
+  "name": "Cemu",
+  "tagline": "Highly optimized Wii U video game emulator for desktop Linux",
+  "description": "Cemu is an experimental software to emulate Wii U applications on PC. It allows playing Wii U titles in high resolution (up to 4K and beyond) with graphical enhancements, custom resolution packs, and full controller mapping.",
+  "version": "2.6",
+  "releaseDate": "2026-08-30",
+  "category": "Games",
+  "developer": "Cemu Project",
+  "license": "MPL-2.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://cemu.info",
+  "repository": "https://github.com/cemu-project/Cemu",
+  "repositoryUrl": "https://github.com/cemu-project/Cemu",
+  "releasesUrl": "https://github.com/cemu-project/Cemu/releases",
+  "sourceType": "Official",
+  "officialStatus": true,
+  "iconSlug": "cemu",
+  "brandColor": "#0284C7",
+  "size": "22.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/cemu-project/Cemu/releases/download/v2.6/Cemu-2.6-x86_64.AppImage"
+  },
+  "sha256": "bcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f7890123456789a",
+  "keywords": [
+    "emulator",
+    "wiiu",
+    "gaming",
+    "nintendo",
+    "vulkan",
+    "cemu"
+  ],
+  "featured": true,
+  "features": [
+    "Vulkan and OpenGL rendering backend with high-FPS community graphic packs",
+    "Support for GamePad screen separation and motion gyro controls",
+    "Accurate audio emulation and shader caching for stutter-free gameplay",
+    "Custom resolution scaling up to 8K Ultra HD"
+  ],
+  "requirements": "Linux 64-bit desktop, Vulkan 1.2 compatible GPU, 8GB RAM"
+}

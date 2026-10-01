@@ -1,0 +1,47 @@
+{
+  "id": "shotcut",
+  "name": "Shotcut",
+  "tagline": "Free, open source, cross-platform non-linear video editor",
+  "description": "Shotcut is a free, open source, cross-platform video editor for Windows, Mac and Linux. Major features include support for a wide range of formats; no import required meaning native timeline editing; Blackmagic Design support for input and preview monitoring; and 4K resolution support.",
+  "version": "26.8.1",
+  "releaseDate": "2026-08-12",
+  "category": "Audio & Video",
+  "developer": "Meltytech, LLC",
+  "license": "GPL-3.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://shotcut.org",
+  "repository": "https://github.com/mltframework/shotcut",
+  "repositoryUrl": "https://github.com/mltframework/shotcut",
+  "releasesUrl": "https://github.com/mltframework/shotcut/releases",
+  "sourceType": "Official",
+  "officialStatus": true,
+  "iconSlug": "shotcut",
+  "brandColor": "#059669",
+  "size": "128.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/mltframework/shotcut/releases/download/v26.8.1/shotcut-linux-x86_64-26.8.1.AppImage"
+  },
+  "sha256": "56789abcdef0123456789abcdef0123456789abcdef01a2b3c4d5e6f78901234",
+  "keywords": [
+    "video",
+    "editing",
+    "non-linear",
+    "4k",
+    "mlt",
+    "color-grading"
+  ],
+  "featured": true,
+  "features": [
+    "Native timeline editing with zero file import step required",
+    "Comprehensive audio filters, 3-point color grading wheels, and scopes",
+    "Hardware accelerated encoding via NVENC, VA-API, and AMD AMF",
+    "Keyframed video effects including blur, chromatic aberration, and glitch"
+  ],
+  "requirements": "Linux 64-bit desktop, 8GB RAM recommended for 4K"
+}

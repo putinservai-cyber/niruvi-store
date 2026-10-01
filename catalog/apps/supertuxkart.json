@@ -1,0 +1,49 @@
+{
+  "id": "supertuxkart",
+  "name": "SuperTuxKart",
+  "tagline": "3D arcade kart racer starring Tux, Beastie, and friends",
+  "description": "SuperTuxKart is a 3D open-source arcade racing game featuring mascot characters of various free software projects. Race through tracks against AI or friends in local split-screen or networked multiplayer battle arenas.",
+  "version": "1.4.0",
+  "releaseDate": "2023-11-01",
+  "category": "Games",
+  "developer": "SuperTuxKart Team",
+  "license": "GPL-3.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://supertuxkart.net",
+  "repository": "https://github.com/supertuxkart/stk-code",
+  "icon": "/icons/supertuxkart.png",
+  "iconSlug": "supertuxkart",
+  "brandColor": "#10B981",
+  "size": "640.2 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/supertuxkart/stk-code/releases/download/v1.4/SuperTuxKart-1.4-linux-x86_64.AppImage"
+  },
+  "sha256": "61a7a0301a2f6ca46e919ff72ca4cba799307779b9ba1b42602161f3eb129759",
+  "keywords": [
+    "game",
+    "racing",
+    "arcade",
+    "multiplayer",
+    "tux",
+    "kart",
+    "fun"
+  ],
+  "featured": false,
+  "features": [
+    "Over 20 story tracks and multiplayer battle arenas",
+    "Networked online multiplayer and local split-screen",
+    "Full game controller and steering wheel compatibility",
+    "Custom addon manager to download user-made tracks"
+  ],
+  "requirements": "Hardware 3D accelerator with OpenGL 3.1+",
+  "repositoryUrl": "https://github.com/supertuxkart/stk-code",
+  "releasesUrl": "https://github.com/supertuxkart/stk-code/releases",
+  "sourceType": "Official",
+  "officialStatus": true
+}

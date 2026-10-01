@@ -1,0 +1,49 @@
+{
+  "id": "joplin",
+  "name": "Joplin",
+  "tagline": "An open source note taking and to-do application with end-to-end encryption",
+  "description": "Joplin is an open source note taking and to-do application, which can handle a large number of notes organized into notebooks. The notes are searchable, can be copied, tagged and modified with full Markdown formatting and math equations.",
+  "version": "3.2.11",
+  "releaseDate": "2025-01-18",
+  "category": "Productivity",
+  "developer": "Laurent Cozic / Joplin Community",
+  "license": "AGPL-3.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://joplinapp.org",
+  "repository": "https://github.com/laurent22/joplin",
+  "icon": "/icons/joplin.png",
+  "iconSlug": "joplin",
+  "brandColor": "#0F52BA",
+  "size": "112.5 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/laurent22/joplin/releases/download/v3.2.11/Joplin-3.2.11.AppImage"
+  },
+  "sha256": "4392815777894a8c903fa6eb7c04ff8dfab06e7887258fe536da4dc12521c7fa",
+  "keywords": [
+    "notes",
+    "markdown",
+    "todo",
+    "e2ee",
+    "sync",
+    "productivity",
+    "organization"
+  ],
+  "featured": false,
+  "features": [
+    "Full Markdown notes with KaTeX math and Mermaid diagrams",
+    "End-to-End Encryption (E2EE) on all sync targets",
+    "Web Clipper extension for Firefox and Chrome",
+    "Sync with Nextcloud, Dropbox, WebDAV, or local file system"
+  ],
+  "requirements": "Linux 64-bit desktop",
+  "repositoryUrl": "https://github.com/laurent22/joplin",
+  "releasesUrl": "https://github.com/laurent22/joplin/releases",
+  "sourceType": "Community",
+  "officialStatus": false
+}

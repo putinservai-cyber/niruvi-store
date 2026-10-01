@@ -1,0 +1,49 @@
+{
+  "id": "handbrake",
+  "name": "HandBrake",
+  "tagline": "Open-source video transcoder for converting video from nearly any format",
+  "description": "HandBrake is a tool for converting video from nearly any format to a selection of modern, widely supported codecs. It supports hardware encoding via Intel QSV, AMD VCN, and NVIDIA NVENC alongside high quality software encoders.",
+  "version": "1.9.0",
+  "releaseDate": "2024-12-22",
+  "category": "Audio & Video",
+  "developer": "HandBrake Team",
+  "license": "GPL-2.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://handbrake.fr",
+  "repository": "https://github.com/HandBrake/HandBrake",
+  "icon": "/icons/handbrake.png",
+  "iconSlug": "handbrake",
+  "brandColor": "#E53E3E",
+  "size": "74.8 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/HandBrake/HandBrake/releases/download/1.9.0/HandBrake-1.9.0-x86_64.AppImage"
+  },
+  "sha256": "3491f03f5ad676994a5a54fe59a4bb3ef06093d939634fa68b9195eeb00d046c",
+  "keywords": [
+    "video",
+    "transcoder",
+    "converter",
+    "h264",
+    "h265",
+    "av1",
+    "encoder"
+  ],
+  "featured": false,
+  "features": [
+    "Convert video from nearly any format with built-in device presets",
+    "Hardware-accelerated encoding (NVENC, Intel QSV, AMD VCN)",
+    "Modern AV1, H.265 (HEVC), and VP9 video codec compression",
+    "Batch queuing, subtitle pass-through, and audio downmixing"
+  ],
+  "requirements": "Linux 64-bit desktop environment",
+  "repositoryUrl": "https://github.com/HandBrake/HandBrake",
+  "releasesUrl": "https://github.com/HandBrake/HandBrake/releases",
+  "sourceType": "Official",
+  "officialStatus": true
+}

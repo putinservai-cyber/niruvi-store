@@ -1,0 +1,44 @@
+{
+  "id": "darktable",
+  "name": "Darktable",
+  "tagline": "Professional open-source photography workflow and non-destructive RAW developer",
+  "description": "Darktable is an open-source photography workflow application and RAW developer. A virtual lighttable and darkroom for photographers, it manages your digital negatives in a database and lets you view them through an interactive lighttable.",
+  "category": "Graphics & Design",
+  "version": "5.6.1",
+  "releaseDate": "2025-01-08",
+  "size": "148.5 MB",
+  "architectures": [
+    "x86_64",
+    "aarch64"
+  ],
+  "license": "GPL-3.0",
+  "licenseCategory": "Open Source",
+  "developer": "Darktable Team",
+  "homepage": "https://www.darktable.org",
+  "repository": "https://github.com/darktable-org/darktable",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://github.com/darktable-org/darktable/releases/download/release-5.6.1/Darktable-5.6.1-x86_64.AppImage",
+    "aarch64": "https://github.com/darktable-org/darktable/releases/download/release-5.6.1/Darktable-5.6.1-aarch64.AppImage"
+  },
+  "brandColor": "#EAB308",
+  "keywords": [
+    "photography",
+    "raw",
+    "lightroom",
+    "photo-editing",
+    "color-grading"
+  ],
+  "featured": false,
+  "features": [
+    "Non-destructive editing workflow across 4x32-bit floating point buffers",
+    "GPU accelerated processing via OpenCL",
+    "Color management support with ICC profile loading",
+    "Advanced masking, filmic tone curve, and lens correction"
+  ],
+  "requirements": "Linux x86_64 or aarch64, OpenCL GPU support recommended",
+  "formats": [
+    "AppImage"
+  ]
+}

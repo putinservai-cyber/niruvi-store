@@ -1,0 +1,43 @@
+{
+  "id": "gittyup",
+  "name": "Gittyup",
+  "tagline": "Graphical Git client designed to understand and manage your history",
+  "description": "Gittyup is an open-source graphical Git client that continues the legacy of GitAhead, featuring fast branch trees, interactive staging, visual commit inspection, and commit squashing.",
+  "category": "Development",
+  "version": "2.0.0",
+  "releaseDate": "2025-01-14",
+  "size": "34.2 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "license": "GPL-3.0",
+  "licenseCategory": "Open Source",
+  "developer": "Murmele",
+  "homepage": "https://murmele.github.io/Gittyup/",
+  "repository": "https://github.com/Murmele/Gittyup",
+  "sourceType": "Official",
+  "trustTier": "Official Developer",
+  "download": {
+    "x86_64": "https://github.com/Murmele/Gittyup/releases/download/gittyup_v2.0.0/Gittyup-2.0.0-x86_64.AppImage"
+  },
+  "formats": [
+    "AppImage"
+  ],
+  "brandColor": "#EC4899",
+  "keywords": [
+    "git",
+    "version-control",
+    "diff",
+    "commits",
+    "branches",
+    "gui"
+  ],
+  "featured": false,
+  "features": [
+    "Fast interactive history log and topological branch viewer",
+    "Single-click line and hunk staging",
+    "Submodule management and conflict resolution visualizer",
+    "Lightweight C++ and Qt architecture with zero electron bloat"
+  ],
+  "requirements": "Linux x86_64, git installed on system"
+}

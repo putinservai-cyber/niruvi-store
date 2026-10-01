@@ -1,0 +1,49 @@
+{
+  "id": "keepassxc",
+  "name": "KeePassXC",
+  "tagline": "Secure, cross-platform password manager stored completely offline",
+  "description": "KeePassXC is a modern, secure, and open-source password manager that stores and manages your most sensitive information offline in an encrypted database using AES-256 and Argon2. You can safely save your logins, credit cards, TOTP 2FA tokens, and private notes.",
+  "version": "2.7.9",
+  "releaseDate": "2024-06-20",
+  "category": "System & Security",
+  "developer": "KeePassXC Team",
+  "license": "GPL-3.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://keepassxc.org",
+  "repository": "https://github.com/keepassxreboot/keepassxc",
+  "icon": "/icons/keepassxc.png",
+  "iconSlug": "keepassxc",
+  "brandColor": "#6CAE3E",
+  "size": "58.4 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/keepassxreboot/keepassxc/releases/download/2.7.9/KeePassXC-2.7.9-x86_64.AppImage"
+  },
+  "sha256": "e3057e9fe5b3da59f71297a73cb941ae1529177114b7e80f9353982e5b774656",
+  "keywords": [
+    "security",
+    "password",
+    "vault",
+    "totp",
+    "2fa",
+    "encryption",
+    "argon2"
+  ],
+  "featured": true,
+  "features": [
+    "AES-256 and ChaCha20 encryption with Argon2 key derivation",
+    "Built-in Time-based One-Time Password (TOTP) authenticator",
+    "Native browser integration for Firefox, Chrome, and Brave",
+    "Auto-Type login automation on X11 and Wayland"
+  ],
+  "requirements": "Any modern Linux desktop",
+  "repositoryUrl": "https://github.com/keepassxreboot/keepassxc",
+  "releasesUrl": "https://github.com/keepassxreboot/keepassxc/releases",
+  "sourceType": "Official",
+  "officialStatus": true
+}

@@ -1,0 +1,49 @@
+{
+  "id": "krita",
+  "name": "Krita",
+  "tagline": "Professional painting application made by artists for artists",
+  "description": "Krita is a creative sketching and painting tool designed for concept artists, illustrators, matte and texture artists, and the VFX industry. It features over 100 professionally designed brushes, 9 brush engines, stabilizer support, and seamless wrap-around pattern creation.",
+  "version": "5.2.6",
+  "releaseDate": "2024-11-28",
+  "category": "Graphics & Design",
+  "developer": "Krita Foundation",
+  "license": "GPL-3.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://krita.org",
+  "repository": "https://invent.kde.org/graphics/krita",
+  "icon": "/icons/krita.png",
+  "iconSlug": "krita",
+  "brandColor": "#3B82F6",
+  "size": "228.4 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://download.kde.org/stable/krita/5.2.6/krita-5.2.6-x86_64.appimage"
+  },
+  "sha256": "a17bc698a27d6d3381a179eef39a67e9f3b55c2bfdc93952d7ee46d034220b39",
+  "keywords": [
+    "painting",
+    "drawing",
+    "illustration",
+    "raster",
+    "art",
+    "kde",
+    "sketch"
+  ],
+  "featured": true,
+  "features": [
+    "Brush stabilizers for smooth inking curves",
+    "Wrap-around tiling mode for game textures and patterns",
+    "Full color management with ICC and HDR support",
+    "Integrated frame-by-frame animation workspace with audio playback"
+  ],
+  "requirements": "Graphics card with OpenGL 3.0 or higher",
+  "repositoryUrl": "https://invent.kde.org/graphics/krita",
+  "releasesUrl": "https://invent.kde.org/graphics/krita/releases",
+  "sourceType": "Official",
+  "officialStatus": true
+}

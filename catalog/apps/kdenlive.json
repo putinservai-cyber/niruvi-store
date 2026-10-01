@@ -1,0 +1,49 @@
+{
+  "id": "kdenlive",
+  "name": "Kdenlive",
+  "tagline": "Non-linear video editor powered by the MLT framework and KDE",
+  "description": "Kdenlive is an acronym for KDE Non-Linear Video Editor. It is a powerful multi-track video editor that supports almost all audio and video formats via FFmpeg, with keyframe animation, proxy editing, auto-subtitling with Whisper AI, and color grading.",
+  "version": "24.12.1",
+  "releaseDate": "2025-01-09",
+  "category": "Audio & Video",
+  "developer": "KDE Community",
+  "license": "GPL-3.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://kdenlive.org",
+  "repository": "https://invent.kde.org/multimedia/kdenlive",
+  "icon": "/icons/kdenlive.png",
+  "iconSlug": "kdenlive",
+  "brandColor": "#5275D3",
+  "size": "274.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://download.kde.org/stable/kdenlive/24.12/linux/kdenlive-24.12.1-x86_64.AppImage"
+  },
+  "sha256": "df06e6bf4710166299b9cf95924716900ee123f990ad312ba30c5e6319c5c76c",
+  "keywords": [
+    "video",
+    "editing",
+    "montage",
+    "ffmpeg",
+    "kde",
+    "subtitles",
+    "multitrack"
+  ],
+  "featured": false,
+  "features": [
+    "Multi-track video editing with timeline audio waveforms",
+    "AI Speech-to-Text subtitle generation using Whisper",
+    "Color scopes, vectorscope, RGB parade, and LUT support",
+    "Configurable keyboard shortcuts and dynamic proxy clips"
+  ],
+  "requirements": "Multicore CPU, 8GB RAM, OpenGL 2.0+",
+  "repositoryUrl": "https://invent.kde.org/multimedia/kdenlive",
+  "releasesUrl": "https://invent.kde.org/multimedia/kdenlive/releases",
+  "sourceType": "Community",
+  "officialStatus": false
+}

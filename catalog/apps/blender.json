@@ -1,0 +1,49 @@
+{
+  "id": "blender",
+  "name": "Blender",
+  "tagline": "Professional 3D creation pipeline for modeling, rigging, and rendering",
+  "description": "Blender is the world-renowned free and open source 3D pipeline suite. It covers modeling, sculpting, rigging, 3D animation, simulation, GPU raytraced rendering with Cycles, video editing, and 2D storyboard drawing with Grease Pencil.",
+  "version": "4.3.2",
+  "releaseDate": "2025-01-20",
+  "category": "Graphics & Design",
+  "developer": "Blender Foundation",
+  "license": "GPL-3.0",
+  "licenseCategory": "Open Source",
+  "homepage": "https://www.blender.org",
+  "repository": "https://projects.blender.org/blender/blender",
+  "icon": "/icons/blender.png",
+  "iconSlug": "blender",
+  "brandColor": "#EA7600",
+  "size": "312.8 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://download.blender.org/release/Blender4.3/blender-4.3.2-linux-x64.AppImage"
+  },
+  "sha256": "4e375ab838531980ee9f57a3e811c7fae98f02969b8219c490ff7a1c1d01931a",
+  "keywords": [
+    "3d",
+    "modeling",
+    "animation",
+    "rendering",
+    "cycles",
+    "vfx",
+    "sculpting"
+  ],
+  "featured": true,
+  "features": [
+    "Cycles GPU ray-tracing with OptiX, HIP, and Vulkan backends",
+    "Advanced geometry node modeling systems",
+    "Grease Pencil 2D illustration and storyboard suite",
+    "Full Python 3 API for pipeline scripting and automation"
+  ],
+  "requirements": "OpenGL 4.3 capable GPU, 8GB RAM minimum",
+  "repositoryUrl": "https://projects.blender.org/blender/blender",
+  "releasesUrl": "https://projects.blender.org/blender/blender/releases",
+  "sourceType": "Official",
+  "officialStatus": true
+}

@@ -1,0 +1,48 @@
+{
+  "id": "appimage-recipes",
+  "name": "AppImage recipes",
+  "tagline": "Recipes and build specifications to generate AppImages with AppImageKit",
+  "description": "A collection of build recipes and Continuous Integration templates maintained by TheAssassin and the AppImage community. Provides automated pkg2appimage recipes to package upstream Debian/Ubuntu binaries, compile native libraries, and package compliant AppImages.",
+  "version": "2.0.0",
+  "releaseDate": "2026-07-10",
+  "category": "Development",
+  "developer": "TheAssassin & Community",
+  "license": "MIT",
+  "licenseCategory": "Permissive",
+  "homepage": "https://github.com/TheAssassin/AppImages",
+  "repository": "https://github.com/TheAssassin/AppImages",
+  "repositoryUrl": "https://github.com/TheAssassin/AppImages",
+  "releasesUrl": "https://github.com/TheAssassin/AppImages",
+  "sourceType": "Community",
+  "officialStatus": false,
+  "iconSlug": "appimage-recipes",
+  "brandColor": "#2563EB",
+  "size": "15.0 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/TheAssassin/AppImages/archive/refs/heads/master.tar.gz"
+  },
+  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "keywords": [
+    "recipes",
+    "build",
+    "ci",
+    "appimagekit",
+    "pkg2appimage",
+    "packaging",
+    "dev"
+  ],
+  "featured": false,
+  "features": [
+    "Ready-to-use YAML and Bash recipes for dozens of popular open source apps",
+    "GitHub Actions and Travis CI continuous delivery workflow examples",
+    "Helper scripts to strip unnecessary libraries and bundle shared runtimes",
+    "AppStream metainfo validation and AppImage desktop integration testing"
+  ],
+  "requirements": "Linux desktop or server"
+}

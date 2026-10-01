@@ -1,0 +1,49 @@
+{
+  "id": "etcher",
+  "name": "balenaEtcher",
+  "tagline": "Flash OS images to SD cards & USB drives, safely and easily.",
+  "description": "balenaEtcher is a powerful OS image flasher built with web technologies to ensure flashing SD Cards or USB drives is a pleasant and safe experience. It protects you from accidentally writing to your hard-drives, and ensures every byte of data is written correctly.",
+  "version": "1.19.21",
+  "releaseDate": "2024-11-15",
+  "category": "Utilities",
+  "developer": "Balena Team",
+  "license": "Apache-2.0",
+  "licenseCategory": "Permissive",
+  "homepage": "https://etcher.balena.io",
+  "repository": "https://github.com/balena-io/etcher",
+  "icon": "/icons/etcher.png",
+  "iconSlug": "etcher",
+  "brandColor": "#00A38C",
+  "size": "142.1 MB",
+  "architectures": [
+    "x86_64"
+  ],
+  "formats": [
+    "AppImage"
+  ],
+  "download": {
+    "x86_64": "https://github.com/balena-io/etcher/releases/download/v1.19.21/balenaEtcher-1.19.21-x64.AppImage"
+  },
+  "sha256": "4b2e84c4e7fae29f8f4a13d80cb5f19001a1db6c1e345cb5774a38a9a202bc51",
+  "keywords": [
+    "flash",
+    "sdcard",
+    "usb",
+    "os",
+    "iso",
+    "bootable",
+    "utility"
+  ],
+  "featured": false,
+  "features": [
+    "Validated flashing prevents writing to corrupt cards",
+    "Drive Selection safety prevents scrubbing system hard-drives",
+    "Clean visual dashboard with beautiful progress percentages",
+    "Supports ISO, IMG, ZIP, DMG, and raw OS blocks"
+  ],
+  "requirements": "64-bit Linux desktop, USB/SD reader",
+  "repositoryUrl": "https://github.com/balena-io/etcher",
+  "releasesUrl": "https://github.com/balena-io/etcher/releases",
+  "sourceType": "Official",
+  "officialStatus": true
+}

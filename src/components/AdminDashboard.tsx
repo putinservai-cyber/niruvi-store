@@ -636,8 +636,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <tr key={app.id} className="hover:bg-neutral-850/40 transition-colors">
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-neutral-800 border border-neutral-700 flex items-center justify-center flex-shrink-0">
-                              <AppIcon slug={app.slug || app.id} className="w-5 h-5" />
+                            <div className="w-9 h-9 rounded-xl bg-neutral-800/80 border border-neutral-700/60 p-1 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                              <AppIcon 
+                                slug={app.slug || app.id} 
+                                iconUrl={(app as any).iconUrl || (app as any).icon} 
+                                name={app.name} 
+                                className="w-7 h-7" 
+                              />
                             </div>
                             <div>
                               <div className="font-semibold text-white flex items-center gap-2">

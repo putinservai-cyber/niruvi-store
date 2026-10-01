@@ -20,6 +20,23 @@ interface AppCardProps {
   onToggleBookmark: (appId: string) => void;
 }
 
+const getSourceBadge = (app: AppMetadata) => {
+  const tier = app.trustTier || (app.sourceType === 'Official' ? 'Official Developer' : 'Verified Community');
+  if (tier === 'Official Developer') {
+    return { label: 'Official', title: 'Official Developer Build', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' };
+  }
+  if (tier === 'Verified Community') {
+    return { label: 'Verified Comm.', title: 'Verified Community Packaged Build', color: 'bg-orange-500/10 text-orange-400 border-orange-500/20' };
+  }
+  if (tier === 'Unverified Community') {
+    return { label: 'Unverified', title: 'Unverified Community Build', color: 'bg-neutral-800 text-neutral-400 border-neutral-700' };
+  }
+  if (app.isUserAdded) {
+    return { label: 'User Added', title: 'Custom App Added', color: 'bg-emerald-950/40 text-emerald-400 border-emerald-900/30' };
+  }
+  return null;
+};
+
 export const AppCard: React.FC<AppCardProps> = ({ 
   app, 
   isInstalled,
@@ -28,20 +45,38 @@ export const AppCard: React.FC<AppCardProps> = ({
   onInstall,
   onToggleBookmark 
 }) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onSelect(app);
+    }
+  };
+
+  const sourceBadge = getSourceBadge(app);
+
   return (
     <div 
       id={`app-card-${app.id}`}
+      role="button"
+      tabIndex={0}
+      aria-label={`View details for ${app.name} version ${app.version}`}
       onClick={() => onSelect(app)}
-      className="group relative flex flex-col bg-neutral-900/60 hover:bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded-2xl p-5 transition-all duration-150 cursor-pointer shadow-sm hover:shadow-md"
+      onKeyDown={handleKeyDown}
+      className="group relative flex flex-col bg-neutral-900/60 hover:bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded-2xl p-5 transition-all duration-150 cursor-pointer shadow-sm hover:shadow-md focus:outline-hidden focus:border-white focus:ring-1 focus:ring-white"
     >
       {/* Top row: Icon + Identity + Bookmark */}
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-start gap-3.5 min-w-0">
           <div 
-            className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform"
-            style={{ backgroundColor: `${app.brandColor || '#ffffff'}15`, border: `1px solid ${app.brandColor || '#ffffff'}30` }}
+            className="w-12 h-12 rounded-xl flex items-center justify-center bg-neutral-800/80 border border-neutral-700/60 p-1.5 shadow-md flex-shrink-0 group-hover:scale-105 transition-transform overflow-hidden"
           >
-            <AppIcon slug={app.iconSlug} className="w-6 h-6" />
+            <AppIcon 
+              slug={app.iconSlug} 
+              iconUrl={app.icon} 
+              name={app.name} 
+              brandColor={app.brandColor} 
+              className="w-9 h-9 sm:w-10 sm:h-10" 
+            />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -85,6 +120,11 @@ export const AppCard: React.FC<AppCardProps> = ({
 
       {/* Meta tags & Architecture */}
       <div className="flex flex-wrap items-center gap-1.5 mb-4 text-[11px]">
+        {sourceBadge && (
+          <span className={`px-2 py-0.5 rounded-md border text-[10px] font-semibold ${sourceBadge.color}`}>
+            {sourceBadge.label}
+          </span>
+        )}
         <span className="px-2 py-0.5 rounded-md bg-neutral-800/80 text-neutral-300 border border-neutral-750">
           {app.category}
         </span>
