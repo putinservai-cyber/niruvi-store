@@ -363,5 +363,58 @@ describe('Niruvi Store — Community Submission (/submit), Worker API Merge & Ba
     expect(screen.getByText(/Cloudflare Turnstile Bot Protection/i)).toBeInTheDocument();
     expect(screen.getByTestId('auth-turnstile-widget-container')).toBeInTheDocument();
   });
+
+  it('renders Phase 3 Community Ratings & Reviews in app details and tracks Saved Library, Update Notifications, and Download History without vlatest', () => {
+    renderStore();
+
+    // 1. Bookmark the first app card and click its Download button
+    const firstApp = SAMPLE_CATALOG[0];
+    const bookmarkBtn = screen.getByRole('button', {
+      name: new RegExp(`Save ${firstApp.name} to library`, 'i'),
+    });
+    fireEvent.click(bookmarkBtn);
+
+    const downloadBtns = screen.getAllByRole('button', {
+      name: new RegExp(`Install ${firstApp.name}`, 'i'),
+    });
+    fireEvent.click(downloadBtns[0]);
+    // Close Install modal
+    fireEvent.click(screen.getByRole('button', { name: /Close download modal/i }));
+
+    // 2. Open app detail modal and verify Community Ratings & Reviews section is rendered
+    fireEvent.click(screen.getByText(firstApp.name));
+    expect(
+      screen.getByRole('region', { name: /Community ratings and reviews/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Sign in to Write a Review/i }),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Close application details/i }));
+
+    // 3. Navigate to Saved Library (/library) and verify Installed, Saved & Bookmarks, and Download History tabs
+    const savedNavBtns = screen.getAllByRole('button', { name: /Saved/i });
+    fireEvent.click(savedNavBtns[0]);
+
+    expect(
+      screen.getByRole('heading', { level: 2, name: /My AppImage Library/i }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/vlatest/i)).not.toBeInTheDocument();
+
+    // Toggle update notifications on Installed card
+    const notifyBtn = screen.getByRole('button', {
+      name: new RegExp(`Toggle update notifications for ${firstApp.name}`, 'i'),
+    });
+    expect(notifyBtn).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(notifyBtn);
+    expect(notifyBtn).toHaveAttribute('aria-pressed', 'false');
+
+    // Switch to Saved & Bookmarks sub-tab
+    fireEvent.click(screen.getByRole('button', { name: /Saved & Bookmarks/i }));
+    expect(screen.getByText(firstApp.name)).toBeInTheDocument();
+
+    // Switch to Download History sub-tab
+    fireEvent.click(screen.getByRole('button', { name: /Download History/i }));
+    expect(screen.getByRole('button', { name: /Download Again/i })).toBeInTheDocument();
+  });
 });
 

@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { AppMetadata } from '../types';
 import { generateNiruviProtocolUrl } from '../data/apps';
 import { buildApiUrl } from '../config/site';
+import { useAuth } from '../context/AuthContext';
+import {
+  AppReviewRecord,
+  fetchAppReviews,
+  upsertAppReview,
+  deleteAppReview,
+} from '../lib/supabase';
 import {
   getChecksumStatus,
   isCommunitySubmitted,
@@ -29,6 +36,9 @@ import {
   GitBranch,
   AlertTriangle,
   Users,
+  Star,
+  MessageSquare,
+  Trash2,
 } from 'lucide-react';
 import { AppIcon } from './AppIcon';
 
@@ -53,11 +63,25 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
   onShowToast,
   initialOpenReport = false,
 }) => {
+  const { user, openAuthModal } = useAuth();
   const [copiedSha, setCopiedSha] = useState(false);
   const [copiedCmd, setCopiedCmd] = useState(false);
   const [selectedArch, setSelectedArch] = useState<string>('x86_64');
   const [liveVersionHistory, setLiveVersionHistory] = useState(app?.versionHistory || []);
   const [loadingHistory, setLoadingHistory] = useState(false);
+
+  // Phase 3: Community Ratings & Reviews state (1–5 stars, 1 per user per app)
+  const [reviews, setReviews] = useState<AppReviewRecord[]>([]);
+  const [reviewRating, setReviewRating] = useState<number>(5);
+  const [reviewTitle, setReviewTitle] = useState<string>('');
+  const [reviewBody, setReviewBody] = useState<string>('');
+  const [reviewDistro, setReviewDistro] = useState<string>('');
+  const [reviewSubmitting, setReviewSubmitting] = useState<boolean>(false);
+  const [showReviewForm, setShowReviewForm] = useState<boolean>(false);
+  const [reviewMessage, setReviewMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
 
   // Report broken package form state
   const [showReportForm, setShowReportForm] = useState(initialOpenReport);
@@ -78,26 +102,55 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
     setShowReportForm(Boolean(initialOpenReport));
     setReportDetails('');
     setReportStatusMsg(null);
+    setReviewMessage(null);
+    setShowReviewForm(false);
 
-    if (app && (!app.versionHistory || app.versionHistory.length === 0) && app.githubRepo) {
-      let cancelled = false;
-      setLoadingHistory(true);
-      fetch(`/api/catalog/${encodeURIComponent(app.id)}`)
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          if (!cancelled && data?.app?.versionHistory?.length) {
-            setLiveVersionHistory(data.app.versionHistory);
+    if (app) {
+      let reviewCancelled = false;
+      fetchAppReviews(app.id)
+        .then((list) => {
+          if (reviewCancelled) return;
+          setReviews(list);
+          const mine = user ? list.find((r) => r.userId === user.id) : undefined;
+          if (mine) {
+            setReviewRating(mine.rating);
+            setReviewTitle(mine.title);
+            setReviewBody(mine.body);
+            setReviewDistro(mine.distro);
+          } else {
+            setReviewRating(5);
+            setReviewTitle('');
+            setReviewBody('');
+            setReviewDistro('');
           }
         })
-        .catch(() => {})
-        .finally(() => {
-          if (!cancelled) setLoadingHistory(false);
-        });
+        .catch(() => {});
+
+      if ((!app.versionHistory || app.versionHistory.length === 0) && app.githubRepo) {
+        let cancelled = false;
+        setLoadingHistory(true);
+        fetch(buildApiUrl(`/api/catalog/${encodeURIComponent(app.id)}`))
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            if (!cancelled && data?.app?.versionHistory?.length) {
+              setLiveVersionHistory(data.app.versionHistory);
+            }
+          })
+          .catch(() => {})
+          .finally(() => {
+            if (!cancelled) setLoadingHistory(false);
+          });
+        return () => {
+          cancelled = true;
+          reviewCancelled = true;
+        };
+      }
+
       return () => {
-        cancelled = true;
+        reviewCancelled = true;
       };
     }
-  }, [app]);
+  }, [app, user]);
 
   useEffect(() => {
     if (!app) return;
@@ -205,6 +258,88 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
       });
     } finally {
       setReportSubmitting(false);
+    }
+  };
+
+  const userExistingReview = user ? reviews.find((r) => r.userId === user.id) : undefined;
+  const averageRating =
+    reviews.length > 0
+      ? Number((reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1))
+      : null;
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) {
+      openAuthModal();
+      return;
+    }
+    if (!reviewBody.trim() || reviewBody.trim().length < 5) {
+      setReviewMessage({
+        type: 'error',
+        text: 'Please write at least 5 characters in your review.',
+      });
+      return;
+    }
+    setReviewSubmitting(true);
+    setReviewMessage(null);
+    try {
+      const saved = await upsertAppReview({
+        appSlug: app.id,
+        userId: user.id,
+        username: user.username,
+        displayName: user.displayName,
+        rating: reviewRating,
+        title: reviewTitle.trim(),
+        body: reviewBody.trim(),
+        distro: reviewDistro.trim(),
+      });
+      setReviews((prev) => {
+        const idx = prev.findIndex((r) => r.userId === user.id);
+        if (idx >= 0) {
+          const copy = [...prev];
+          copy[idx] = saved;
+          return copy;
+        }
+        return [saved, ...prev];
+      });
+      setShowReviewForm(false);
+      setReviewMessage({
+        type: 'success',
+        text: userExistingReview ? 'Your review was updated.' : 'Your review was published.',
+      });
+      if (onShowToast) {
+        onShowToast(
+          userExistingReview ? 'Review updated.' : 'Review published.',
+          'success'
+        );
+      }
+    } catch (err: any) {
+      setReviewMessage({
+        type: 'error',
+        text: err?.message || 'Unable to save review.',
+      });
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!user) return;
+    const isStaff = user.role === 'ADMIN' || user.role === 'MODERATOR';
+    await deleteAppReview({
+      reviewId,
+      userId: user.id,
+      isModeratorOrAdmin: isStaff,
+    });
+    setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+    if (userExistingReview?.id === reviewId) {
+      setReviewRating(5);
+      setReviewTitle('');
+      setReviewBody('');
+      setReviewDistro('');
+    }
+    if (onShowToast) {
+      onShowToast('Review deleted.', 'info');
     }
   };
 
@@ -512,7 +647,7 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-xs font-bold text-white font-mono">
-                              v{rel.version}
+                              {formatAppVersion(rel.version)}
                             </span>
                             {rel.releaseDate && (
                               <span className="text-xs text-neutral-400 font-mono">
@@ -647,6 +782,226 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
             <div className="text-[11px] text-neutral-400 font-mono truncate">
               Protocol URI: <span className="text-neutral-300">{protocolUrl}</span>
             </div>
+          </section>
+
+          {/* Phase 3: Community Ratings & Reviews (1–5 Stars, 1 per user per app) */}
+          <section
+            aria-label="Community ratings and reviews"
+            className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-4"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <MessageSquare className="w-4 h-4 text-amber-400" aria-hidden="true" />
+                <div>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-white">
+                    Community Ratings &amp; Reviews
+                  </h3>
+                  <div className="flex items-center gap-2 mt-0.5 text-xs text-neutral-400">
+                    {averageRating !== null ? (
+                      <>
+                        <span className="inline-flex items-center gap-1 font-bold text-amber-400">
+                          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                          {averageRating.toFixed(1)} / 5.0
+                        </span>
+                        <span>
+                          ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
+                        </span>
+                      </>
+                    ) : (
+                      <span>No ratings yet — be the first to review {app.name}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {user ? (
+                <button
+                  type="button"
+                  onClick={() => setShowReviewForm((prev) => !prev)}
+                  className="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white border border-neutral-700 text-xs font-medium transition-colors cursor-pointer"
+                >
+                  {userExistingReview
+                    ? showReviewForm
+                      ? 'Cancel Edit'
+                      : 'Edit Your Review'
+                    : showReviewForm
+                      ? 'Cancel'
+                      : 'Write a Review'}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={openAuthModal}
+                  className="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-sky-400 border border-neutral-800 text-xs font-medium transition-colors cursor-pointer"
+                >
+                  Sign in to Write a Review
+                </button>
+              )}
+            </div>
+
+            {reviewMessage && (
+              <p
+                className={`text-xs ${
+                  reviewMessage.type === 'success' ? 'text-emerald-400' : 'text-rose-400'
+                }`}
+              >
+                {reviewMessage.text}
+              </p>
+            )}
+
+            {showReviewForm && user && (
+              <form
+                onSubmit={handleSubmitReview}
+                className="p-3.5 rounded-xl bg-neutral-900 border border-neutral-800 space-y-3"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <span className="block text-xs font-medium text-neutral-300 mb-1">
+                      Your Star Rating (1–5)
+                    </span>
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setReviewRating(star)}
+                          aria-label={`Rate ${star} out of 5 stars`}
+                          className="p-1 rounded hover:bg-neutral-800 transition-colors cursor-pointer"
+                        >
+                          <Star
+                            className={`w-4 h-4 ${
+                              star <= reviewRating
+                                ? 'fill-amber-400 text-amber-400'
+                                : 'text-neutral-600'
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex-1 min-w-[180px]">
+                    <label className="block text-xs text-neutral-400 mb-1">
+                      Linux Distro Tested (optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={reviewDistro}
+                      onChange={(e) => setReviewDistro(e.target.value)}
+                      placeholder="e.g. Ubuntu 24.04, Fedora 41, Arch"
+                      className="w-full px-3 py-1.5 rounded-lg bg-neutral-950 border border-neutral-800 text-xs text-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs text-neutral-400 mb-1">
+                    Review Summary Title (optional)
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={120}
+                    value={reviewTitle}
+                    onChange={(e) => setReviewTitle(e.target.value)}
+                    placeholder="Fast startup and rock-solid AppImage integration"
+                    className="w-full px-3 py-1.5 rounded-lg bg-neutral-950 border border-neutral-800 text-xs text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs text-neutral-400 mb-1">Review Details</label>
+                  <textarea
+                    rows={3}
+                    required
+                    maxLength={2000}
+                    value={reviewBody}
+                    onChange={(e) => setReviewBody(e.target.value)}
+                    placeholder="Share how this AppImage runs on your Linux system..."
+                    className="w-full px-3 py-2 rounded-lg bg-neutral-950 border border-neutral-800 text-xs text-white"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowReviewForm(false)}
+                    className="px-3 py-1.5 rounded-lg bg-neutral-950 text-neutral-300 border border-neutral-800 text-xs cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={reviewSubmitting}
+                    className="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs cursor-pointer disabled:opacity-50"
+                  >
+                    {reviewSubmitting
+                      ? 'Saving…'
+                      : userExistingReview
+                        ? 'Update Review'
+                        : 'Publish Review'}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {reviews.length > 0 && (
+              <div className="space-y-2.5 max-h-64 overflow-y-auto">
+                {reviews.map((rev) => {
+                  const canDelete =
+                    Boolean(user) &&
+                    (user?.id === rev.userId ||
+                      user?.role === 'ADMIN' ||
+                      user?.role === 'MODERATOR');
+                  return (
+                    <div
+                      key={rev.id}
+                      className="p-3 rounded-lg bg-neutral-900 border border-neutral-800 space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <div className="flex items-center gap-0.5">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                              <Star
+                                key={s}
+                                className={`w-3 h-3 ${
+                                  s <= rev.rating
+                                    ? 'fill-amber-400 text-amber-400'
+                                    : 'text-neutral-700'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          {rev.title && (
+                            <span className="text-xs font-bold text-white">{rev.title}</span>
+                          )}
+                          <span className="text-[11px] font-mono text-neutral-400">
+                            by @{rev.username}
+                          </span>
+                          {rev.distro && (
+                            <span className="px-1.5 py-0.5 rounded bg-neutral-950 border border-neutral-800 text-[10px] font-mono text-neutral-300">
+                              {rev.distro}
+                            </span>
+                          )}
+                        </div>
+
+                        {canDelete && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteReview(rev.id)}
+                            aria-label={`Delete review by ${rev.username}`}
+                            title="Delete review"
+                            className="p-1 rounded text-neutral-500 hover:text-rose-400 transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-xs text-neutral-300 leading-relaxed">{rev.body}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </section>
 
           {/* Links & Report Broken Package */}

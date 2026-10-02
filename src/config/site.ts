@@ -69,8 +69,10 @@ export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 /**
  * Cloudflare Worker API Base URL (configured via VITE_API_URL) and Turnstile Site Key (VITE_TURNSTILE_SITE_KEY).
+ * Note: If VITE_API_URL is accidentally pointed at a `*.supabase.co` host, we ignore it here
+ * so `/api/*` Worker fetches never hit Supabase's API gateway without an `apikey` header.
  */
-export const API_BASE_URL = (
+const rawApiBaseUrl = (
   (metaEnv && metaEnv.VITE_API_URL) ||
   (typeof process !== 'undefined' && process.env && process.env.VITE_API_URL) ||
   ''
@@ -78,10 +80,12 @@ export const API_BASE_URL = (
   .trim()
   .replace(/\/+$/, '');
 
+export const API_BASE_URL = /\.supabase\.co(\/|$)/i.test(rawApiBaseUrl) ? '' : rawApiBaseUrl;
+
 export const TURNSTILE_SITE_KEY = (
   (metaEnv && metaEnv.VITE_TURNSTILE_SITE_KEY) ||
   (typeof process !== 'undefined' && process.env && process.env.VITE_TURNSTILE_SITE_KEY) ||
-  ''
+  '0x4AAAAAAFLO1pJ9suZGgMaE'
 ).trim();
 
 export function buildApiUrl(apiPath: string): string {

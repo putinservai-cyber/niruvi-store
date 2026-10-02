@@ -20,6 +20,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { sanitizeText, sanitizeUrl, sanitizeUsername } from '../utils/sanitize';
+import { buildApiUrl } from '../config/site';
 
 export interface UserProfile {
   id: string;
@@ -232,7 +233,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      const res = await fetch('/api/auth/me', {
+      const res = await fetch(buildApiUrl('/api/auth/me'), {
         method: 'GET',
         credentials: 'include',
       });
@@ -342,7 +343,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // 3. Optionally sync with /api/auth/google if a backend server is available
         try {
           const idToken = await fbUser.getIdToken();
-          const res = await fetch('/api/auth/google', {
+          const res = await fetch(buildApiUrl('/api/auth/google'), {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -531,7 +532,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Try Worker API if available
     try {
-      const res = await fetch('/api/user/profile', {
+      const res = await fetch(buildApiUrl('/api/user/profile'), {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -627,7 +628,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(buildApiUrl('/api/auth/login'), {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -736,7 +737,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      const res = await fetch('/api/auth/register', {
+      const res = await fetch(buildApiUrl('/api/auth/register'), {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -804,7 +805,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Do not reveal whether the email exists in Firebase Auth
     }
 
-    const res = await fetch('/api/auth/forgot-password', {
+    const res = await fetch(buildApiUrl('/api/auth/forgot-password'), {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -832,7 +833,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       try {
         const res = await fetch(
-          `/api/auth/check-username?username=${encodeURIComponent(clean)}`,
+          buildApiUrl(`/api/auth/check-username?username=${encodeURIComponent(clean)}`),
           {
             method: 'GET',
             credentials: 'include',
@@ -863,7 +864,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const cleanPayoutEmail = data.payoutEmail.trim();
 
     try {
-      const res = await fetch('/api/developer/register', {
+      const res = await fetch(buildApiUrl('/api/developer/register'), {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -908,7 +909,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const upgradePlan = async (planId: string, licenseKey?: string, paymentId?: string) => {
     if (user) {
       try {
-        const res = await fetch('/api/user/upgrade-plan', {
+        const res = await fetch(buildApiUrl('/api/user/upgrade-plan'), {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -937,7 +938,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ): Promise<{ success: boolean; plan?: string; message?: string }> => {
     const trimmed = key.trim().toUpperCase();
     try {
-      const res = await fetch('/api/license/activate', {
+      const res = await fetch(buildApiUrl('/api/license/activate'), {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -976,7 +977,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // ignore if not signed in via Firebase
     }
     try {
-      await fetch('/api/auth/logout', {
+      await fetch(buildApiUrl('/api/auth/logout'), {
         method: 'POST',
         credentials: 'include',
       });

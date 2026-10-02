@@ -2,7 +2,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, it, expect } from 'vitest';
 import worker, { Env, KVNamespace } from '../src/worker';
-import { isSafeAnonKey } from '../src/lib/supabase';
+import {
+  isSafeAnonKey,
+  upsertAppReview,
+  fetchAppReviews,
+  deleteAppReview,
+  setLibraryUpdateNotification,
+  getLibraryNotificationPrefs,
+} from '../src/lib/supabase';
 import {
   sanitizeText,
   sanitizeUrl,
@@ -202,5 +209,87 @@ describe('Cloudflare Worker Auth Security & Session Hardening', () => {
     expect(sql).toContain("status in ('draft', 'pending', 'published', 'rejected', 'taken_down')");
     expect(sql).toContain("trust_tier in ('publisher_verified', 'checksum_verified', 'unverified')");
     expect(sql).toContain('insert into public.audit_log');
+    expect(sql).toContain(
+      'revoke all on function public.handle_new_auth_user() from public, anon, authenticated;'
+    );
+    for (const fnName of [
+      'current_user_role',
+      'is_moderator_or_admin',
+      'is_admin',
+      'guard_profile_updates_and_audit',
+      'guard_app_moderation_and_audit',
+    ]) {
+      expect(sql).toMatch(new RegExp(`function public\\.${fnName}\\(\\)[^$]*?security invoker`, 'i'));
+    }
+  });
+
+  it('enforces Phase 3 1-review-per-user-per-app upsert, own/staff deletion, and library update notifications', async () => {
+    // 1. User creates a review for Audacity
+    const created = await upsertAppReview({
+      appSlug: 'audacity',
+      userId: 'user_alice_1',
+      username: 'alice_linux',
+      displayName: 'Alice Linux',
+      rating: 5,
+      title: 'Great audio editor',
+      body: 'Runs out of the box on Fedora 41 with PipeWire.',
+      distro: 'Fedora 41',
+    });
+    expect(created.rating).toBe(5);
+    expect(created.appSlug).toBe('audacity');
+
+    // 2. Same user updates their review on Audacity -> must update in-place (still 1 review)
+    const updated = await upsertAppReview({
+      appSlug: 'audacity',
+      userId: 'user_alice_1',
+      username: 'alice_linux',
+      displayName: 'Alice Linux',
+      rating: 4,
+      title: 'Updated after plugin test',
+      body: 'LV2 plugins work well too.',
+      distro: 'Fedora 41',
+    });
+    expect(updated.id).toBe(created.id);
+    const listAfterUpdate = await fetchAppReviews('audacity');
+    expect(listAfterUpdate).toHaveLength(1);
+    expect(listAfterUpdate[0].rating).toBe(4);
+    expect(listAfterUpdate[0].title).toBe('Updated after plugin test');
+
+    // 3. Another non-staff user cannot delete Alice's review
+    await deleteAppReview({
+      reviewId: created.id,
+      userId: 'user_mallory_2',
+      isModeratorOrAdmin: false,
+    });
+    expect(await fetchAppReviews('audacity')).toHaveLength(1);
+
+    // 4. Alice can delete her own review
+    await deleteAppReview({
+      reviewId: created.id,
+      userId: 'user_alice_1',
+      isModeratorOrAdmin: false,
+    });
+    expect(await fetchAppReviews('audacity')).toHaveLength(0);
+
+    // 5. Library update notifications toggle per app
+    await setLibraryUpdateNotification('user_alice_1', 'audacity', false);
+    expect(getLibraryNotificationPrefs().audacity).toBe(false);
+    await setLibraryUpdateNotification('user_alice_1', 'audacity', true);
+    expect(getLibraryNotificationPrefs().audacity).toBe(true);
+  });
+
+  it('prevents bun.lock build failures and ensures Supabase env vars are wired in CI workflows', () => {
+    const bunLockPath = path.join(process.cwd(), 'bun.lock');
+    expect(fs.existsSync(bunLockPath)).toBe(false);
+
+    const pkgJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf-8'));
+    expect(pkgJson.packageManager).toMatch(/^npm@/);
+
+    const deployYml = fs.readFileSync(
+      path.join(process.cwd(), '.github', 'workflows', 'deploy.yml'),
+      'utf-8'
+    );
+    expect(deployYml).toContain('VITE_SUPABASE_URL');
+    expect(deployYml).toContain('VITE_SUPABASE_ANON_KEY');
   });
 });

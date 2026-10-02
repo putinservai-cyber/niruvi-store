@@ -23,15 +23,33 @@ const metaEnv =
     ? (import.meta as unknown as { env?: Record<string, string | undefined> }).env
     : undefined;
 
+const rawApiUrlCandidate = (
+  (metaEnv && metaEnv.VITE_API_URL) ||
+  (typeof process !== 'undefined' && process.env && process.env.VITE_API_URL) ||
+  ''
+).trim();
+
 const rawSupabaseUrl = (
-  (metaEnv && metaEnv.VITE_SUPABASE_URL) ||
-  (typeof process !== 'undefined' && process.env && process.env.VITE_SUPABASE_URL) ||
+  (metaEnv && (metaEnv.VITE_SUPABASE_URL || metaEnv.NEXT_PUBLIC_SUPABASE_URL)) ||
+  (typeof process !== 'undefined' &&
+    process.env &&
+    (process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)) ||
+  (/\.supabase\.co(\/|$)/i.test(rawApiUrlCandidate) ? rawApiUrlCandidate : '') ||
   ''
 ).trim();
 
 const rawSupabaseAnonKey = (
-  (metaEnv && metaEnv.VITE_SUPABASE_ANON_KEY) ||
-  (typeof process !== 'undefined' && process.env && process.env.VITE_SUPABASE_ANON_KEY) ||
+  (metaEnv &&
+    (metaEnv.VITE_SUPABASE_ANON_KEY ||
+      metaEnv.VITE_SUPABASE_PUBLISHABLE_KEY ||
+      metaEnv.VITE_SUPABASE_KEY ||
+      metaEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY)) ||
+  (typeof process !== 'undefined' &&
+    process.env &&
+    (process.env.VITE_SUPABASE_ANON_KEY ||
+      process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.VITE_SUPABASE_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)) ||
   ''
 ).trim();
 
@@ -62,7 +80,9 @@ export function isSafeAnonKey(key: string): boolean {
 }
 
 export const SUPABASE_URL = rawSupabaseUrl.startsWith('https://')
-  ? rawSupabaseUrl.replace(/\/+$/, '')
+  ? rawSupabaseUrl
+      .replace(/\/+$/, '')
+      .replace(/\/(rest|auth)\/v1$/i, '')
   : '';
 
 export const SUPABASE_ANON_KEY = isSafeAnonKey(rawSupabaseAnonKey) ? rawSupabaseAnonKey : '';
@@ -77,6 +97,11 @@ export function isSupabaseConfigured(): boolean {
  */
 export const supabase: SupabaseClient | null = isSupabaseConfigured()
   ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: {
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+        },
+      },
       auth: {
         flowType: 'pkce',
         autoRefreshToken: true,
@@ -240,20 +265,29 @@ export interface LibraryNotificationPrefs {
 const LOCAL_REVIEWS_KEY = 'niruvi_app_reviews_v1';
 const LOCAL_NOTIFY_PREFS_KEY = 'niruvi_library_notify_prefs_v1';
 
+let memoryReviewsFallback: AppReviewRecord[] = [];
+let memoryNotifyPrefsFallback: LibraryNotificationPrefs = {};
+
 function readLocalReviews(): AppReviewRecord[] {
   try {
-    const raw = localStorage.getItem(LOCAL_REVIEWS_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (typeof localStorage !== 'undefined') {
+      const raw = localStorage.getItem(LOCAL_REVIEWS_KEY);
+      if (!raw) return [...memoryReviewsFallback];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    }
+    return [...memoryReviewsFallback];
   } catch {
-    return [];
+    return [...memoryReviewsFallback];
   }
 }
 
 function writeLocalReviews(reviews: AppReviewRecord[]): void {
+  memoryReviewsFallback = [...reviews];
   try {
-    localStorage.setItem(LOCAL_REVIEWS_KEY, JSON.stringify(reviews));
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(LOCAL_REVIEWS_KEY, JSON.stringify(reviews));
+    }
   } catch {
     // ignore storage errors
   }
@@ -261,12 +295,15 @@ function writeLocalReviews(reviews: AppReviewRecord[]): void {
 
 export function getLibraryNotificationPrefs(): LibraryNotificationPrefs {
   try {
-    const raw = localStorage.getItem(LOCAL_NOTIFY_PREFS_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === 'object' ? parsed : {};
+    if (typeof localStorage !== 'undefined') {
+      const raw = localStorage.getItem(LOCAL_NOTIFY_PREFS_KEY);
+      if (!raw) return { ...memoryNotifyPrefsFallback };
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' ? parsed : { ...memoryNotifyPrefsFallback };
+    }
+    return { ...memoryNotifyPrefsFallback };
   } catch {
-    return {};
+    return { ...memoryNotifyPrefsFallback };
   }
 }
 
@@ -277,8 +314,11 @@ export async function setLibraryUpdateNotification(
 ): Promise<void> {
   const prefs = getLibraryNotificationPrefs();
   prefs[appSlug] = notifyUpdates;
+  memoryNotifyPrefsFallback = { ...prefs };
   try {
-    localStorage.setItem(LOCAL_NOTIFY_PREFS_KEY, JSON.stringify(prefs));
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(LOCAL_NOTIFY_PREFS_KEY, JSON.stringify(prefs));
+    }
   } catch {
     // ignore storage error
   }
@@ -353,6 +393,77 @@ export async function syncLibraryBookmarkWithSupabase(params: {
     }
   } catch {
     // Local bookmark state remains intact if offline
+  }
+}
+
+export interface SupabaseLibraryRow {
+  appSlug: string;
+  pinnedVersion: string | null;
+  notifyUpdates: boolean;
+}
+
+export async function fetchUserLibraryFromSupabase(
+  userId: string
+): Promise<SupabaseLibraryRow[]> {
+  if (!supabase || !userId) return [];
+  try {
+    const { data } = await supabase
+      .from('library')
+      .select('app_slug, pinned_version, notify_updates')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    if (!Array.isArray(data)) return [];
+    const prefs = getLibraryNotificationPrefs();
+    const rows = data.map((r: any) => {
+      const slug = String(r.app_slug || '');
+      const notify = r.notify_updates !== false;
+      if (slug) prefs[slug] = notify;
+      return {
+        appSlug: slug,
+        pinnedVersion: r.pinned_version ? String(r.pinned_version) : null,
+        notifyUpdates: notify,
+      };
+    });
+    try {
+      localStorage.setItem(LOCAL_NOTIFY_PREFS_KEY, JSON.stringify(prefs));
+    } catch {
+      // ignore storage error
+    }
+    return rows.filter((r) => Boolean(r.appSlug));
+  } catch {
+    return [];
+  }
+}
+
+export interface SupabaseDownloadRow {
+  appId: string;
+  version: string;
+  arch: string;
+  timestamp: string;
+}
+
+export async function fetchUserDownloadsFromSupabase(
+  userId: string
+): Promise<SupabaseDownloadRow[]> {
+  if (!supabase || !userId) return [];
+  try {
+    const { data } = await supabase
+      .from('downloads')
+      .select('app_slug, version, arch, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(25);
+    if (!Array.isArray(data)) return [];
+    return data
+      .map((r: any) => ({
+        appId: String(r.app_slug || ''),
+        version: String(r.version || 'unknown'),
+        arch: String(r.arch || 'x86_64'),
+        timestamp: String(r.created_at || new Date().toISOString()),
+      }))
+      .filter((r) => Boolean(r.appId));
+  } catch {
+    return [];
   }
 }
 

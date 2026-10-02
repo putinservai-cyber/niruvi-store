@@ -226,6 +226,10 @@ Every downloadable AppImage on Niruvi Store includes:
     - `public.app_versions` (enforces direct `https://...*.AppImage` asset URLs, non-placeholder versions, and 64-character hex `sha256` per architecture).
     - `public.reviews`, `public.library`, `public.downloads`, `public.reports`, and `public.audit_log`.
   - **Server-Enforced Role & Moderation Triggers**: `guard_profile_updates_and_audit()` blocks any client attempt to self-escalate `role` and writes an immutable `public.audit_log` row on role changes; `guard_app_moderation_and_audit()` enforces moderator/admin privileges for publishing, rejecting, or taking down apps and logs every state transition.
+- **Phase 3 User Features (`src/lib/supabase.ts`, `src/components/MyLibraryView.tsx`, `src/components/AppDetailModal.tsx`, `src/App.tsx`)**:
+  - **Saved Library Sync & Update Notifications**: Anonymous users can browse, download, and bookmark apps without signing in; signed-in users automatically sync bookmarks (`public.library`), per-app update notification toggles (`notify_updates`), and upstream version comparisons across devices.
+  - **Anonymous & Authenticated Download History**: Records AppImage downloads (`public.downloads` + local history) with version, architecture (`x86_64`, `aarch64`, `armhf`), and timestamp.
+  - **Community Ratings & Reviews (1–5 Stars)**: Supports 1 review per user per app (`UNIQUE (app_id, user_id)`), Linux distro tagging, average star ratings, author edit/delete, and moderator/admin deletion.
 
 To report security vulnerabilities, see [SECURITY.md](SECURITY.md).
 

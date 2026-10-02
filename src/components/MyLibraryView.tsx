@@ -2,21 +2,25 @@ import React, { useState } from 'react';
 import { AppMetadata, InstalledAppRecord } from '../types';
 import { AppIcon } from './AppIcon';
 import { removeInstalledApp, toggleBookmark } from '../utils/storage';
+import { formatAppVersion, hasKnownVersion } from '../utils/catalogSchema';
+import {
+  getLibraryNotificationPrefs,
+  setLibraryUpdateNotification,
+  LibraryNotificationPrefs,
+} from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
 import { 
   FolderCheck, 
   Trash2, 
-  ExternalLink, 
   Play, 
   RefreshCw, 
   Star, 
   Download, 
-  HardDrive, 
-  Calendar, 
-  Clock, 
-  AlertCircle,
   CheckCircle2,
-  Sparkles,
-  ArrowRight
+  Bell,
+  BellOff,
+  History,
+  Cpu,
 } from 'lucide-react';
 
 interface MyLibraryViewProps {
@@ -26,6 +30,8 @@ interface MyLibraryViewProps {
   onSelectApp: (app: AppMetadata) => void;
   onOpenInstall: (app: AppMetadata) => void;
   onRefreshLibrary: () => void;
+  onToggleBookmark?: (appId: string, e: React.MouseEvent) => void;
+  onRemoveInstalled?: (appId: string) => void;
 }
 
 export const MyLibraryView: React.FC<MyLibraryViewProps> = ({
@@ -35,10 +41,16 @@ export const MyLibraryView: React.FC<MyLibraryViewProps> = ({
   onSelectApp,
   onOpenInstall,
   onRefreshLibrary,
+  onToggleBookmark,
+  onRemoveInstalled,
 }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'installed' | 'saved'>('installed');
+  const { user } = useAuth();
+  const [activeSubTab, setActiveSubTab] = useState<'installed' | 'saved' | 'downloads'>('installed');
   const [isCheckingUpdates, setIsCheckingUpdates] = useState(false);
   const [updateStatusMessage, setUpdateStatusMessage] = useState<string | null>(null);
+  const [notifyPrefs, setNotifyPrefs] = useState<LibraryNotificationPrefs>(() =>
+    getLibraryNotificationPrefs()
+  );
 
   // Map installed records to AppMetadata
   const installedAppsWithMeta = installedRecords
@@ -51,6 +63,17 @@ export const MyLibraryView: React.FC<MyLibraryViewProps> = ({
   // Bookmarked apps
   const bookmarkedApps = catalog.filter((app) => bookmarkedIds.includes(app.id));
 
+  const isAppRecordUpToDate = (recordVersion: string, catalogVersion: string): boolean => {
+    if (!hasKnownVersion(catalogVersion) || !hasKnownVersion(recordVersion)) {
+      return true;
+    }
+    return recordVersion.replace(/^v/i, '') === catalogVersion.replace(/^v/i, '');
+  };
+
+  const updatesAvailableCount = installedAppsWithMeta.filter(
+    ({ record, app }) => !isAppRecordUpToDate(record.installedVersion, app.version)
+  ).length;
+
   // Check for updates
   const handleCheckUpdates = () => {
     setIsCheckingUpdates(true);
@@ -58,18 +81,41 @@ export const MyLibraryView: React.FC<MyLibraryViewProps> = ({
 
     setTimeout(() => {
       setIsCheckingUpdates(false);
-      setUpdateStatusMessage('All installed AppImages are currently up to date with the latest catalog versions.');
-    }, 900);
+      if (updatesAvailableCount > 0) {
+        setUpdateStatusMessage(
+          `${updatesAvailableCount} installed AppImage${updatesAvailableCount === 1 ? ' has a' : 's have'} newer upstream release${updatesAvailableCount === 1 ? '' : 's'} available.`
+        );
+      } else {
+        setUpdateStatusMessage(
+          'All installed AppImages are currently up to date with the latest catalog versions.'
+        );
+      }
+    }, 350);
+  };
+
+  const handleToggleNotify = async (appSlug: string) => {
+    const current = notifyPrefs[appSlug] !== false;
+    const next = !current;
+    setNotifyPrefs((prev) => ({ ...prev, [appSlug]: next }));
+    await setLibraryUpdateNotification(user?.id, appSlug, next);
   };
 
   const handleUninstall = (appId: string) => {
     removeInstalledApp(appId);
-    onRefreshLibrary();
+    if (onRemoveInstalled) {
+      onRemoveInstalled(appId);
+    } else {
+      onRefreshLibrary();
+    }
   };
 
-  const handleRemoveBookmark = (appId: string) => {
+  const handleRemoveBookmark = (appId: string, e: React.MouseEvent) => {
     toggleBookmark(appId);
-    onRefreshLibrary();
+    if (onToggleBookmark) {
+      onToggleBookmark(appId, e);
+    } else {
+      onRefreshLibrary();
+    }
   };
 
   const handleLaunch = (app: AppMetadata) => {
@@ -144,12 +190,12 @@ export const MyLibraryView: React.FC<MyLibraryViewProps> = ({
         </div>
       </div>
 
-      {/* Sub-tabs: Installed vs Bookmarked */}
-      <div className="flex items-center gap-4 border-b border-neutral-800 pb-1">
+      {/* Sub-tabs: Installed, Bookmarked & Download History */}
+      <div className="flex flex-wrap items-center gap-4 border-b border-neutral-800 pb-1">
         <button
           id="subtab-installed"
           onClick={() => setActiveSubTab('installed')}
-          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${
+          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
             activeSubTab === 'installed'
               ? 'border-white text-white'
               : 'border-transparent text-neutral-400 hover:text-neutral-200'
@@ -162,14 +208,27 @@ export const MyLibraryView: React.FC<MyLibraryViewProps> = ({
         <button
           id="subtab-saved"
           onClick={() => setActiveSubTab('saved')}
-          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${
+          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
             activeSubTab === 'saved'
               ? 'border-white text-white'
               : 'border-transparent text-neutral-400 hover:text-neutral-200'
           }`}
         >
           <Star className="w-4 h-4 text-amber-400" />
-          <span>Saved & Bookmarks ({bookmarkedApps.length})</span>
+          <span>Saved &amp; Bookmarks ({bookmarkedApps.length})</span>
+        </button>
+
+        <button
+          id="subtab-downloads"
+          onClick={() => setActiveSubTab('downloads')}
+          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
+            activeSubTab === 'downloads'
+              ? 'border-white text-white'
+              : 'border-transparent text-neutral-400 hover:text-neutral-200'
+          }`}
+        >
+          <History className="w-4 h-4 text-sky-400" />
+          <span>Download History ({installedAppsWithMeta.length})</span>
         </button>
       </div>
 
@@ -179,8 +238,9 @@ export const MyLibraryView: React.FC<MyLibraryViewProps> = ({
           {installedAppsWithMeta.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {installedAppsWithMeta.map(({ record, app }) => {
-                const isUpToDate = record.installedVersion === app.version;
+                const isUpToDate = isAppRecordUpToDate(record.installedVersion, app.version);
                 const formattedDate = new Date(record.installedAt).toLocaleDateString();
+                const notifyOn = notifyPrefs[app.id] !== false;
 
                 return (
                   <div
@@ -211,7 +271,7 @@ export const MyLibraryView: React.FC<MyLibraryViewProps> = ({
                                 {app.name}
                               </h3>
                               <span className="text-[11px] px-2 py-0.5 rounded bg-neutral-950 text-neutral-300 font-mono border border-neutral-800">
-                                v{record.installedVersion}
+                                {formatAppVersion(record.installedVersion)}
                               </span>
                               {isUpToDate ? (
                                 <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
@@ -219,7 +279,7 @@ export const MyLibraryView: React.FC<MyLibraryViewProps> = ({
                                 </span>
                               ) : (
                                 <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                                  Update to v{app.version}
+                                  Update to {formatAppVersion(app.version)}
                                 </span>
                               )}
                             </div>
@@ -227,13 +287,31 @@ export const MyLibraryView: React.FC<MyLibraryViewProps> = ({
                           </div>
                         </div>
 
-                        <button
-                          onClick={() => handleUninstall(app.id)}
-                          className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                          title="Remove from Installed Library"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleNotify(app.id)}
+                            aria-pressed={notifyOn}
+                            aria-label={`Toggle update notifications for ${app.name}`}
+                            title={notifyOn ? 'Update notifications enabled' : 'Update notifications muted'}
+                            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                              notifyOn
+                                ? 'text-sky-400 bg-sky-500/10 hover:bg-sky-500/20'
+                                : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800'
+                            }`}
+                          >
+                            {notifyOn ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleUninstall(app.id)}
+                            className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                            title="Remove from Installed Library"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
 
                       {/* Location & Metadata */}
@@ -256,24 +334,27 @@ export const MyLibraryView: React.FC<MyLibraryViewProps> = ({
                     {/* Actions */}
                     <div className="flex items-center justify-between gap-2 pt-4 mt-4 border-t border-neutral-800">
                       <button
+                        type="button"
                         onClick={() => onSelectApp(app)}
-                        className="text-xs text-neutral-400 hover:text-white transition-colors"
+                        className="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer"
                       >
-                        Details & SHA-256
+                        Details &amp; SHA-256
                       </button>
 
                       <div className="flex items-center gap-2">
                         <button
+                          type="button"
                           onClick={() => onOpenInstall(app)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-750 text-neutral-200 border border-neutral-700 text-xs font-medium transition-colors"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-750 text-neutral-200 border border-neutral-700 text-xs font-medium transition-colors cursor-pointer"
                         >
                           <RefreshCw className="w-3 h-3" />
-                          <span>Re-Install</span>
+                          <span>{isUpToDate ? 'Re-Install' : 'Update Now'}</span>
                         </button>
 
                         <button
+                          type="button"
                           onClick={() => handleLaunch(app)}
-                          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white hover:bg-neutral-200 text-black text-xs font-semibold shadow-sm transition-colors"
+                          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white hover:bg-neutral-200 text-black text-xs font-semibold shadow-sm transition-colors cursor-pointer"
                           title="Launch using desktop handler: niruvi://run"
                         >
                           <Play className="w-3 h-3 fill-black text-black" />
@@ -304,58 +385,79 @@ export const MyLibraryView: React.FC<MyLibraryViewProps> = ({
         <div>
           {bookmarkedApps.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {bookmarkedApps.map((app) => (
-                <div
-                  key={app.id}
-                  className="bg-neutral-900/60 hover:bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded-2xl p-5 flex flex-col justify-between"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
-                      <div 
-                        className="w-10 h-10 rounded-xl flex items-center justify-center bg-neutral-800/80 border border-neutral-700/60 p-1 shadow-md flex-shrink-0 overflow-hidden"
-                      >
-                        <AppIcon 
-                          slug={app.iconSlug} 
-                          iconUrl={app.icon} 
-                          name={app.name} 
-                          brandColor={app.brandColor} 
-                          className="w-8 h-8" 
-                        />
-                      </div>
-                      <div>
-                        <h4 
-                          onClick={() => onSelectApp(app)}
-                          className="font-bold text-white text-sm hover:text-neutral-200 cursor-pointer transition-colors"
+              {bookmarkedApps.map((app) => {
+                const notifyOn = notifyPrefs[app.id] !== false;
+                return (
+                  <div
+                    key={app.id}
+                    className="bg-neutral-900/60 hover:bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded-2xl p-5 flex flex-col justify-between"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        <div 
+                          className="w-10 h-10 rounded-xl flex items-center justify-center bg-neutral-800/80 border border-neutral-700/60 p-1 shadow-md flex-shrink-0 overflow-hidden"
                         >
-                          {app.name}
-                        </h4>
-                        <p className="text-xs text-neutral-400">{app.category}</p>
+                          <AppIcon 
+                            slug={app.iconSlug} 
+                            iconUrl={app.icon} 
+                            name={app.name} 
+                            brandColor={app.brandColor} 
+                            className="w-8 h-8" 
+                          />
+                        </div>
+                        <div>
+                          <h4 
+                            onClick={() => onSelectApp(app)}
+                            className="font-bold text-white text-sm hover:text-neutral-200 cursor-pointer transition-colors"
+                          >
+                            {app.name}
+                          </h4>
+                          <p className="text-xs text-neutral-400">{app.category}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleNotify(app.id)}
+                          aria-pressed={notifyOn}
+                          aria-label={`Toggle update notifications for ${app.name}`}
+                          title={notifyOn ? 'Update notifications enabled' : 'Update notifications muted'}
+                          className={`p-1 rounded-lg transition-colors cursor-pointer ${
+                            notifyOn
+                              ? 'text-sky-400 bg-sky-500/10 hover:bg-sky-500/20'
+                              : 'text-neutral-500 hover:text-neutral-300'
+                          }`}
+                        >
+                          {notifyOn ? <Bell className="w-3.5 h-3.5" /> : <BellOff className="w-3.5 h-3.5" />}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => handleRemoveBookmark(app.id, e)}
+                          className="text-amber-400 hover:text-neutral-400 p-1 transition-colors cursor-pointer"
+                          title="Remove Bookmark"
+                        >
+                          <Star className="w-4 h-4 fill-amber-400" />
+                        </button>
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => handleRemoveBookmark(app.id)}
-                      className="text-amber-400 hover:text-neutral-400 p-1 transition-colors"
-                      title="Remove Bookmark"
-                    >
-                      <Star className="w-4 h-4 fill-amber-400" />
-                    </button>
-                  </div>
+                    <p className="text-xs text-neutral-300 mt-3 line-clamp-2">{app.tagline}</p>
 
-                  <p className="text-xs text-neutral-300 mt-3 line-clamp-2">{app.tagline}</p>
-
-                  <div className="flex items-center justify-between pt-3 mt-4 border-t border-neutral-800 text-xs">
-                    <span className="text-neutral-400 font-mono">v{app.version}</span>
-                    <button
-                      onClick={() => onOpenInstall(app)}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white hover:bg-neutral-200 text-black font-semibold text-xs transition-colors shadow-sm"
-                    >
-                      <Download className="w-3 h-3" />
-                      <span>Install</span>
-                    </button>
+                    <div className="flex items-center justify-between pt-3 mt-4 border-t border-neutral-800 text-xs">
+                      <span className="text-neutral-400 font-mono">{formatAppVersion(app.version)}</span>
+                      <button
+                        type="button"
+                        onClick={() => onOpenInstall(app)}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white hover:bg-neutral-200 text-black font-semibold text-xs transition-colors shadow-sm cursor-pointer"
+                      >
+                        <Download className="w-3 h-3" />
+                        <span>Install</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="py-16 text-center rounded-2xl bg-neutral-900/40 border border-neutral-800 p-8 flex flex-col items-center">
@@ -364,7 +466,88 @@ export const MyLibraryView: React.FC<MyLibraryViewProps> = ({
               </div>
               <h3 className="text-base font-semibold text-white">No bookmarked applications</h3>
               <p className="text-xs text-neutral-400 mt-1 max-w-sm">
-                Click the star icon on any application card in the store to bookmark it for fast reference.
+                Click the bookmark icon on any application card in the store to save it to your library and receive upstream update alerts.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Download History Tab Content */}
+      {activeSubTab === 'downloads' && (
+        <div className="space-y-4">
+          {installedAppsWithMeta.length > 0 ? (
+            <>
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-neutral-400">
+                  Recent AppImage downloads recorded locally{user ? ' and synced to your account' : ''}.
+                </p>
+                <button
+                  type="button"
+                  onClick={onRefreshLibrary}
+                  className="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border border-neutral-800 text-xs font-medium transition-colors cursor-pointer"
+                >
+                  Clear History
+                </button>
+              </div>
+              <div className="space-y-2.5">
+                {installedAppsWithMeta.map(({ record, app }) => (
+                  <div
+                    key={`dl-${app.id}-${record.installedAt}`}
+                    className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <AppIcon
+                        slug={app.iconSlug}
+                        iconUrl={app.icon}
+                        name={app.name}
+                        brandColor={app.brandColor}
+                        className="w-9 h-9 rounded-lg"
+                      />
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => onSelectApp(app)}
+                            className="text-sm font-bold text-white hover:text-sky-300 transition-colors cursor-pointer"
+                          >
+                            {app.name}
+                          </button>
+                          <span className="px-2 py-0.5 rounded bg-neutral-950 border border-neutral-800 text-[11px] font-mono text-neutral-300">
+                            {formatAppVersion(record.installedVersion)}
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-[11px] font-mono text-neutral-400">
+                            <Cpu className="w-3 h-3 text-sky-400" />
+                            {app.architectures[0] || 'x86_64'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-neutral-400 mt-0.5">
+                          Downloaded on {new Date(record.installedAt).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onOpenInstall(app)}
+                        className="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Download Again</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="py-16 text-center rounded-2xl bg-neutral-900/40 border border-neutral-800 p-8 flex flex-col items-center">
+              <div className="w-12 h-12 rounded-2xl bg-neutral-900 flex items-center justify-center text-neutral-500 mb-3 border border-neutral-800">
+                <History className="w-6 h-6" />
+              </div>
+              <h3 className="text-base font-semibold text-white">No download history yet</h3>
+              <p className="text-xs text-neutral-400 mt-1 max-w-sm">
+                Apps you download from the catalog appear here so you can quickly inspect their SHA-256 checksum or re-download them.
               </p>
             </div>
           )}

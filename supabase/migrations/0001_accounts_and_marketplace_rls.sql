@@ -180,13 +180,13 @@ create table if not exists public.audit_log (
 create index if not exists idx_audit_log_created_at on public.audit_log(created_at desc);
 
 -- ============================================================================
--- HELPER FUNCTIONS FOR SERVER-AUTHORITATIVE RBAC
+-- HELPER FUNCTIONS FOR SERVER-AUTHORITATIVE RBAC (SECURITY INVOKER)
 -- ============================================================================
 create or replace function public.current_user_role()
 returns text
 language sql
 stable
-security definer
+security invoker
 set search_path = public
 as $$
   select coalesce(
@@ -199,7 +199,7 @@ create or replace function public.is_moderator_or_admin()
 returns boolean
 language sql
 stable
-security definer
+security invoker
 set search_path = public
 as $$
   select public.current_user_role() in ('moderator', 'admin');
@@ -209,7 +209,7 @@ create or replace function public.is_admin()
 returns boolean
 language sql
 stable
-security definer
+security invoker
 set search_path = public
 as $$
   select public.current_user_role() = 'admin';
@@ -276,18 +276,21 @@ begin
 end;
 $$;
 
+-- Prevent anon and authenticated API roles from invoking the auth.users trigger via PostgREST RPC
+revoke all on function public.handle_new_auth_user() from public, anon, authenticated;
+
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_auth_user();
 
 -- ============================================================================
--- ROLE ESCALATION GUARD & MODERATION AUDIT LOG TRIGGERS
+-- ROLE ESCALATION GUARD & MODERATION AUDIT LOG TRIGGERS (SECURITY INVOKER)
 -- ============================================================================
 create or replace function public.guard_profile_updates_and_audit()
 returns trigger
 language plpgsql
-security definer
+security invoker
 set search_path = public
 as $$
 declare
@@ -331,7 +334,7 @@ create trigger trg_guard_profile_updates
 create or replace function public.guard_app_moderation_and_audit()
 returns trigger
 language plpgsql
-security definer
+security invoker
 set search_path = public
 as $$
 declare

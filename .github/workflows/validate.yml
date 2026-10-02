@@ -40,6 +40,8 @@ jobs:
           VITE_SITE_URL: "https://putinservai-cyber.github.io"
           VITE_API_URL: ${{ vars.VITE_API_URL || '' }}
           VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY || '' }}
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || secrets.VITE_SUPABASE_URL || '' }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY || secrets.VITE_SUPABASE_ANON_KEY || '' }}
 
       - name: Build Static Production Site (Custom domain mode VITE_BASE=/)
         run: npm run build
@@ -48,3 +50,5 @@ jobs:
           VITE_SITE_URL: "https://niruvi-store.runs-on.dev"
           VITE_API_URL: ${{ vars.VITE_API_URL || '' }}
           VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY || '' }}
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || secrets.VITE_SUPABASE_URL || '' }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY || secrets.VITE_SUPABASE_ANON_KEY || '' }}

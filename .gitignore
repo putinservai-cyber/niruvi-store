@@ -13,6 +13,8 @@
 node_modules/
 /.pnp
 .pnp.js
+bun.lock
+bun.lockb
 
 # Production & Generated Build Artifacts
 dist/

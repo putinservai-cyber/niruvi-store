@@ -37,6 +37,13 @@ import { Donate } from './pages/Donate';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { updatePageSeo } from './utils/seo';
 import { withBaseUrl, stripBaseUrl, buildApiUrl } from './config/site';
+import { useAuth } from './context/AuthContext';
+import {
+  recordAppDownload,
+  syncLibraryBookmarkWithSupabase,
+  fetchUserLibraryFromSupabase,
+  fetchUserDownloadsFromSupabase,
+} from './lib/supabase';
 import {
   PackageOpen,
   CheckCircle2,
@@ -197,6 +204,7 @@ export interface AppProps {
 }
 
 export function App({ initialCatalogOverride }: AppProps = {}) {
+  const { user } = useAuth();
   const initialRoute = useMemo(() => parseCurrentLocation(), []);
 
   const overrideValidation = useMemo(() => {
@@ -337,7 +345,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
 
     setCatalogLoading(true);
     try {
-      const res = await fetch(`/api/catalog?${params.toString()}`);
+      const res = await fetch(buildApiUrl(`/api/catalog?${params.toString()}`));
       const contentType = res.headers?.get?.('content-type') || '';
       if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
@@ -555,7 +563,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
   // If deep-linked to an app ID not in Page 1 seed, fetch it from /api/catalog/:id
   useEffect(() => {
     if (initialRoute.appId && !selectedApp) {
-      fetch(`/api/catalog/${encodeURIComponent(initialRoute.appId)}`)
+      fetch(buildApiUrl(`/api/catalog/${encodeURIComponent(initialRoute.appId)}`))
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
           if (data?.app) setSelectedApp(data.app);
@@ -580,7 +588,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
 
   // Download History in localStorage
   const [downloadHistory, setDownloadHistory] = useState<
-    { appId: string; timestamp: string; arch: string }[]
+    { appId: string; version?: string; timestamp: string; arch: string }[]
   >(() => {
     try {
       const saved = localStorage.getItem('niruvi_download_history');
@@ -588,6 +596,46 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
     } catch {}
     return [];
   });
+
+  // Phase 3: Sync saved library & download history from Supabase when user signs in
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+
+    fetchUserLibraryFromSupabase(user.id).then((rows) => {
+      if (cancelled || rows.length === 0) return;
+      setStarredIds((prev) => {
+        const merged = Array.from(new Set([...prev, ...rows.map((r) => r.appSlug)]));
+        try {
+          localStorage.setItem('niruvi_starred_apps', JSON.stringify(merged));
+        } catch {}
+        return merged;
+      });
+    });
+
+    fetchUserDownloadsFromSupabase(user.id).then((rows) => {
+      if (cancelled || rows.length === 0) return;
+      setDownloadHistory((prev) => {
+        const seen = new Set(prev.map((d) => d.appId));
+        const merged = [...prev];
+        for (const r of rows) {
+          if (!seen.has(r.appId)) {
+            seen.add(r.appId);
+            merged.push(r);
+          }
+        }
+        const trimmed = merged.slice(0, 25);
+        try {
+          localStorage.setItem('niruvi_download_history', JSON.stringify(trimmed));
+        } catch {}
+        return trimmed;
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
 
@@ -753,23 +801,59 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
         try {
           localStorage.setItem('niruvi_starred_apps', JSON.stringify(next));
         } catch {}
+        if (user?.id) {
+          const catalogMatch =
+            (fullCatalogCacheRef.current || APPS_CATALOG).find((a) => a.id === appId);
+          syncLibraryBookmarkWithSupabase({
+            userId: user.id,
+            appSlug: appId,
+            pinnedVersion: catalogMatch?.version,
+            bookmarked: !exists,
+          });
+        }
         showToast(exists ? 'Removed from Saved' : 'Saved to Library', 'info');
         return next;
       });
     },
-    [showToast]
+    [showToast, user?.id]
   );
 
-  const recordDownload = useCallback((appId: string, arch: string) => {
-    setDownloadHistory((prev) => {
-      const filtered = prev.filter((item) => item.appId !== appId);
-      const next = [{ appId, timestamp: new Date().toISOString(), arch }, ...filtered].slice(0, 25);
-      try {
-        localStorage.setItem('niruvi_download_history', JSON.stringify(next));
-      } catch {}
-      return next;
-    });
-  }, []);
+  const recordDownload = useCallback(
+    (appId: string, version: string, arch: string) => {
+      setDownloadHistory((prev) => {
+        const filtered = prev.filter((item) => item.appId !== appId);
+        const next = [
+          { appId, version, timestamp: new Date().toISOString(), arch },
+          ...filtered,
+        ].slice(0, 25);
+        try {
+          localStorage.setItem('niruvi_download_history', JSON.stringify(next));
+        } catch {}
+        return next;
+      });
+      recordAppDownload({
+        userId: user?.id || null,
+        appSlug: appId,
+        version,
+        arch,
+      });
+    },
+    [user?.id]
+  );
+
+  const removeSingleInstalled = useCallback(
+    (appId: string) => {
+      setDownloadHistory((prev) => {
+        const next = prev.filter((item) => item.appId !== appId);
+        try {
+          localStorage.setItem('niruvi_download_history', JSON.stringify(next));
+        } catch {}
+        return next;
+      });
+      showToast('Removed from Installed Library', 'info');
+    },
+    [showToast]
+  );
 
   const clearHistory = useCallback(() => {
     setDownloadHistory([]);
@@ -784,7 +868,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
     const chosenArch = arch || (selectedArch !== 'All' ? selectedArch : app.architectures[0]);
     setInstallArch(chosenArch);
     setInstallApp(app);
-    recordDownload(app.id, chosenArch);
+    recordDownload(app.id, app.version, chosenArch);
   };
 
   const handleOpenVerifierWithHash = (hash: string) => {
@@ -889,17 +973,27 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
             {activeTab === 'library' && (
               <MyLibraryView
                 catalog={fullCatalogCacheRef.current || APPS_CATALOG}
-                installedRecords={downloadHistory.map((d) => ({
-                  appId: d.appId,
-                  installedVersion: 'latest',
-                  installedAt: d.timestamp,
-                  installMethod: 'direct',
-                  installDirectory: '~/Applications',
-                }))}
+                installedRecords={downloadHistory.map((d) => {
+                  const catalogMatch = (fullCatalogCacheRef.current || APPS_CATALOG).find(
+                    (a) => a.id === d.appId
+                  );
+                  return {
+                    appId: d.appId,
+                    installedVersion: d.version || catalogMatch?.version || 'unknown',
+                    installedAt: d.timestamp,
+                    installMethod: 'direct',
+                    installDirectory: '~/Applications',
+                  };
+                })}
                 bookmarkedIds={starredIds}
                 onSelectApp={(app) => handleSelectApp(app)}
-                onOpenInstall={(app) => setInstallApp(app)}
+                onOpenInstall={(app) => {
+                  setInstallApp(app);
+                  recordDownload(app.id, app.version, app.architectures[0] || 'x86_64');
+                }}
                 onRefreshLibrary={clearHistory}
+                onToggleBookmark={handleToggleStar}
+                onRemoveInstalled={removeSingleInstalled}
               />
             )}
 
