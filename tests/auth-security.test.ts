@@ -291,6 +291,12 @@ describe('Cloudflare Worker Auth Security & Session Hardening', () => {
     const pkgJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf-8'));
     expect(pkgJson.packageManager).toMatch(/^npm@/);
 
+    const pkgLock = JSON.parse(
+      fs.readFileSync(path.join(process.cwd(), 'package-lock.json'), 'utf-8')
+    );
+    expect(pkgLock.packages[''].devDependencies.wrangler).toBe(pkgJson.devDependencies.wrangler);
+    expect(pkgLock.packages['node_modules/wrangler'].version).toMatch(/^4\./);
+
     const deployYml = fs.readFileSync(
       path.join(process.cwd(), '.github', 'workflows', 'deploy.yml'),
       'utf-8'
