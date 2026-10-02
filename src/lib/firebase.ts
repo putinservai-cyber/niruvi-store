@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, GithubAuthProvider } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
@@ -17,6 +17,7 @@ const app = !getApps().length ? initializeApp(resolvedConfig) : getApps()[0];
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
 export const googleAuthProvider = new GoogleAuthProvider();
+export const githubAuthProvider = new GithubAuthProvider();
 
 async function testConnection() {
   if (typeof window === 'undefined' || (import.meta as any).env?.MODE === 'test') return;

@@ -7,11 +7,11 @@
 **The Decentralized, Free, Open-Source Linux Application Marketplace for AppImages**
 
 [![Validate Catalog](https://github.com/putinservai-cyber/niruvi-store/actions/workflows/validate.yml/badge.svg)](https://github.com/putinservai-cyber/niruvi-store/actions/workflows/validate.yml)
-[![Deploy](https://github.com/putinservai-cyber/niruvi-store/actions/workflows/deploy.yml/badge.svg)](https://niruvi-store.putinservai.workers.dev)
+[![Deploy](https://github.com/putinservai-cyber/niruvi-store/actions/workflows/deploy.yml/badge.svg)](https://niruvi-store.runs-on.dev/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![AppImage Support](https://img.shields.io/badge/AppImage-Ready-5851DB.svg)](https://appimage.org/)
 
-[**Live Web Store (`niruvi-store.putinservai.workers.dev`)**](https://niruvi-store.putinservai.workers.dev) • [**Niruvi Desktop Manager**](https://github.com/putinservai-cyber/niruvi) • [**Submit Application**](CONTRIBUTING.md) • [**Support on Ko-fi**](https://ko-fi.com/putinservai)
+[**Live Web Store (`niruvi-store.runs-on.dev`)**](https://niruvi-store.runs-on.dev/) • [**Niruvi Desktop Manager**](https://github.com/putinservai-cyber/niruvi) • [**Submit Application**](CONTRIBUTING.md) • [**Support on Ko-fi**](https://ko-fi.com/putinservai)
 
 </div>
 
@@ -213,7 +213,19 @@ Every downloadable AppImage on Niruvi Store includes:
 - **Content-Security-Policy (CSP)**: Enforced via `<meta http-equiv="Content-Security-Policy">` in `index.html`, with `rel="noopener noreferrer"` on all external links and click-to-load consent placeholders (`src/components/ThirdPartyEmbed.tsx`) for third-party embeds.
 - **WCAG 2.2 AA Accessibility**: Built with semantic landmarks (`header`, `nav`, `main`, `footer`), a "Skip to main content" link, `44×44px` minimum touch targets, `prefers-reduced-motion` support, high-contrast tokens (`tailwind.config.js`), and automated `eslint-plugin-jsx-a11y` + `axe-core` tests.
 - **Privacy & Legal Transparency**: Includes plain-English routes for **Privacy Policy** (`#/privacy`), **Terms & Conditions** (`#/terms`), **Cookie Policy** (`#/cookies`), and **Refund Policy** (`#/refunds`), plus an accessible, equal-weight Cookie & Browser Storage Consent banner (`src/components/CookieConsent.tsx`).
-- **Cloudflare Workers + Static Pre-Rendering**: Configured with `SITE_URL` (`https://niruvi-store.putinservai.workers.dev`), pre-rendered HTML for all catalog and legal routes (`scripts/prerender-static.ts`), `public/robots.txt`, `public/sitemap.xml`, `SoftwareApplication` JSON-LD schemas, shareable URL query filters (`?q=...&category=...`), and `public/404.html` 404 page handling.
+- **Canonical Domain & Static Pre-Rendering**: Configured with a single canonical `VITE_SITE_URL` (`https://niruvi-store.runs-on.dev`), `https://` protocol enforcement, root `/` base path, pre-rendered HTML for all catalog and legal routes (`scripts/prerender-static.ts`), `public/robots.txt`, `public/sitemap.xml`, `SoftwareApplication` JSON-LD schemas, shareable URL query filters (`?q=...&category=...`), and `public/404.html` + `public/_redirects` SPA deep-link fallback.
+- **Phase 1 Catalog Cleanup & Moderation Guard (`catalog/cleanup-report.json`)**:
+  - By default, the main store listing hides every catalog entry that lacks a direct `https://...*.AppImage` asset URL and a verified 64-character SHA-256 digest (`hiddenFromMainListing: true`), while preserving all `2,790` entries in `public/catalog.json` (zero data deleted).
+  - Eliminated `"vlatest"` version displays across cards, detail modals, install dialogs, and SEO metadata; entries lacking a known upstream release tag display `"Version unknown"` only where unavoidable.
+  - Added automated policy moderation (`isPolicyFlaggedEntry`) that blocks prohibited credential/account-scraping tools (such as `account-scraper`).
+- **Phase 2 Accounts, OAuth PKCE & Row Level Security (`src/lib/supabase.ts`, `supabase/migrations/0001_accounts_and_marketplace_rls.sql`)**:
+  - **OAuth 2.0 PKCE Sign-In (GitHub & Google)**: Configured `@supabase/supabase-js` with `flowType: 'pkce'`, `VITE_SUPABASE_URL`, and `VITE_SUPABASE_ANON_KEY`. Includes `isSafeAnonKey()` runtime protection that rejects any `service_role` or `sb_secret_` key from ever being initialized in the browser.
+  - **8-Table Marketplace Schema with Row Level Security (`ALTER TABLE ... ENABLE ROW LEVEL SECURITY`)**:
+    - `public.profiles` (`role IN ('user', 'publisher', 'moderator', 'admin')` stored strictly in Postgres; auto-provisioned via `handle_new_auth_user()` trigger on `auth.users`).
+    - `public.apps` (`status IN ('draft', 'pending', 'published', 'rejected', 'taken_down')` and `trust_tier IN ('publisher_verified', 'checksum_verified', 'unverified')`).
+    - `public.app_versions` (enforces direct `https://...*.AppImage` asset URLs, non-placeholder versions, and 64-character hex `sha256` per architecture).
+    - `public.reviews`, `public.library`, `public.downloads`, `public.reports`, and `public.audit_log`.
+  - **Server-Enforced Role & Moderation Triggers**: `guard_profile_updates_and_audit()` blocks any client attempt to self-escalate `role` and writes an immutable `public.audit_log` row on role changes; `guard_app_moderation_and_audit()` enforces moderator/admin privileges for publishing, rejecting, or taking down apps and logs every state transition.
 
 To report security vulnerabilities, see [SECURITY.md](SECURITY.md).
 

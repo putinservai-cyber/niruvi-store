@@ -1,0 +1,27 @@
+{
+  "generatedAt": "2026-10-02",
+  "totalCatalogEntries": 2790,
+  "appImageHubFeedEntries": 2785,
+  "curatedAppJsonFiles": 15,
+  "mainListingEligibleCount": 15,
+  "hiddenFromMainListingCount": 2775,
+  "affectedCounts": {
+    "lackingDirectAppImageUrl": 2774,
+    "lackingVerifiedSha256": 2775,
+    "lackingBothDirectUrlAndSha256": 2774,
+    "unknownVersion": 2775,
+    "emptyDescription": 309,
+    "emptyLicense": 1048,
+    "emptySize": 2775,
+    "policyFlaggedCount": 1
+  },
+  "policyFlaggedEntries": [
+    {
+      "id": "account-scraper",
+      "name": "account-scraper",
+      "description": "Find spotify premium and netflix accounts for free!",
+      "moderationReason": "Prohibited credential/account generator or unauthorized account-scraping tool"
+    }
+  ],
+  "curatedEntriesHiddenFromMainListing": []
+}

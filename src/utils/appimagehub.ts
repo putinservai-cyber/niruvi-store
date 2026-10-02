@@ -14,7 +14,11 @@
  */
 
 import { AppMetadata, Architecture, Category, ReleaseVersionEntry, SimplifiedCategory } from '../types';
-import { isGenuineSha256 } from './catalogSchema';
+import {
+  isGenuineSha256,
+  isDirectAppImageUrl,
+  isPolicyFlaggedEntry,
+} from './catalogSchema';
 
 export const APPIMAGEHUB_FEED_URL = 'https://appimage.github.io/feed.json';
 export const APPIMAGEHUB_DATABASE_BASE_URL = 'https://appimage.github.io/database';
@@ -656,6 +660,25 @@ export function buildAppMetadataFromNormalized(
     releaseInfo?.verified && releaseInfo.sha256 && isGenuineSha256(releaseInfo.sha256)
   );
   const sha256 = hasConfirmedSha ? releaseInfo!.sha256 : '';
+  const resolvedDownloadUrl = releaseInfo?.primaryDownloadUrl || normalized.download_url;
+  const hasDirectUrl = isDirectAppImageUrl(resolvedDownloadUrl);
+  const policyCheck = isPolicyFlaggedEntry({
+    id: normalized.id,
+    name: normalized.name,
+    description: normalized.description,
+  });
+
+  const moderationFlag: AppMetadata['moderationFlag'] = policyCheck.flagged
+    ? 'flagged_policy'
+    : hasDirectUrl && hasConfirmedSha
+      ? 'clean'
+      : 'unverified_upstream';
+
+  const hiddenFromMainListing = !hasDirectUrl || !hasConfirmedSha || policyCheck.flagged;
+
+  const rawVer = (releaseInfo?.latestVersion || '').trim();
+  const resolvedVersion =
+    rawVer && !/^(v?latest|unknown)$/i.test(rawVer) ? rawVer.replace(/^v/i, '') : 'Version unknown';
 
   const licenseStr = normalized.license || '';
   const licenseCategory: AppMetadata['licenseCategory'] =
@@ -679,7 +702,7 @@ export function buildAppMetadataFromNormalized(
     description: normalized.description,
     category: normalized.category as unknown as Exclude<Category, 'All'>,
     simplifiedCategory: normalized.category,
-    version: releaseInfo?.latestVersion || 'latest',
+    version: resolvedVersion,
     releaseDate: releaseInfo?.latestReleaseDate || '',
     size: releaseInfo?.latestSize || '',
     architectures:
@@ -696,18 +719,23 @@ export function buildAppMetadataFromNormalized(
       github: repoUrl || undefined,
     },
     sha256,
-    downloadUrl: releaseInfo?.primaryDownloadUrl || normalized.download_url,
-    downloadMap: releaseInfo?.downloadMap || { x86_64: normalized.download_url },
+    downloadUrl: resolvedDownloadUrl,
+    downloadMap: releaseInfo?.downloadMap || { x86_64: resolvedDownloadUrl },
     iconSlug: normalized.id,
     icon: normalized.icon || undefined,
     homepageUrl: normalized.homepage,
     sourceUrl: repoUrl || normalized.homepage,
     repositoryUrl: repoUrl || undefined,
-    releasesUrl: repoUrl ? `${repoUrl}/releases` : normalized.download_url,
+    releasesUrl: repoUrl ? `${repoUrl}/releases` : resolvedDownloadUrl,
     githubRepo: normalized.github_repo || undefined,
     sourceType: normalized.github_repo ? 'Official' : 'Community',
     trustTier: hasConfirmedSha ? 'Official Developer' : 'Unverified Community',
     officialStatus: hasConfirmedSha,
+    hasDirectAppImageUrl: hasDirectUrl,
+    hasVerifiedSha256: hasConfirmedSha,
+    hiddenFromMainListing,
+    moderationFlag,
+    moderationReason: policyCheck.reason,
     tags: normalized.categories.map((c) => c.toLowerCase()),
     featured: false,
     downloadsCount: 0,

@@ -7,7 +7,12 @@ import {
   buildAppMetadataFromNormalized,
   mapToSimplifiedCategory,
 } from '../src/utils/appimagehub';
-import { isGenuineSha256 } from '../src/utils/catalogSchema';
+import {
+  isGenuineSha256,
+  isDirectAppImageUrl,
+  isPolicyFlaggedEntry,
+  hasKnownVersion,
+} from '../src/utils/catalogSchema';
 
 const rawEnvSiteUrl = (
   process.env.VITE_SITE_URL || 'https://niruvi-store.runs-on.dev'
@@ -164,6 +169,23 @@ async function generateCatalog() {
       const simplifiedCategory = mapToSimplifiedCategory(raw.category);
       const repoUrl = raw.repositoryUrl || raw.repository || '';
       const githubRepoMatch = repoUrl.match(/github\.com\/([^/]+\/[^/]+)/i);
+      const hasDirectUrl = isDirectAppImageUrl(downloadUrl);
+      const policyCheck = isPolicyFlaggedEntry({
+        id: raw.id,
+        name: raw.name,
+        tagline: raw.tagline,
+        description: raw.description,
+      });
+      const moderationFlag: 'clean' | 'flagged_policy' | 'unverified_upstream' = policyCheck.flagged
+        ? 'flagged_policy'
+        : hasDirectUrl && isGenuineHash
+          ? 'clean'
+          : 'unverified_upstream';
+      const hiddenFromMainListing = !hasDirectUrl || !isGenuineHash || policyCheck.flagged;
+      const cleanVersion =
+        raw.version && !/^(v?latest|unknown)$/i.test(raw.version.trim())
+          ? raw.version.trim().replace(/^v/i, '')
+          : 'Version unknown';
 
       const overrideEntry = {
         id: raw.id,
@@ -172,7 +194,7 @@ async function generateCatalog() {
         description: raw.description || '',
         category: simplifiedCategory,
         simplifiedCategory,
-        version: raw.version,
+        version: cleanVersion,
         releaseDate: raw.releaseDate || '',
         size: raw.size || '',
         architectures: raw.architectures || ['x86_64'],
@@ -209,8 +231,13 @@ async function generateCatalog() {
         checksumStatus,
         trustTier,
         officialStatus: isVerifiedHash,
+        hasDirectAppImageUrl: hasDirectUrl,
+        hasVerifiedSha256: isGenuineHash,
+        hiddenFromMainListing,
+        moderationFlag,
+        moderationReason: policyCheck.reason,
         tags: raw.keywords || [simplifiedCategory.toLowerCase()],
-        featured: Boolean(raw.featured && isVerifiedHash),
+        featured: Boolean(raw.featured && isVerifiedHash && hasDirectUrl),
         downloadsCount: 0,
         rating: 0,
         changelog: raw.changelog && raw.changelog.length > 0 ? raw.changelog : undefined,
@@ -267,8 +294,12 @@ async function generateCatalog() {
 
   const allApps = Array.from(catalogMap.values());
 
-  // Sort verified apps first, then approved community submissions from catalog/apps/, then featured, then alphabetical
+  // Sort main-listing eligible apps first, then verified, then approved community submissions, then featured, then alphabetical
   allApps.sort((a, b) => {
+    const aEligible = !a.hiddenFromMainListing;
+    const bEligible = !b.hiddenFromMainListing;
+    if (aEligible && !bEligible) return -1;
+    if (!aEligible && bEligible) return 1;
     if (a.publisher.verified && !b.publisher.verified) return -1;
     if (!a.publisher.verified && b.publisher.verified) return 1;
     const aCuratedCommunity = a.source === 'community';
@@ -280,6 +311,64 @@ async function generateCatalog() {
     return a.name.localeCompare(b.name);
   });
 
+  // Build Phase 1 Catalog Cleanup Report (without deleting any data)
+  const mainListingApps = allApps.filter((a) => !a.hiddenFromMainListing);
+  const hiddenApps = allApps.filter((a) => Boolean(a.hiddenFromMainListing));
+  const missingDirectUrlApps = allApps.filter((a) => !a.hasDirectAppImageUrl);
+  const missingSha256Apps = allApps.filter((a) => !a.hasVerifiedSha256);
+  const unknownVersionApps = allApps.filter((a) => !hasKnownVersion(a.version));
+  const missingDescriptionApps = allApps.filter((a) => !a.description || !a.description.trim());
+  const missingLicenseApps = allApps.filter((a) => !a.license || !a.license.trim());
+  const missingSizeApps = allApps.filter((a) => !a.size || !a.size.trim());
+  const policyFlaggedApps = allApps.filter((a) => a.moderationFlag === 'flagged_policy');
+
+  const curatedMissingDirectOrSha = Array.from(verifiedOverrides.values())
+    .filter((a) => a.hiddenFromMainListing)
+    .map((a) => ({
+      id: a.id,
+      name: a.name,
+      downloadUrl: a.downloadUrl,
+      hasDirectAppImageUrl: Boolean(a.hasDirectAppImageUrl),
+      hasVerifiedSha256: Boolean(a.hasVerifiedSha256),
+      reason: !a.hasDirectAppImageUrl
+        ? 'Download URL points to a releases page, mirrorlist, or archive instead of a direct .AppImage asset'
+        : 'Missing verified 64-character SHA-256 digest',
+    }));
+
+  const cleanupReport = {
+    generatedAt: new Date().toISOString().slice(0, 10),
+    totalCatalogEntries: allApps.length,
+    appImageHubFeedEntries: rawFeedItems.length,
+    curatedAppJsonFiles: verifiedOverrides.size,
+    mainListingEligibleCount: mainListingApps.length,
+    hiddenFromMainListingCount: hiddenApps.length,
+    affectedCounts: {
+      lackingDirectAppImageUrl: missingDirectUrlApps.length,
+      lackingVerifiedSha256: missingSha256Apps.length,
+      lackingBothDirectUrlAndSha256: allApps.filter(
+        (a) => !a.hasDirectAppImageUrl && !a.hasVerifiedSha256
+      ).length,
+      unknownVersion: unknownVersionApps.length,
+      emptyDescription: missingDescriptionApps.length,
+      emptyLicense: missingLicenseApps.length,
+      emptySize: missingSizeApps.length,
+      policyFlaggedCount: policyFlaggedApps.length,
+    },
+    policyFlaggedEntries: policyFlaggedApps.map((a) => ({
+      id: a.id,
+      name: a.name,
+      description: a.description,
+      moderationReason: a.moderationReason || 'Policy violation',
+    })),
+    curatedEntriesHiddenFromMainListing: curatedMissingDirectOrSha,
+  };
+
+  fs.writeFileSync(
+    path.join(catalogDir, 'cleanup-report.json'),
+    JSON.stringify(cleanupReport, null, 2),
+    'utf-8'
+  );
+
   const outDir = path.join(process.cwd(), 'src', 'data');
   if (!fs.existsSync(outDir)) {
     fs.mkdirSync(outDir, { recursive: true });
@@ -290,23 +379,25 @@ async function generateCatalog() {
     fs.mkdirSync(publicDir, { recursive: true });
   }
 
-  // 1. Write full catalog (all 2,569+ apps) to public/catalog.json for Worker & API pagination
+  // 1. Write full catalog (all 2,790 apps, none deleted, with hiddenFromMainListing flags) to public/catalog.json
   const fullCatalogPath = path.join(publicDir, 'catalog.json');
   fs.writeFileSync(fullCatalogPath, JSON.stringify(allApps), 'utf-8');
 
-  // 2. Write lightweight Page 1 seed (first 48 apps) to src/data/generated-catalog.json
-  //    so the browser JS bundle never loads all 2,500+ apps into memory at once.
-  const page1SeedApps = allApps.slice(0, 48);
+  // 2. Write first-page seed catalog (starting with all 15 main-listing eligible apps + first unverified page items) to src/data/generated-catalog.json
   const seedJsonPath = path.join(outDir, 'generated-catalog.json');
-  fs.writeFileSync(seedJsonPath, JSON.stringify(page1SeedApps, null, 2), 'utf-8');
+  const firstPageSeedApps = allApps.filter((a) => a.moderationFlag !== 'flagged_policy').slice(0, 48);
+  fs.writeFileSync(seedJsonPath, JSON.stringify(firstPageSeedApps, null, 2), 'utf-8');
 
-  // 3. Write src/data/apps.ts (self-contained inside src/ with total count metadata)
+  // 3. Write src/data/apps.ts (self-contained inside src/ with total & cleanup report metadata)
   const tsContent = `import { AppMetadata, Category } from '../types';
 import generatedApps from './generated-catalog.json';
 
 export const APPS_CATALOG: AppMetadata[] = generatedApps as unknown as AppMetadata[];
 export const TOTAL_CATALOG_COUNT = ${allApps.length};
 export const APPIMAGEHUB_FEED_COUNT = ${rawFeedItems.length};
+export const VERIFIED_DIRECT_CATALOG_COUNT = ${mainListingApps.length};
+export const HIDDEN_UNVERIFIED_CATALOG_COUNT = ${hiddenApps.length};
+export const CATALOG_CLEANUP_REPORT = ${JSON.stringify(cleanupReport, null, 2)} as const;
 
 export const CATEGORIES: Category[] = ${JSON.stringify(categories)} as Category[];
 

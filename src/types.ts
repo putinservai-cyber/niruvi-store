@@ -92,6 +92,11 @@ export interface AppMetadata {
   checksumStatus?: 'verified' | 'provided' | 'unverified';
   trustTier?: 'Official Developer' | 'Verified Community' | 'Unverified Community';
   officialStatus?: boolean;
+  hasDirectAppImageUrl?: boolean;
+  hasVerifiedSha256?: boolean;
+  hiddenFromMainListing?: boolean;
+  moderationFlag?: 'clean' | 'flagged_policy' | 'unverified_upstream';
+  moderationReason?: string;
   tags: string[];
   featured?: boolean;
   downloadsCount: number;

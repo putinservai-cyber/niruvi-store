@@ -1,10 +1,18 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { APPS_CATALOG, TOTAL_CATALOG_COUNT } from './data/apps';
+import {
+  APPS_CATALOG,
+  TOTAL_CATALOG_COUNT,
+  VERIFIED_DIRECT_CATALOG_COUNT,
+  HIDDEN_UNVERIFIED_CATALOG_COUNT,
+  CATALOG_CLEANUP_REPORT,
+} from './data/apps';
 import { AppMetadata } from './types';
 import { mapToSimplifiedCategory } from './utils/appimagehub';
 import {
   isCommunitySubmitted,
   isGenuineSha256,
+  isEligibleForMainListing,
+  isPolicyFlaggedEntry,
   mapWorkerSubmissionToAppMetadata,
   validateCatalogAtRuntime,
 } from './utils/catalogSchema';
@@ -106,12 +114,21 @@ function filterAndSortCatalog(
     category: string;
     arch: string;
     onlyVerified: boolean;
+    includeUnverifiedImports?: boolean;
     sortBy: SortOption;
   }
 ): AppMetadata[] {
   const qLower = options.q.trim().toLowerCase();
   return apps
     .filter((app) => {
+      // Always block policy-flagged entries (e.g. account-scraper)
+      if (app.moderationFlag === 'flagged_policy' || isPolicyFlaggedEntry(app).flagged) {
+        return false;
+      }
+      // Phase 1: Hide every catalog entry that lacks a direct .AppImage URL and a SHA-256 from the main listing by default
+      if (!options.includeUnverifiedImports && !isEligibleForMainListing(app)) {
+        return false;
+      }
       if (qLower) {
         const hay = `${app.name} ${app.tagline || ''} ${app.description || ''} ${app.category} ${app.simplifiedCategory || ''} ${app.publisher.name} ${(app.tags || []).join(' ')}`.toLowerCase();
         if (!hay.includes(qLower)) return false;
@@ -274,6 +291,10 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
     return arch === 'x86_64' || arch === 'aarch64' || arch === 'armhf' ? arch : 'All';
   });
   const [onlyVerified, setOnlyVerified] = useState(() => initialUrlParams.get('verified') === '1');
+  const [includeUnverifiedImports, setIncludeUnverifiedImports] = useState(
+    () => initialUrlParams.get('unverified') === '1'
+  );
+  const [showCleanupReport, setShowCleanupReport] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>(() => {
     const s = initialUrlParams.get('sort');
     return s === 'name' || s === 'recent' || s === 'featured' ? s : 'featured';
@@ -293,7 +314,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [catalogError, setCatalogError] = useState<string | null>(null);
 
-  const queryKey = `${currentPage}|${searchQuery.trim()}|${selectedCategory}|${selectedArch}|${onlyVerified}|${sortBy}`;
+  const queryKey = `${currentPage}|${searchQuery.trim()}|${selectedCategory}|${selectedArch}|${onlyVerified}|${includeUnverifiedImports}|${sortBy}`;
   const isDefaultFirstPage =
     currentPage === 1 &&
     !searchQuery.trim() &&
@@ -310,7 +331,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
       q: searchQuery.trim(),
       category: selectedCategory,
       arch: selectedArch,
-      verified: onlyVerified ? '1' : '0',
+      verified: onlyVerified || !includeUnverifiedImports ? '1' : '0',
       sort: sortBy,
     });
 
@@ -321,10 +342,18 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
       if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
         if (Array.isArray(data?.items) && typeof data?.total === 'number') {
+          const filteredItems = filterAndSortCatalog(data.items, {
+            q: searchQuery,
+            category: selectedCategory,
+            arch: selectedArch,
+            onlyVerified,
+            includeUnverifiedImports,
+            sortBy,
+          });
           setServerPage({
             key: queryKey,
-            items: data.items,
-            total: data.total,
+            items: filteredItems,
+            total: includeUnverifiedImports ? data.total : filteredItems.length,
           });
           setCatalogLoading(false);
           return;
@@ -350,6 +379,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
           category: selectedCategory,
           arch: selectedArch,
           onlyVerified,
+          includeUnverifiedImports,
           sortBy,
         });
         const start = (currentPage - 1) * PAGE_SIZE;
@@ -370,6 +400,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
     selectedCategory,
     selectedArch,
     onlyVerified,
+    includeUnverifiedImports,
     sortBy,
     queryKey,
     communityApps,
@@ -435,6 +466,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
       category: selectedCategory,
       arch: selectedArch,
       onlyVerified,
+      includeUnverifiedImports,
       sortBy,
     });
   }, [
@@ -445,6 +477,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
     selectedCategory,
     selectedArch,
     onlyVerified,
+    includeUnverifiedImports,
     sortBy,
   ]);
 
@@ -458,6 +491,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
             category: selectedCategory,
             arch: selectedArch,
             onlyVerified,
+            includeUnverifiedImports,
             sortBy,
           }
         );
@@ -466,7 +500,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
       return serverPage.items;
     }
     if (!initialCatalogOverride && isDefaultFirstPage && communityApps.length === 0) {
-      return baseSeedCatalog.slice(0, PAGE_SIZE);
+      return syncFiltered.slice(0, PAGE_SIZE);
     }
     const start = (currentPage - 1) * PAGE_SIZE;
     return syncFiltered.slice(start, start + PAGE_SIZE);
@@ -475,7 +509,6 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
     serverPage,
     queryKey,
     isDefaultFirstPage,
-    baseSeedCatalog,
     currentPage,
     syncFiltered,
     communityApps,
@@ -483,6 +516,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
     selectedCategory,
     selectedArch,
     onlyVerified,
+    includeUnverifiedImports,
     sortBy,
   ]);
 
@@ -490,8 +524,15 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
     if (!initialCatalogOverride && serverPage && serverPage.key === queryKey) {
       return serverPage.total + communityApps.length;
     }
-    if (!initialCatalogOverride && isDefaultFirstPage) {
-      return TOTAL_CATALOG_COUNT + communityApps.length;
+    if (!initialCatalogOverride && isDefaultFirstPage && !fullCatalogCacheRef.current) {
+      if (includeUnverifiedImports) {
+        return (
+          TOTAL_CATALOG_COUNT -
+          CATALOG_CLEANUP_REPORT.affectedCounts.policyFlaggedCount +
+          communityApps.length
+        );
+      }
+      return VERIFIED_DIRECT_CATALOG_COUNT + communityApps.length;
     }
     return syncFiltered.length;
   }, [
@@ -499,6 +540,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
     serverPage,
     queryKey,
     isDefaultFirstPage,
+    includeUnverifiedImports,
     syncFiltered,
     communityApps.length,
   ]);
@@ -757,6 +799,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
     setSelectedCategory('All');
     setSelectedArch('All');
     setOnlyVerified(false);
+    setIncludeUnverifiedImports(false);
     setSortBy('featured');
     setCurrentPage(1);
   };
@@ -768,7 +811,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
   };
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-[#0a0a0c] text-neutral-100 font-sans selection:bg-sky-500/30 selection:text-sky-200 flex flex-col">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#0a0a0c] text-neutral-100 font-sans selection:bg-sky-500/30 selection:text-sky-200 flex flex-col items-center">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2.5 focus:rounded-lg focus:bg-sky-500 focus:text-black focus:font-semibold focus:text-xs"
@@ -808,33 +851,34 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
       {/* Main Content */}
       <ErrorBoundary>
         {legalRoute === 'privacy' ? (
-          <main id="main-content" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <main id="main-content" className="flex-1 w-full max-w-7xl min-w-0 mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <Privacy
               onBackToStore={() => navigateLegal('store')}
               onOpenCookieSettings={() => setCookieSettingsOpen(true)}
             />
           </main>
         ) : legalRoute === 'terms' ? (
-          <main id="main-content" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <main id="main-content" className="flex-1 w-full max-w-7xl min-w-0 mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <Terms onBackToStore={() => navigateLegal('store')} />
           </main>
         ) : legalRoute === 'cookies' ? (
-          <main id="main-content" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <main id="main-content" className="flex-1 w-full max-w-7xl min-w-0 mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <Cookies
               onBackToStore={() => navigateLegal('store')}
               onOpenCookieSettings={() => setCookieSettingsOpen(true)}
             />
           </main>
         ) : legalRoute === 'refunds' ? (
-          <main id="main-content" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <main id="main-content" className="flex-1 w-full max-w-7xl min-w-0 mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <Refunds onBackToStore={() => navigateLegal('store')} />
           </main>
         ) : (
           <main
             id="main-content"
             tabIndex={-1}
-            className="flex-1 max-w-7xl w-full min-w-0 mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-6 focus:outline-none"
+            className="flex-1 w-full max-w-7xl min-w-0 mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 focus:outline-none"
           >
+            <div className="w-full max-w-7xl mx-auto min-w-0">
             {activeTab === 'verifier' && (
               <IntegrityVerifierView
                 catalog={APPS_CATALOG}
@@ -893,13 +937,16 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
             {activeTab === 'browse' && (
               <>
                 {/* Clean, Concise Software Catalog Header */}
-                <div className="mb-6 pb-5 border-b border-neutral-800 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div className="mb-4 pb-5 border-b border-neutral-800 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                   <div>
                     <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                       Linux AppImage Software Directory
                     </h1>
                     <p className="text-xs sm:text-sm text-neutral-400 mt-1">
-                      Indexing all {TOTAL_CATALOG_COUNT.toLocaleString()} applications from{' '}
+                      Showing {VERIFIED_DIRECT_CATALOG_COUNT.toLocaleString()} verified direct{' '}
+                      <code className="text-neutral-200 font-mono">.AppImage</code> packages with
+                      SHA-256 checksums ({HIDDEN_UNVERIFIED_CATALOG_COUNT.toLocaleString()}{' '}
+                      unverified{' '}
                       <a
                         href="https://appimage.github.io/feed.json"
                         target="_blank"
@@ -908,15 +955,104 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
                       >
                         AppImageHub
                       </a>{' '}
-                      and upstream GitHub Releases. Direct downloads from original authors.
+                      entries hidden by default; no data deleted).
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono shrink-0">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-400 font-mono shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setShowCleanupReport((prev) => !prev)}
+                      aria-expanded={showCleanupReport}
+                      className="px-2.5 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-sky-400 font-sans font-medium text-xs transition-colors cursor-pointer"
+                    >
+                      {showCleanupReport ? 'Hide Cleanup Report' : 'Catalog Audit Report'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIncludeUnverifiedImports((prev) => !prev);
+                        setCurrentPage(1);
+                      }}
+                      aria-pressed={includeUnverifiedImports}
+                      className={`px-2.5 py-1.5 rounded-lg border font-sans font-medium text-xs transition-colors cursor-pointer ${
+                        includeUnverifiedImports
+                          ? 'bg-amber-500/15 border-amber-500/40 text-amber-300'
+                          : 'bg-neutral-900 hover:bg-neutral-800 border-neutral-800 text-neutral-300'
+                      }`}
+                    >
+                      {includeUnverifiedImports
+                        ? 'Hide Unverified Imports'
+                        : `Show Unverified (${(HIDDEN_UNVERIFIED_CATALOG_COUNT - CATALOG_CLEANUP_REPORT.affectedCounts.policyFlaggedCount).toLocaleString()})`}
+                    </button>
                     <span>Page {currentPage} of {totalPages}</span>
-                    <span>•</span>
-                    <span>{PAGE_SIZE} per page</span>
                   </div>
                 </div>
+
+                {/* Phase 1 Catalog Cleanup & Audit Report Drawer */}
+                {showCleanupReport && (
+                  <section
+                    aria-label="Catalog cleanup report"
+                    className="mb-6 p-4 sm:p-5 rounded-2xl bg-neutral-900/80 border border-neutral-800 text-xs text-neutral-300 space-y-3"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h2 className="text-sm font-semibold text-white">
+                        Phase 1 Catalog Cleanup &amp; Verification Report
+                      </h2>
+                      <span className="font-mono text-[11px] text-neutral-400">
+                        Total entries preserved: {CATALOG_CLEANUP_REPORT.totalCatalogEntries.toLocaleString()} (0 deleted)
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono">
+                      <div className="p-3 rounded-xl bg-neutral-950 border border-emerald-500/30">
+                        <div className="text-emerald-400 text-sm font-bold">
+                          {CATALOG_CLEANUP_REPORT.mainListingEligibleCount.toLocaleString()}
+                        </div>
+                        <div className="text-[11px] text-neutral-400 font-sans mt-0.5">
+                          Direct .AppImage + SHA-256 (Shown)
+                        </div>
+                      </div>
+                      <div className="p-3 rounded-xl bg-neutral-950 border border-neutral-800">
+                        <div className="text-amber-300 text-sm font-bold">
+                          {CATALOG_CLEANUP_REPORT.affectedCounts.lackingDirectAppImageUrl.toLocaleString()}
+                        </div>
+                        <div className="text-[11px] text-neutral-400 font-sans mt-0.5">
+                          Missing direct .AppImage URL (Hidden)
+                        </div>
+                      </div>
+                      <div className="p-3 rounded-xl bg-neutral-950 border border-neutral-800">
+                        <div className="text-amber-300 text-sm font-bold">
+                          {CATALOG_CLEANUP_REPORT.affectedCounts.lackingVerifiedSha256.toLocaleString()}
+                        </div>
+                        <div className="text-[11px] text-neutral-400 font-sans mt-0.5">
+                          Missing SHA-256 &amp; Version unknown (Hidden)
+                        </div>
+                      </div>
+                      <div className="p-3 rounded-xl bg-neutral-950 border border-rose-500/30">
+                        <div className="text-rose-400 text-sm font-bold">
+                          {CATALOG_CLEANUP_REPORT.affectedCounts.policyFlaggedCount.toLocaleString()}
+                        </div>
+                        <div className="text-[11px] text-neutral-400 font-sans mt-0.5">
+                          Policy-flagged blocked ({CATALOG_CLEANUP_REPORT.policyFlaggedEntries.map((e) => e.id).join(', ')})
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-neutral-400 leading-relaxed">
+                      Additional metadata gaps in hidden feed entries:{' '}
+                      <strong className="text-neutral-200">
+                        {CATALOG_CLEANUP_REPORT.affectedCounts.emptySize.toLocaleString()}
+                      </strong>{' '}
+                      missing file size,{' '}
+                      <strong className="text-neutral-200">
+                        {CATALOG_CLEANUP_REPORT.affectedCounts.emptyLicense.toLocaleString()}
+                      </strong>{' '}
+                      missing license, and{' '}
+                      <strong className="text-neutral-200">
+                        {CATALOG_CLEANUP_REPORT.affectedCounts.emptyDescription.toLocaleString()}
+                      </strong>{' '}
+                      missing description.
+                    </p>
+                  </section>
+                )}
 
                 {/* Filter Bar with Category, Arch, Verified SHA-256, Sort & Visible Count */}
                 <FilterBar
@@ -1082,6 +1218,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
                 )}
               </>
             )}
+            </div>
           </main>
         )}
       </ErrorBoundary>

@@ -23,6 +23,7 @@
     "test:watch": "NODE_OPTIONS=\"--import ./scripts/vitest-node-shim.mjs\" vitest"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.2",
     "clsx": "^2.1.1",
     "firebase": "^12.18.0",
     "lucide-react": "^1.16.0",

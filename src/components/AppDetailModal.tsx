@@ -6,6 +6,8 @@ import {
   getChecksumStatus,
   isCommunitySubmitted,
   isGenuineSha256,
+  formatAppVersion,
+  hasKnownVersion,
 } from '../utils/catalogSchema';
 import {
   X,
@@ -117,7 +119,10 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
   const hasCopyableSha = isTrulyVerified || hasProvidedChecksum;
   const activeDownloadUrl = app.downloadMap?.[selectedArch] || app.downloadUrl;
   const protocolUrl = generateNiruviProtocolUrl(app, selectedArch);
-  const fileName = `${app.id}-${app.version}-${selectedArch}.AppImage`;
+  const fileVersionSegment = hasKnownVersion(app.version)
+    ? `-${app.version.replace(/^v/i, '')}`
+    : '';
+  const fileName = `${app.id}${fileVersionSegment}-${selectedArch}.AppImage`;
   const chmodCmd = `chmod +x ${fileName} && ./${fileName}`;
   const verifyCmd = hasCopyableSha
     ? `echo "${app.sha256}  ${fileName}" | sha256sum --check`
@@ -203,8 +208,7 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
     }
   };
 
-  const displayVersion =
-    app.version && app.version !== 'latest' ? `v${app.version.replace(/^v/i, '')}` : 'latest';
+  const displayVersion = formatAppVersion(app.version);
 
   return (
     <div

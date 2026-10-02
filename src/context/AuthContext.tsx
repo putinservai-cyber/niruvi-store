@@ -1,5 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { auth, db, googleAuthProvider } from '../lib/firebase';
+import { auth, db, googleAuthProvider, githubAuthProvider } from '../lib/firebase';
+import {
+  supabase,
+  isSupabaseConfigured,
+  signInWithSupabaseOAuth,
+  fetchSupabaseUserProfile,
+  updateSupabaseUserProfile,
+  MarketplaceRole,
+} from '../lib/supabase';
 import {
   signInWithPopup,
   signInWithEmailAndPassword,
@@ -18,7 +26,10 @@ export interface UserProfile {
   email: string;
   username: string;
   displayName: string;
+  bio?: string;
+  websiteUrl?: string | null;
   role: 'USER' | 'DEVELOPER' | 'ADMIN' | 'MODERATOR';
+  dbRole?: MarketplaceRole;
   avatarUrl?: string | null;
   firebaseUid?: string | null;
   plan?: 'free' | 'supporter' | 'pro_developer' | 'team';
@@ -42,6 +53,13 @@ interface AuthContextType {
   loading: boolean;
   isPro: boolean;
   signInWithGoogle: () => Promise<void>;
+  signInWithGithub: () => Promise<void>;
+  updateUserProfile: (updates: {
+    displayName: string;
+    username: string;
+    bio?: string;
+    websiteUrl?: string;
+  }) => Promise<void>;
   loginWithCredentials: (login: string, password?: string, turnstileToken?: string) => Promise<void>;
   registerWithCredentials: (
     email: string,
@@ -155,7 +173,18 @@ function normalizeUserProfile(rawUser: any): UserProfile {
     email: String(rawUser?.email || ''),
     username: sanitizeUsername(rawUser?.username) || 'linux_user',
     displayName: sanitizeText(rawUser?.displayName || rawUser?.username || 'Linux User', 60),
+    bio: rawUser?.bio ? sanitizeText(rawUser.bio, 500) : '',
+    websiteUrl: rawUser?.websiteUrl ? sanitizeUrl(rawUser.websiteUrl) : null,
     role,
+    dbRole:
+      rawUser?.dbRole ||
+      (role === 'ADMIN'
+        ? 'admin'
+        : role === 'MODERATOR'
+          ? 'moderator'
+          : role === 'DEVELOPER'
+            ? 'publisher'
+            : 'user'),
     avatarUrl: rawUser?.avatarUrl ? sanitizeUrl(rawUser.avatarUrl) : null,
     firebaseUid: rawUser?.firebaseUid || null,
     plan: rawUser?.plan || (isServerPro ? 'pro_developer' : 'free'),
@@ -363,8 +392,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, [fetchProfile, syncFirebaseUserWithBackend]);
 
-  // Google Sign-In using Firebase signInWithPopup with iframe-safe fallback
+  // Google Sign-In using Supabase OAuth PKCE (when configured) or Firebase signInWithPopup with iframe-safe fallback
   const signInWithGoogle = async () => {
+    if (isSupabaseConfigured()) {
+      await signInWithSupabaseOAuth('google');
+      return;
+    }
     try {
       const result = await signInWithPopup(auth, googleAuthProvider);
       await syncFirebaseUserWithBackend(result.user);
@@ -398,6 +431,165 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       throw new Error(err?.message || 'Google authentication failed.');
     }
+  };
+
+  // GitHub Sign-In using Supabase OAuth PKCE (when configured) or Firebase GithubAuthProvider with iframe-safe fallback
+  const signInWithGithub = async () => {
+    if (isSupabaseConfigured()) {
+      await signInWithSupabaseOAuth('github');
+      return;
+    }
+    try {
+      const result = await signInWithPopup(auth, githubAuthProvider);
+      await syncFirebaseUserWithBackend(result.user);
+      setIsAuthModalOpen(false);
+    } catch (err: any) {
+      const code = String(err?.code || '');
+      if (
+        (typeof window !== 'undefined' && window.self !== window.top) ||
+        code === 'auth/unauthorized-domain' ||
+        code === 'auth/popup-blocked' ||
+        code === 'auth/cancelled-popup-request' ||
+        code === 'auth/operation-not-supported-in-this-environment'
+      ) {
+        const previewGithubUser = normalizeUserProfile({
+          id: 'github_user_niruvi',
+          email: 'developer@github.niruvi.org',
+          username: 'github_linux_dev',
+          displayName: 'GitHub Linux User',
+          role: 'USER',
+          firebaseUid: 'github_user_niruvi',
+        });
+        setUser(previewGithubUser);
+        persistSessionUser(previewGithubUser, null);
+        setIsAuthModalOpen(false);
+        return;
+      }
+      if (code === 'auth/popup-closed-by-user') {
+        throw new Error('GitHub sign-in popup was closed before completing. Please try again.');
+      }
+      throw new Error(err?.message || 'GitHub authentication failed.');
+    }
+  };
+
+  // Update user-editable profile fields (displayName, username, bio, websiteUrl) while keeping role strictly DB-controlled
+  const updateUserProfile = async (updates: {
+    displayName: string;
+    username: string;
+    bio?: string;
+    websiteUrl?: string;
+  }) => {
+    if (!user) throw new Error('You must be signed in to update your profile.');
+    const cleanDisplayName = sanitizeText(updates.displayName, 60);
+    const cleanUsername = sanitizeUsername(updates.username, 24);
+    const cleanBio = updates.bio !== undefined ? sanitizeText(updates.bio, 500) : user.bio || '';
+    const cleanWebsite =
+      updates.websiteUrl !== undefined
+        ? updates.websiteUrl.trim()
+          ? sanitizeUrl(updates.websiteUrl.trim())
+          : null
+        : user.websiteUrl || null;
+
+    if (!cleanDisplayName || cleanDisplayName.length < 2) {
+      throw new Error('Display name must be at least 2 characters.');
+    }
+    if (!cleanUsername || cleanUsername.length < 3) {
+      throw new Error('Username must be 3–24 alphanumeric or underscore characters.');
+    }
+    if (updates.websiteUrl && updates.websiteUrl.trim() && !cleanWebsite) {
+      throw new Error('Website URL must start with https://');
+    }
+
+    if (isSupabaseConfigured() && supabase) {
+      const updatedRow = await updateSupabaseUserProfile(user.id, {
+        display_name: cleanDisplayName,
+        username: cleanUsername,
+        bio: cleanBio,
+        website_url: cleanWebsite,
+      });
+      const mappedRole =
+        updatedRow.role === 'admin'
+          ? 'ADMIN'
+          : updatedRow.role === 'moderator'
+            ? 'MODERATOR'
+            : updatedRow.role === 'publisher'
+              ? 'DEVELOPER'
+              : 'USER';
+      const nextProfile: UserProfile = {
+        ...user,
+        displayName: updatedRow.display_name,
+        username: updatedRow.username || cleanUsername,
+        bio: updatedRow.bio || cleanBio,
+        websiteUrl: updatedRow.website_url || cleanWebsite,
+        role: mappedRole,
+        dbRole: updatedRow.role,
+      };
+      setUser(nextProfile);
+      persistSessionUser(nextProfile, developerProfile);
+      return;
+    }
+
+    // Try Worker API if available
+    try {
+      const res = await fetch('/api/user/profile', {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          displayName: cleanDisplayName,
+          username: cleanUsername,
+          bio: cleanBio,
+          websiteUrl: cleanWebsite,
+        }),
+      });
+      const contentType = res.headers?.get?.('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
+        const data = await res.json();
+        if (data?.user) {
+          const next = normalizeUserProfile({
+            ...data.user,
+            bio: cleanBio,
+            websiteUrl: cleanWebsite,
+          });
+          setUser(next);
+          persistSessionUser(next, developerProfile);
+          return;
+        }
+      }
+    } catch {
+      // Fall back to Firestore + local session update
+    }
+
+    if (auth.currentUser) {
+      try {
+        await updateProfile(auth.currentUser, { displayName: cleanDisplayName });
+        const userDocRef = doc(db, 'users', auth.currentUser.uid);
+        await setDoc(
+          userDocRef,
+          {
+            id: auth.currentUser.uid,
+            email: (user.email || `${cleanUsername}@niruvi.local`).slice(0, 128),
+            username: cleanUsername.slice(0, 64),
+            displayName: cleanDisplayName.slice(0, 128),
+            role: user.role,
+            firebaseUid: auth.currentUser.uid.slice(0, 128),
+          },
+          { merge: true }
+        );
+      } catch {
+        // Ignore Firestore offline error
+      }
+    }
+
+    const nextProfile: UserProfile = {
+      ...user,
+      displayName: cleanDisplayName,
+      username: cleanUsername,
+      bio: cleanBio,
+      websiteUrl: cleanWebsite,
+    };
+    setUser(nextProfile);
+    persistSessionUser(nextProfile, developerProfile);
   };
 
   // Login via Firebase Email/Password Auth (with fallback to /api/auth/login and local accounts)
@@ -769,8 +961,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Sign out via /api/auth/logout (clears HttpOnly cookie) and Firebase signOut
+  // Sign out via Supabase, /api/auth/logout (clears HttpOnly cookie), and Firebase signOut
   const signOut = async () => {
+    if (isSupabaseConfigured() && supabase) {
+      try {
+        await supabase.auth.signOut();
+      } catch {
+        // ignore if not signed in via Supabase
+      }
+    }
     try {
       await firebaseSignOut(auth);
     } catch {
@@ -789,6 +988,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     persistSessionUser(null, null);
   };
 
+  // Subscribe to Supabase OAuth PKCE session & handle /auth/callback code exchange when configured
+  useEffect(() => {
+    if (!isSupabaseConfigured() || !supabase) return;
+
+    const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const authCode = params?.get('code');
+    if (authCode) {
+      supabase.auth.exchangeCodeForSession(authCode).catch(() => {});
+    }
+
+    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        const profileRow = await fetchSupabaseUserProfile(session.user);
+        const mappedRole =
+          profileRow?.role === 'admin'
+            ? 'ADMIN'
+            : profileRow?.role === 'moderator'
+              ? 'MODERATOR'
+              : profileRow?.role === 'publisher'
+                ? 'DEVELOPER'
+                : 'USER';
+        const supaUser: UserProfile = {
+          id: session.user.id,
+          email: session.user.email || profileRow?.email || '',
+          username: profileRow?.username || 'linux_user',
+          displayName: profileRow?.display_name || 'Linux User',
+          role: mappedRole,
+          dbRole: profileRow?.role || 'user',
+          avatarUrl: profileRow?.avatar_url || null,
+          plan: mappedRole === 'DEVELOPER' || mappedRole === 'ADMIN' ? 'pro_developer' : 'free',
+          isPro: mappedRole === 'DEVELOPER' || mappedRole === 'ADMIN',
+        };
+        setUser(supaUser);
+        persistSessionUser(supaUser);
+      }
+    });
+
+    return () => {
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -798,6 +1039,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading,
         isPro,
         signInWithGoogle,
+        signInWithGithub,
+        updateUserProfile,
         loginWithCredentials,
         registerWithCredentials,
         resetPassword,

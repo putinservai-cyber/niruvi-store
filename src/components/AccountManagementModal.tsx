@@ -29,10 +29,10 @@ export const AccountManagementModal: React.FC = () => {
     isAccountModalOpen,
     closeAccountModal,
     signOut,
+    updateUserProfile,
     activateLicense,
     becomeDeveloper,
     refreshProfile,
-    token
   } = useAuth();
 
   const [activeTab, setActiveTab] = useState<'profile' | 'plan' | 'developer' | 'security'>('profile');
@@ -40,6 +40,8 @@ export const AccountManagementModal: React.FC = () => {
   // Edit profile state
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [username, setUsername] = useState(user?.username || '');
+  const [bio, setBio] = useState(user?.bio || '');
+  const [websiteUrl, setWebsiteUrl] = useState(user?.websiteUrl || '');
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [profileMessage, setProfileMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -64,6 +66,8 @@ export const AccountManagementModal: React.FC = () => {
     if (user) {
       setDisplayName(user.displayName || '');
       setUsername(user.username || '');
+      setBio(user.bio || '');
+      setWebsiteUrl(user.websiteUrl || '');
     }
   }, [user]);
 
@@ -97,27 +101,15 @@ export const AccountManagementModal: React.FC = () => {
     const cleanUsername = sanitizeUsername(username, 32);
 
     try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-      const res = await fetch('/api/user/profile', {
-        method: 'PUT',
-        credentials: 'include',
-        headers,
-        body: JSON.stringify({ displayName: cleanDisplayName, username: cleanUsername }),
+      await updateUserProfile({
+        displayName: cleanDisplayName,
+        username: cleanUsername,
+        bio,
+        websiteUrl,
       });
-      const data = await res.json();
-      if (res.ok) {
-        setProfileMessage({ type: 'success', text: 'Profile details updated successfully!' });
-        await refreshProfile();
-      } else {
-        setProfileMessage({ type: 'error', text: data.error || 'Failed to update profile' });
-      }
+      setProfileMessage({ type: 'success', text: 'Profile details updated successfully!' });
     } catch (err: any) {
-      setProfileMessage({ type: 'error', text: err?.message || 'Network error updating profile' });
+      setProfileMessage({ type: 'error', text: err?.message || 'Failed to update profile' });
     } finally {
       setIsUpdatingProfile(false);
     }
@@ -312,6 +304,45 @@ export const AccountManagementModal: React.FC = () => {
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       className="w-full pl-8 pr-3 py-2 bg-neutral-900 border border-neutral-800 rounded-xl text-sm text-white font-mono focus:outline-hidden focus:border-neutral-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-neutral-300 mb-1">Bio (Optional)</label>
+                  <textarea
+                    rows={2}
+                    maxLength={500}
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Linux enthusiast, open-source contributor, or AppImage maintainer..."
+                    className="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded-xl text-sm text-white focus:outline-hidden focus:border-neutral-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-300 mb-1">
+                      Website URL (https://)
+                    </label>
+                    <input
+                      type="url"
+                      value={websiteUrl}
+                      onChange={(e) => setWebsiteUrl(e.target.value)}
+                      placeholder="https://github.com/your-handle"
+                      className="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded-xl text-sm text-white focus:outline-hidden focus:border-neutral-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-400 mb-1">
+                      Database Role (Server RLS Enforced)
+                    </label>
+                    <input
+                      type="text"
+                      disabled
+                      value={`${user.dbRole || user.role.toLowerCase()} (read-only)`}
+                      className="w-full px-3 py-2 bg-neutral-900/50 border border-neutral-850 rounded-xl text-sm font-mono text-neutral-400 cursor-not-allowed"
                     />
                   </div>
                 </div>

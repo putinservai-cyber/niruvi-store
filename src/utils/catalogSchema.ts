@@ -42,6 +42,97 @@ export function isGenuineSha256(hash: unknown): boolean {
   return !SYNTHETIC_HASH_PATTERNS.some((rx) => rx.test(trimmed));
 }
 
+/**
+ * Checks whether a URL is a direct HTTPS link to a `.AppImage` binary file
+ * (and NOT a GitHub /releases HTML page, mirrorlist CGI script, or appimage.github.io page).
+ */
+export function isDirectAppImageUrl(url: unknown): boolean {
+  if (typeof url !== 'string') return false;
+  const trimmed = url.trim();
+  if (!trimmed.startsWith('https://')) return false;
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol !== 'https:') return false;
+    if (parsed.hostname.toLowerCase() === 'appimage.github.io') return false;
+    const pathname = decodeURIComponent(parsed.pathname).toLowerCase();
+    return pathname.endsWith('.appimage');
+  } catch {
+    return false;
+  }
+}
+
+const POLICY_BLOCKLIST_RULES: Array<{ idPattern?: RegExp; textPattern: RegExp; reason: string }> = [
+  {
+    idPattern: /^account-scraper$/i,
+    textPattern: /\b(account[-_\s]?scraper|account\s+generator\s+services|free\s+spotify,?\s*netflix)\b/i,
+    reason: 'Prohibited credential/account generator or unauthorized account-scraping tool',
+  },
+];
+
+/**
+ * Inspects a catalog item for policy/moderation violations (e.g. `account-scraper`).
+ */
+export function isPolicyFlaggedEntry(app: {
+  id?: string;
+  name?: string;
+  tagline?: string;
+  description?: string;
+}): { flagged: boolean; reason?: string } {
+  const id = (app.id || '').trim();
+  const combined = `${id} ${app.name || ''} ${app.tagline || ''} ${app.description || ''}`;
+  for (const rule of POLICY_BLOCKLIST_RULES) {
+    if ((rule.idPattern && rule.idPattern.test(id)) || rule.textPattern.test(combined)) {
+      return { flagged: true, reason: rule.reason };
+    }
+  }
+  return { flagged: false };
+}
+
+/**
+ * Formats an application version string without ever outputting "vlatest".
+ * Returns "Version unknown" when a real version is unavailable.
+ */
+export function formatAppVersion(version?: string | null): string {
+  if (!version || typeof version !== 'string') return 'Version unknown';
+  const trimmed = version.trim();
+  if (!trimmed || /^(v?latest|unknown|version\s+unknown|n\/a|-)$/i.test(trimmed)) {
+    return 'Version unknown';
+  }
+  return `v${trimmed.replace(/^v/i, '')}`;
+}
+
+/**
+ * Returns true if the version string represents a known release version (not "latest" or "Version unknown").
+ */
+export function hasKnownVersion(version?: string | null): boolean {
+  return formatAppVersion(version) !== 'Version unknown';
+}
+
+/**
+ * Determines whether a catalog entry is eligible to appear in the default main store listing:
+ * requires a direct `https://...*.AppImage` URL, a genuine 64-hex SHA-256 digest, and no policy violation.
+ */
+export function isEligibleForMainListing(app: {
+  id?: string;
+  name?: string;
+  tagline?: string;
+  description?: string;
+  downloadUrl?: string;
+  sha256?: string;
+  hiddenFromMainListing?: boolean;
+  moderationFlag?: string;
+  isUserAdded?: boolean;
+  source?: string;
+}): boolean {
+  if (app.moderationFlag === 'flagged_policy' || isPolicyFlaggedEntry(app).flagged) {
+    return false;
+  }
+  if (typeof app.hiddenFromMainListing === 'boolean') {
+    return !app.hiddenFromMainListing;
+  }
+  return isDirectAppImageUrl(app.downloadUrl) && isGenuineSha256(app.sha256);
+}
+
 export const ScreenshotSchema = z.object({
   url: z
     .string()

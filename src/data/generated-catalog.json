@@ -1,5 +1,70 @@
 [
   {
+    "id": "blender",
+    "name": "Blender",
+    "tagline": "Professional 3D creation pipeline for modeling, rigging, and rendering",
+    "description": "Blender is the world-renowned free and open source 3D pipeline suite. It covers modeling, sculpting, rigging, 3D animation, simulation, GPU raytraced rendering with Cycles, video editing, and 2D storyboard drawing with Grease Pencil.",
+    "category": "Graphics",
+    "simplifiedCategory": "Graphics",
+    "version": "4.3.2",
+    "releaseDate": "2025-01-20",
+    "size": "312.8 MB",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "GPL-3.0",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "Blender Foundation",
+      "website": "https://www.blender.org",
+      "verified": true,
+      "github": "https://projects.blender.org/blender/blender"
+    },
+    "sha256": "4e375ab838531980ee9f57a3e811c7fae98f02969b8219c490ff7a1c1d01931a",
+    "downloadUrl": "https://download.blender.org/release/Blender4.3/blender-4.3.2-linux-x64.AppImage",
+    "downloadMap": {
+      "x86_64": "https://download.blender.org/release/Blender4.3/blender-4.3.2-linux-x64.AppImage"
+    },
+    "iconSlug": "blender",
+    "icon": "/icons/blender.svg",
+    "brandColor": "#EA7600",
+    "features": [
+      "Cycles GPU ray-tracing with OptiX, HIP, and Vulkan backends",
+      "Advanced geometry node modeling systems",
+      "Grease Pencil 2D illustration and storyboard suite",
+      "Full Python 3 API for pipeline scripting and automation"
+    ],
+    "homepageUrl": "https://www.blender.org",
+    "sourceUrl": "https://projects.blender.org/blender/blender",
+    "repositoryUrl": "https://projects.blender.org/blender/blender",
+    "releasesUrl": "https://projects.blender.org/blender/blender/releases",
+    "source": "official",
+    "sourceType": "Official",
+    "checksumStatus": "verified",
+    "trustTier": "Official Developer",
+    "officialStatus": true,
+    "hasDirectAppImageUrl": true,
+    "hasVerifiedSha256": true,
+    "hiddenFromMainListing": false,
+    "moderationFlag": "clean",
+    "tags": [
+      "3d",
+      "modeling",
+      "animation",
+      "rendering",
+      "cycles",
+      "vfx",
+      "sculpting"
+    ],
+    "featured": true,
+    "downloadsCount": 0,
+    "rating": 0,
+    "requirements": "OpenGL 4.3 capable GPU, 8GB RAM minimum"
+  },
+  {
     "id": "keepassxc",
     "name": "KeePassXC",
     "tagline": "Secure, cross-platform password manager stored completely offline",
@@ -38,6 +103,10 @@
     "sourceType": "Official",
     "trustTier": "Official Developer",
     "officialStatus": true,
+    "hasDirectAppImageUrl": true,
+    "hasVerifiedSha256": true,
+    "hiddenFromMainListing": false,
+    "moderationFlag": "clean",
     "tags": [
       "security",
       "password",
@@ -64,6 +133,8 @@
       "Native browser integration for Firefox, Chrome, and Brave",
       "Auto-Type login automation on X11 and Wayland"
     ],
+    "source": "official",
+    "checksumStatus": "verified",
     "requirements": "Any modern Linux desktop"
   },
   {
@@ -104,6 +175,10 @@
     "sourceType": "Official",
     "trustTier": "Official Developer",
     "officialStatus": true,
+    "hasDirectAppImageUrl": true,
+    "hasVerifiedSha256": true,
+    "hiddenFromMainListing": false,
+    "moderationFlag": "clean",
     "tags": [
       "painting",
       "drawing",
@@ -130,7 +205,144 @@
       "Full color management with ICC and HDR support",
       "Integrated frame-by-frame animation workspace with audio playback"
     ],
+    "source": "official",
+    "checksumStatus": "verified",
     "requirements": "Graphics card with OpenGL 3.0 or higher"
+  },
+  {
+    "id": "obs-studio",
+    "name": "OBS Studio",
+    "tagline": "High-performance video recording and live broadcasting software",
+    "description": "OBS Studio is the gold standard for live streaming and offline screen recording on Linux. It provides low-latency capture via PipeWire and X11, multi-view production monitors, hardware-accelerated video encoding (NVENC, VA-API, QuickSync), and modular scene composition.",
+    "category": "Audio/Video",
+    "simplifiedCategory": "Audio/Video",
+    "version": "31.0.1",
+    "releaseDate": "2025-01-08",
+    "size": "188.0 MB",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "GPL-2.0",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "OBS Project",
+      "website": "https://obsproject.com",
+      "verified": true,
+      "github": "https://github.com/obsproject/obs-studio"
+    },
+    "sha256": "c3d9a11fa3571d796791c530bb1507f352136067727e4c30c806509f6f663d12",
+    "downloadUrl": "https://github.com/obsproject/obs-studio/releases/download/31.0.1/OBS-Studio-31.0.1-Ubuntu-x86_64.AppImage",
+    "downloadMap": {
+      "x86_64": "https://github.com/obsproject/obs-studio/releases/download/31.0.1/OBS-Studio-31.0.1-Ubuntu-x86_64.AppImage"
+    },
+    "iconSlug": "obs-studio",
+    "icon": "/icons/obs-studio.svg",
+    "brandColor": "#475569",
+    "features": [
+      "Real-time audio & video capture via PipeWire and V4L2",
+      "Hardware-accelerated NVENC, VA-API, and SVT-AV1 encoders",
+      "Audio mixer with noise gate, suppression, and gain filters",
+      "Modular Dock UI with custom web browser source plugins"
+    ],
+    "homepageUrl": "https://obsproject.com",
+    "sourceUrl": "https://github.com/obsproject/obs-studio",
+    "repositoryUrl": "https://github.com/obsproject/obs-studio",
+    "releasesUrl": "https://github.com/obsproject/obs-studio/releases",
+    "githubRepo": "obsproject/obs-studio",
+    "source": "official",
+    "sourceType": "Official",
+    "checksumStatus": "verified",
+    "trustTier": "Official Developer",
+    "officialStatus": true,
+    "hasDirectAppImageUrl": true,
+    "hasVerifiedSha256": true,
+    "hiddenFromMainListing": false,
+    "moderationFlag": "clean",
+    "tags": [
+      "streaming",
+      "recording",
+      "video",
+      "broadcast",
+      "screen-recorder",
+      "twitch",
+      "youtube"
+    ],
+    "featured": true,
+    "downloadsCount": 0,
+    "rating": 0,
+    "requirements": "OpenGL 3.3 compatible GPU, PipeWire or PulseAudio"
+  },
+  {
+    "id": "vscodium",
+    "name": "VSCodium",
+    "tagline": "Telemetry-free, community-driven distribution of Microsoft VS Code",
+    "description": "VSCodium provides binary releases of Microsoft's Visual Studio Code built from the MIT-licensed vscode repository. It completely strips all proprietary telemetry, tracking, and proprietary license agreements, giving developers a privacy-respecting code editor with complete access to debugging, syntax highlighting, and extensions.",
+    "category": "Development",
+    "simplifiedCategory": "Development",
+    "version": "1.96.2",
+    "releaseDate": "2025-01-14",
+    "size": "104.2 MB",
+    "architectures": [
+      "x86_64",
+      "aarch64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "MIT",
+    "licenseCategory": "Permissive",
+    "publisher": {
+      "name": "VSCodium Project",
+      "website": "https://vscodium.com",
+      "verified": true,
+      "github": "https://github.com/VSCodium/vscodium"
+    },
+    "sha256": "9f8b4618e28f3b2591b65b6a782b1c2a129037cba8b99c75620be2f627a3c748",
+    "downloadUrl": "https://github.com/VSCodium/vscodium/releases/download/1.96.2.25015/VSCodium-1.96.2.25015.glibc2.28-x86_64.AppImage",
+    "downloadMap": {
+      "x86_64": "https://github.com/VSCodium/vscodium/releases/download/1.96.2.25015/VSCodium-1.96.2.25015.glibc2.28-x86_64.AppImage",
+      "aarch64": "https://github.com/VSCodium/vscodium/releases/download/1.96.2.25015/VSCodium-1.96.2.25015.glibc2.28-arm64.AppImage"
+    },
+    "iconSlug": "vscodium",
+    "icon": "/icons/vscodium.png",
+    "brandColor": "#2F80ED",
+    "features": [
+      "Zero telemetry, tracking, or background analytics",
+      "Full TypeScript, JavaScript, Python, Rust, and Go support",
+      "Open VSX Registry extension compatibility",
+      "Integrated Git source control and multi-root terminal"
+    ],
+    "homepageUrl": "https://vscodium.com",
+    "sourceUrl": "https://github.com/VSCodium/vscodium",
+    "repositoryUrl": "https://github.com/VSCodium/vscodium",
+    "releasesUrl": "https://github.com/VSCodium/vscodium/releases",
+    "githubRepo": "VSCodium/vscodium",
+    "source": "official",
+    "sourceType": "Official",
+    "checksumStatus": "verified",
+    "trustTier": "Official Developer",
+    "officialStatus": true,
+    "hasDirectAppImageUrl": true,
+    "hasVerifiedSha256": true,
+    "hiddenFromMainListing": false,
+    "moderationFlag": "clean",
+    "tags": [
+      "editor",
+      "ide",
+      "code",
+      "programming",
+      "typescript",
+      "python",
+      "rust",
+      "golang"
+    ],
+    "featured": true,
+    "downloadsCount": 0,
+    "rating": 0,
+    "requirements": "GLIBC >= 2.28, libfuse2 or libfuse3"
   },
   {
     "id": "audacity",
@@ -171,6 +383,10 @@
     "sourceType": "Official",
     "trustTier": "Official Developer",
     "officialStatus": true,
+    "hasDirectAppImageUrl": true,
+    "hasVerifiedSha256": true,
+    "hiddenFromMainListing": false,
+    "moderationFlag": "clean",
     "tags": [
       "audio",
       "sound",
@@ -197,6 +413,8 @@
       "Noise reduction, equalization, and dynamic compression",
       "Export to MP3, WAV, FLAC, Ogg Vorbis, and Opus"
     ],
+    "source": "official",
+    "checksumStatus": "verified",
     "requirements": "ALSA or PulseAudio / PipeWire"
   },
   {
@@ -238,6 +456,10 @@
     "sourceType": "Official",
     "trustTier": "Official Developer",
     "officialStatus": true,
+    "hasDirectAppImageUrl": true,
+    "hasVerifiedSha256": true,
+    "hiddenFromMainListing": false,
+    "moderationFlag": "clean",
     "tags": [
       "flash",
       "sdcard",
@@ -264,6 +486,8 @@
       "Clean visual dashboard with beautiful progress percentages",
       "Supports ISO, IMG, ZIP, DMG, and raw OS blocks"
     ],
+    "source": "official",
+    "checksumStatus": "verified",
     "requirements": "64-bit Linux desktop, USB/SD reader"
   },
   {
@@ -305,6 +529,10 @@
     "sourceType": "Community",
     "trustTier": "Verified Community",
     "officialStatus": true,
+    "hasDirectAppImageUrl": true,
+    "hasVerifiedSha256": true,
+    "hiddenFromMainListing": false,
+    "moderationFlag": "clean",
     "tags": [
       "cad",
       "3d",
@@ -331,6 +559,8 @@
       "Technical drawing generation (TechDraw workbench)",
       "Comprehensive Python scripting API"
     ],
+    "source": "official",
+    "checksumStatus": "verified",
     "requirements": "64-bit Linux with OpenGL 3.0+"
   },
   {
@@ -372,6 +602,10 @@
     "sourceType": "Official",
     "trustTier": "Official Developer",
     "officialStatus": true,
+    "hasDirectAppImageUrl": true,
+    "hasVerifiedSha256": true,
+    "hiddenFromMainListing": false,
+    "moderationFlag": "clean",
     "tags": [
       "youtube",
       "video",
@@ -397,6 +631,8 @@
       "Import/Export subscriptions completely locally",
       "Custom playlists and local channel subscriptions"
     ],
+    "source": "official",
+    "checksumStatus": "verified",
     "requirements": "Linux 64-bit, ALSA or PulseAudio / PipeWire"
   },
   {
@@ -437,6 +673,10 @@
     "sourceType": "Official",
     "trustTier": "Official Developer",
     "officialStatus": true,
+    "hasDirectAppImageUrl": true,
+    "hasVerifiedSha256": true,
+    "hiddenFromMainListing": false,
+    "moderationFlag": "clean",
     "tags": [
       "photo",
       "image",
@@ -462,6 +702,74 @@
       "Full color management with ICC profile workflows",
       "Broad format support (XCF, PSD, TIFF, PNG, JPEG, WebP)"
     ],
+    "source": "official",
+    "checksumStatus": "verified",
+    "requirements": "Linux 64-bit desktop environment"
+  },
+  {
+    "id": "handbrake",
+    "name": "HandBrake",
+    "tagline": "Open-source video transcoder for converting video from nearly any format",
+    "description": "HandBrake is a tool for converting video from nearly any format to a selection of modern, widely supported codecs. It supports hardware encoding via Intel QSV, AMD VCN, and NVIDIA NVENC alongside high quality software encoders.",
+    "category": "Audio/Video",
+    "simplifiedCategory": "Audio/Video",
+    "version": "1.9.0",
+    "releaseDate": "2024-12-22",
+    "size": "74.8 MB",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "GPL-2.0",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "HandBrake Team",
+      "website": "https://handbrake.fr",
+      "verified": true,
+      "github": "https://github.com/HandBrake/HandBrake"
+    },
+    "sha256": "3491f03f5ad676994a5a54fe59a4bb3ef06093d939634fa68b9195eeb00d046c",
+    "downloadUrl": "https://github.com/HandBrake/HandBrake/releases/download/1.9.0/HandBrake-1.9.0-x86_64.AppImage",
+    "downloadMap": {
+      "x86_64": "https://github.com/HandBrake/HandBrake/releases/download/1.9.0/HandBrake-1.9.0-x86_64.AppImage"
+    },
+    "iconSlug": "handbrake",
+    "icon": "/icons/handbrake.png",
+    "brandColor": "#E53E3E",
+    "features": [
+      "Convert video from nearly any format with built-in device presets",
+      "Hardware-accelerated encoding (NVENC, Intel QSV, AMD VCN)",
+      "Modern AV1, H.265 (HEVC), and VP9 video codec compression",
+      "Batch queuing, subtitle pass-through, and audio downmixing"
+    ],
+    "homepageUrl": "https://handbrake.fr",
+    "sourceUrl": "https://github.com/HandBrake/HandBrake",
+    "repositoryUrl": "https://github.com/HandBrake/HandBrake",
+    "releasesUrl": "https://github.com/HandBrake/HandBrake/releases",
+    "githubRepo": "HandBrake/HandBrake",
+    "source": "official",
+    "sourceType": "Official",
+    "checksumStatus": "verified",
+    "trustTier": "Official Developer",
+    "officialStatus": true,
+    "hasDirectAppImageUrl": true,
+    "hasVerifiedSha256": true,
+    "hiddenFromMainListing": false,
+    "moderationFlag": "clean",
+    "tags": [
+      "video",
+      "transcoder",
+      "converter",
+      "h264",
+      "h265",
+      "av1",
+      "encoder"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
     "requirements": "Linux 64-bit desktop environment"
   },
   {
@@ -502,6 +810,10 @@
     "sourceType": "Official",
     "trustTier": "Official Developer",
     "officialStatus": true,
+    "hasDirectAppImageUrl": true,
+    "hasVerifiedSha256": true,
+    "hiddenFromMainListing": false,
+    "moderationFlag": "clean",
     "tags": [
       "vector",
       "svg",
@@ -528,6 +840,8 @@
       "Flexible text tool with kerning, letter spacing, and line spacing",
       "Broad format export (PDF, EPS, SVG, PNG, WebP)"
     ],
+    "source": "official",
+    "checksumStatus": "verified",
     "requirements": "X11/Wayland desktop environment"
   },
   {
@@ -569,6 +883,10 @@
     "sourceType": "Community",
     "trustTier": "Verified Community",
     "officialStatus": true,
+    "hasDirectAppImageUrl": true,
+    "hasVerifiedSha256": true,
+    "hiddenFromMainListing": false,
+    "moderationFlag": "clean",
     "tags": [
       "notes",
       "markdown",
@@ -595,6 +913,8 @@
       "Web Clipper extension for Firefox and Chrome",
       "Sync with Nextcloud, Dropbox, WebDAV, or local file system"
     ],
+    "source": "official",
+    "checksumStatus": "verified",
     "requirements": "Linux 64-bit desktop"
   },
   {
@@ -635,6 +955,10 @@
     "sourceType": "Community",
     "trustTier": "Verified Community",
     "officialStatus": true,
+    "hasDirectAppImageUrl": true,
+    "hasVerifiedSha256": true,
+    "hiddenFromMainListing": false,
+    "moderationFlag": "clean",
     "tags": [
       "video",
       "editing",
@@ -661,7 +985,132 @@
       "Color scopes, vectorscope, RGB parade, and LUT support",
       "Configurable keyboard shortcuts and dynamic proxy clips"
     ],
+    "source": "official",
+    "checksumStatus": "verified",
     "requirements": "Multicore CPU, 8GB RAM, OpenGL 2.0+"
+  },
+  {
+    "id": "supertuxkart",
+    "name": "SuperTuxKart",
+    "tagline": "3D arcade kart racer starring Tux, Beastie, and friends",
+    "description": "SuperTuxKart is a 3D open-source arcade racing game featuring mascot characters of various free software projects. Race through tracks against AI or friends in local split-screen or networked multiplayer battle arenas.",
+    "category": "Games",
+    "simplifiedCategory": "Games",
+    "version": "1.4.0",
+    "releaseDate": "2023-11-01",
+    "size": "640.2 MB",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "GPL-3.0",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "SuperTuxKart Team",
+      "website": "https://supertuxkart.net",
+      "verified": true,
+      "github": "https://github.com/supertuxkart/stk-code"
+    },
+    "sha256": "61a7a0301a2f6ca46e919ff72ca4cba799307779b9ba1b42602161f3eb129759",
+    "downloadUrl": "https://github.com/supertuxkart/stk-code/releases/download/v1.4/SuperTuxKart-1.4-linux-x86_64.AppImage",
+    "downloadMap": {
+      "x86_64": "https://github.com/supertuxkart/stk-code/releases/download/v1.4/SuperTuxKart-1.4-linux-x86_64.AppImage"
+    },
+    "iconSlug": "supertuxkart",
+    "icon": "/icons/supertuxkart.png",
+    "brandColor": "#10B981",
+    "features": [
+      "Over 20 story tracks and multiplayer battle arenas",
+      "Networked online multiplayer and local split-screen",
+      "Full game controller and steering wheel compatibility",
+      "Custom addon manager to download user-made tracks"
+    ],
+    "homepageUrl": "https://supertuxkart.net",
+    "sourceUrl": "https://github.com/supertuxkart/stk-code",
+    "repositoryUrl": "https://github.com/supertuxkart/stk-code",
+    "releasesUrl": "https://github.com/supertuxkart/stk-code/releases",
+    "githubRepo": "supertuxkart/stk-code",
+    "source": "official",
+    "sourceType": "Official",
+    "checksumStatus": "verified",
+    "trustTier": "Official Developer",
+    "officialStatus": true,
+    "hasDirectAppImageUrl": true,
+    "hasVerifiedSha256": true,
+    "hiddenFromMainListing": false,
+    "moderationFlag": "clean",
+    "tags": [
+      "game",
+      "racing",
+      "arcade",
+      "multiplayer",
+      "tux",
+      "kart",
+      "fun"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "requirements": "Hardware 3D accelerator with OpenGL 3.1+"
+  },
+  {
+    "id": "_icq",
+    "name": "- ICQ",
+    "tagline": "Retro ICQ-style multi-messenger for WhatsApp and Telegram",
+    "description": "Retro ICQ-style multi-messenger for WhatsApp and Telegram",
+    "category": "Internet",
+    "simplifiedCategory": "Internet",
+    "version": "Version unknown",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "Felix-Helleckes",
+      "website": "https://github.com/Felix-Helleckes/ICQ",
+      "verified": false,
+      "github": "https://github.com/Felix-Helleckes/ICQ"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/Felix-Helleckes/ICQ/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/Felix-Helleckes/ICQ/releases"
+    },
+    "iconSlug": "_icq",
+    "icon": "https://appimage.github.io/database/-_ICQ/icons/512x512/icq-messenger.png",
+    "homepageUrl": "https://github.com/Felix-Helleckes/ICQ",
+    "sourceUrl": "https://github.com/Felix-Helleckes/ICQ",
+    "repositoryUrl": "https://github.com/Felix-Helleckes/ICQ",
+    "releasesUrl": "https://github.com/Felix-Helleckes/ICQ/releases",
+    "githubRepo": "Felix-Helleckes/ICQ",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
+    "tags": [
+      "network"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/-_ICQ/screenshot.png",
+        "alt": "- ICQ screenshot 1"
+      }
+    ]
   },
   {
     "id": "1devtool_releases",
@@ -670,7 +1119,7 @@
     "description": "One workspace. Every AI agent. Every project.",
     "category": "Development",
     "simplifiedCategory": "Development",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -702,6 +1151,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "development"
     ],
@@ -723,7 +1176,7 @@
     "description": "3D controller visualization overlay",
     "category": "System/Utilities",
     "simplifiedCategory": "System/Utilities",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -755,6 +1208,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "utility"
     ],
@@ -776,7 +1233,7 @@
     "description": "3’s PokeMMO Tool — For Blueberries",
     "category": "System/Utilities",
     "simplifiedCategory": "System/Utilities",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -808,6 +1265,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "utility"
     ],
@@ -829,7 +1290,7 @@
     "description": "Browse, download, and auto-change 4K wallpapers",
     "category": "Graphics",
     "simplifiedCategory": "Graphics",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -861,6 +1322,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "graphics"
     ],
@@ -882,7 +1347,7 @@
     "description": "Desktop (Electron) and web emulator for the AC6502 family of computers",
     "category": "Development",
     "simplifiedCategory": "Development",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -914,6 +1379,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "development"
     ],
@@ -935,7 +1404,7 @@
     "description": "",
     "category": "System/Utilities",
     "simplifiedCategory": "System/Utilities",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -967,6 +1436,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "utility"
     ],
@@ -984,11 +1457,11 @@
   {
     "id": "abcarus",
     "name": "ABCarus",
-    "tagline": "ABCarus is a small Electron app for editing, converting, and auditioning ABC notation. Import and export fl...",
-    "description": "ABCarus is a small Electron app for editing, converting, and auditioning ABC notation. Import and export flows support common MusicXML workflows with bundled tools for portability.",
+    "tagline": "Edit, render, and play ABC notation",
+    "description": "Edit, render, and play ABC notation",
     "category": "Audio/Video",
     "simplifiedCategory": "Audio/Video",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -1020,6 +1493,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "audiovideo"
     ],
@@ -1029,7 +1506,7 @@
     "versionHistory": [],
     "screenshots": [
       {
-        "url": "https://appimage.github.io/database/ABCarus/screenshot.png",
+        "url": "https://raw.githubusercontent.com/topchyan/abcarus/master/assets/screenshots/appstream-main.png",
         "alt": "ABCarus screenshot 1"
       }
     ]
@@ -1041,7 +1518,7 @@
     "description": "LLM-Mediated Object System",
     "category": "System/Utilities",
     "simplifiedCategory": "System/Utilities",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -1073,6 +1550,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "utility"
     ],
@@ -1094,7 +1575,7 @@
     "description": "Abraca DAB radio",
     "category": "Audio/Video",
     "simplifiedCategory": "Audio/Video",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -1126,6 +1607,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "audiovideo"
     ],
@@ -1147,7 +1632,7 @@
     "description": "",
     "category": "System/Utilities",
     "simplifiedCategory": "System/Utilities",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -1179,6 +1664,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "utility"
     ],
@@ -1200,7 +1689,7 @@
     "description": "Accessimap Lecteur DER",
     "category": "Education",
     "simplifiedCategory": "Education",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -1231,6 +1720,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "education"
     ],
@@ -1246,66 +1739,13 @@
     ]
   },
   {
-    "id": "account-scraper",
-    "name": "account-scraper",
-    "tagline": "Find spotify premium and netflix accounts for free!",
-    "description": "Find spotify premium and netflix accounts for free!",
-    "category": "System/Utilities",
-    "simplifiedCategory": "System/Utilities",
-    "version": "latest",
-    "releaseDate": "",
-    "size": "",
-    "architectures": [
-      "x86_64"
-    ],
-    "formats": [
-      "AppImage"
-    ],
-    "license": "MIT",
-    "licenseCategory": "Permissive",
-    "publisher": {
-      "name": "redabacha",
-      "website": "https://github.com/redabacha/account-scraper",
-      "verified": false,
-      "github": "https://github.com/redabacha/account-scraper"
-    },
-    "sha256": "",
-    "downloadUrl": "https://github.com/redabacha/account-scraper/releases",
-    "downloadMap": {
-      "x86_64": "https://github.com/redabacha/account-scraper/releases"
-    },
-    "iconSlug": "account-scraper",
-    "icon": "https://appimage.github.io/database/account-scraper/icons/512x512/account-scraper.png",
-    "homepageUrl": "https://github.com/redabacha/account-scraper",
-    "sourceUrl": "https://github.com/redabacha/account-scraper",
-    "repositoryUrl": "https://github.com/redabacha/account-scraper",
-    "releasesUrl": "https://github.com/redabacha/account-scraper/releases",
-    "githubRepo": "redabacha/account-scraper",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "utility"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "versionHistory": [],
-    "screenshots": [
-      {
-        "url": "https://appimage.github.io/database/account-scraper/screenshot.png",
-        "alt": "account-scraper screenshot 1"
-      }
-    ]
-  },
-  {
     "id": "acp_inspector",
     "name": "ACP Inspector",
     "tagline": "ACP Inspector is a developer tool for testing and debugging agents that speak the Agent Client Protocol (AC...",
     "description": "ACP Inspector is a developer tool for testing and debugging agents that speak the Agent Client Protocol (ACP) - inspect the JSON-RPC traffic, sessions, permission requests, and slash commands.",
     "category": "Development",
     "simplifiedCategory": "Development",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -1337,6 +1777,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "development"
     ],
@@ -1358,7 +1802,7 @@
     "description": "",
     "category": "Office",
     "simplifiedCategory": "Office",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -1390,6 +1834,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "office"
     ],
@@ -1411,7 +1859,7 @@
     "description": "Ada — agent-first desktop app",
     "category": "Development",
     "simplifiedCategory": "Development",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -1443,6 +1891,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "development"
     ],
@@ -1464,7 +1916,7 @@
     "description": "Addap’s, join the new wave of internet social browsing",
     "category": "Internet",
     "simplifiedCategory": "Internet",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -1492,6 +1944,10 @@
     "sourceType": "Community",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "chat"
     ],
@@ -1513,7 +1969,7 @@
     "description": "",
     "category": "System/Utilities",
     "simplifiedCategory": "System/Utilities",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -1542,6 +1998,10 @@
     "sourceType": "Community",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "settings"
     ],
@@ -1563,7 +2023,7 @@
     "description": "Altnautica Command — Open-source Ground Control Station for autonomous drones",
     "category": "System/Utilities",
     "simplifiedCategory": "System/Utilities",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -1595,6 +2055,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "utility"
     ],
@@ -1616,7 +2080,7 @@
     "description": "The Advanced REST Client desktop application.",
     "category": "Development",
     "simplifiedCategory": "Development",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -1648,6 +2112,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "development"
     ],
@@ -1669,7 +2137,7 @@
     "description": "Aplicatie gratuita pentru proiectia imnurilor si versetelor biblice in biserica.",
     "category": "System/Utilities",
     "simplifiedCategory": "System/Utilities",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -1701,6 +2169,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "utility"
     ],
@@ -1722,7 +2194,7 @@
     "description": "Linux-native SDR client for FlexRadio",
     "category": "System/Utilities",
     "simplifiedCategory": "System/Utilities",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -1754,6 +2226,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "hamradio"
     ],
@@ -1775,7 +2251,7 @@
     "description": "AFS 管理器 - 统一管理多个 AI 服务提供商，提供 OpenAI 兼容 API 接口",
     "category": "System/Utilities",
     "simplifiedCategory": "System/Utilities",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -1807,6 +2283,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "utility"
     ],
@@ -1828,7 +2308,7 @@
     "description": "Pixel Agents — standalone desktop app for visualizing AI coding agents",
     "category": "System/Utilities",
     "simplifiedCategory": "System/Utilities",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -1860,6 +2340,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "utility"
     ],
@@ -1881,7 +2365,7 @@
     "description": "",
     "category": "Development",
     "simplifiedCategory": "Development",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -1913,6 +2397,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "development"
     ],
@@ -1934,7 +2422,7 @@
     "description": "Desktop app for managing AI agent teams, reviews, runtime logs, and provider-aware workflows",
     "category": "Development",
     "simplifiedCategory": "Development",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -1966,6 +2454,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "development"
     ],
@@ -1987,7 +2479,7 @@
     "description": "AgentFlow desktop workspace for multi-agent workflows",
     "category": "Development",
     "simplifiedCategory": "Development",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -2019,6 +2511,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "development"
     ],
@@ -2040,7 +2536,7 @@
     "description": "Configure and run existing coding-agent CLIs from a desktop app.",
     "category": "Development",
     "simplifiedCategory": "Development",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -2072,6 +2568,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "development"
     ],
@@ -2087,13 +2587,70 @@
     ]
   },
   {
+    "id": "agentop",
+    "name": "AgentOp",
+    "tagline": "",
+    "description": "",
+    "category": "Development",
+    "simplifiedCategory": "Development",
+    "version": "Version unknown",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "MIT",
+    "licenseCategory": "Permissive",
+    "publisher": {
+      "name": "macromania",
+      "website": "https://github.com/macromania/agentop",
+      "verified": false,
+      "github": "https://github.com/macromania/agentop"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/macromania/agentop/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/macromania/agentop/releases"
+    },
+    "iconSlug": "agentop",
+    "icon": "https://appimage.github.io/database/AgentOp/icons/128x128/@agentopelectron.png",
+    "homepageUrl": "https://github.com/macromania/agentop",
+    "sourceUrl": "https://github.com/macromania/agentop",
+    "repositoryUrl": "https://github.com/macromania/agentop",
+    "releasesUrl": "https://github.com/macromania/agentop/releases",
+    "githubRepo": "macromania/agentop",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
+    "tags": [
+      "development"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/AgentOp/screenshot.png",
+        "alt": "AgentOp screenshot 1"
+      }
+    ]
+  },
+  {
     "id": "agentrq",
     "name": "AgentRQ",
     "tagline": "AgentRQ desktop app — AI-powered task queue for autonomous agents",
     "description": "AgentRQ desktop app — AI-powered task queue for autonomous agents",
     "category": "Development",
     "simplifiedCategory": "Development",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -2125,6 +2682,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "development"
     ],
@@ -2146,7 +2707,7 @@
     "description": "Pilos Agents — turn AI conversations into automated workflows",
     "category": "Development",
     "simplifiedCategory": "Development",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -2178,6 +2739,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "development"
     ],
@@ -2193,13 +2758,70 @@
     ]
   },
   {
+    "id": "aglaia",
+    "name": "Aglaia",
+    "tagline": "Scanner / page-extraction pipeline",
+    "description": "Scanner / page-extraction pipeline",
+    "category": "Graphics",
+    "simplifiedCategory": "Graphics",
+    "version": "Version unknown",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "",
+    "licenseCategory": "Open Source",
+    "publisher": {
+      "name": "yb85",
+      "website": "https://github.com/yb85/aglaia",
+      "verified": false,
+      "github": "https://github.com/yb85/aglaia"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/yb85/aglaia/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/yb85/aglaia/releases"
+    },
+    "iconSlug": "aglaia",
+    "icon": "https://appimage.github.io/database/Aglaia/icons/256x256/aglaia.png",
+    "homepageUrl": "https://github.com/yb85/aglaia",
+    "sourceUrl": "https://github.com/yb85/aglaia",
+    "repositoryUrl": "https://github.com/yb85/aglaia",
+    "releasesUrl": "https://github.com/yb85/aglaia/releases",
+    "githubRepo": "yb85/aglaia",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
+    "tags": [
+      "graphics"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/Aglaia/screenshot.png",
+        "alt": "Aglaia screenshot 1"
+      }
+    ]
+  },
+  {
     "id": "agora",
     "name": "Agora",
     "tagline": "Simple File Conversion Application",
     "description": "Simple File Conversion Application",
     "category": "System/Utilities",
     "simplifiedCategory": "System/Utilities",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -2228,6 +2850,10 @@
     "sourceType": "Community",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "utility"
     ],
@@ -2249,7 +2875,7 @@
     "description": "",
     "category": "System/Utilities",
     "simplifiedCategory": "System/Utilities",
-    "version": "latest",
+    "version": "Version unknown",
     "releaseDate": "",
     "size": "",
     "architectures": [
@@ -2281,6 +2907,10 @@
     "sourceType": "Official",
     "trustTier": "Unverified Community",
     "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
     "tags": [
       "utility"
     ],
@@ -2292,376 +2922,6 @@
       {
         "url": "https://appimage.github.io/database/Agro/screenshot.png",
         "alt": "Agro screenshot 1"
-      }
-    ]
-  },
-  {
-    "id": "ai_canvas",
-    "name": "AI Canvas",
-    "tagline": "Local-first scene-first mockup editor desktop app.",
-    "description": "Local-first scene-first mockup editor desktop app.",
-    "category": "Graphics",
-    "simplifiedCategory": "Graphics",
-    "version": "latest",
-    "releaseDate": "",
-    "size": "",
-    "architectures": [
-      "x86_64"
-    ],
-    "formats": [
-      "AppImage"
-    ],
-    "license": "AGPL-3.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "chadnickbok",
-      "website": "https://github.com/chadnickbok/ai-canvas",
-      "verified": false,
-      "github": "https://github.com/chadnickbok/ai-canvas"
-    },
-    "sha256": "",
-    "downloadUrl": "https://github.com/chadnickbok/ai-canvas/releases",
-    "downloadMap": {
-      "x86_64": "https://github.com/chadnickbok/ai-canvas/releases"
-    },
-    "iconSlug": "ai_canvas",
-    "icon": "https://appimage.github.io/database/AI_Canvas/icons/1024x1024/ai-canvas.png",
-    "homepageUrl": "https://github.com/chadnickbok/ai-canvas",
-    "sourceUrl": "https://github.com/chadnickbok/ai-canvas",
-    "repositoryUrl": "https://github.com/chadnickbok/ai-canvas",
-    "releasesUrl": "https://github.com/chadnickbok/ai-canvas/releases",
-    "githubRepo": "chadnickbok/ai-canvas",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "graphics"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "versionHistory": [],
-    "screenshots": [
-      {
-        "url": "https://appimage.github.io/database/AI_Canvas/screenshot.png",
-        "alt": "AI Canvas screenshot 1"
-      }
-    ]
-  },
-  {
-    "id": "ai_gist",
-    "name": "AI Gist",
-    "tagline": "本地优先的 AI 提示词管理工具，能够管理 AI 提示词 + 变量填充 + 分类标签。",
-    "description": "本地优先的 AI 提示词管理工具，能够管理 AI 提示词 + 变量填充 + 分类标签。",
-    "category": "System/Utilities",
-    "simplifiedCategory": "System/Utilities",
-    "version": "latest",
-    "releaseDate": "",
-    "size": "",
-    "architectures": [
-      "x86_64"
-    ],
-    "formats": [
-      "AppImage"
-    ],
-    "license": "AGPL-3.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "yarin-zhang",
-      "website": "https://github.com/yarin-zhang/AI-Gist",
-      "verified": false,
-      "github": "https://github.com/yarin-zhang/AI-Gist"
-    },
-    "sha256": "",
-    "downloadUrl": "https://github.com/yarin-zhang/AI-Gist/releases",
-    "downloadMap": {
-      "x86_64": "https://github.com/yarin-zhang/AI-Gist/releases"
-    },
-    "iconSlug": "ai_gist",
-    "icon": "https://appimage.github.io/database/AI_Gist/icons/512x512/ai-gist.png",
-    "homepageUrl": "https://github.com/yarin-zhang/AI-Gist",
-    "sourceUrl": "https://github.com/yarin-zhang/AI-Gist",
-    "repositoryUrl": "https://github.com/yarin-zhang/AI-Gist",
-    "releasesUrl": "https://github.com/yarin-zhang/AI-Gist/releases",
-    "githubRepo": "yarin-zhang/AI-Gist",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "utility"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "versionHistory": [],
-    "screenshots": [
-      {
-        "url": "https://appimage.github.io/database/AI_Gist/screenshot.png",
-        "alt": "AI Gist screenshot 1"
-      }
-    ]
-  },
-  {
-    "id": "ai-bot-workspace",
-    "name": "ai-bot-workspace",
-    "tagline": "An Electron application which includes testing workspaces for some Riddles.io competitions.",
-    "description": "An Electron application which includes testing workspaces for some Riddles.io competitions.",
-    "category": "Development",
-    "simplifiedCategory": "Development",
-    "version": "latest",
-    "releaseDate": "",
-    "size": "",
-    "architectures": [
-      "x86_64"
-    ],
-    "formats": [
-      "AppImage"
-    ],
-    "license": "MIT",
-    "licenseCategory": "Permissive",
-    "publisher": {
-      "name": "jmerle",
-      "website": "https://github.com/jmerle/ai-bot-workspace",
-      "verified": false,
-      "github": "https://github.com/jmerle/ai-bot-workspace"
-    },
-    "sha256": "",
-    "downloadUrl": "https://github.com/jmerle/ai-bot-workspace/releases",
-    "downloadMap": {
-      "x86_64": "https://github.com/jmerle/ai-bot-workspace/releases"
-    },
-    "iconSlug": "ai-bot-workspace",
-    "homepageUrl": "https://github.com/jmerle/ai-bot-workspace",
-    "sourceUrl": "https://github.com/jmerle/ai-bot-workspace",
-    "repositoryUrl": "https://github.com/jmerle/ai-bot-workspace",
-    "releasesUrl": "https://github.com/jmerle/ai-bot-workspace/releases",
-    "githubRepo": "jmerle/ai-bot-workspace",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "development"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "versionHistory": [],
-    "screenshots": [
-      {
-        "url": "https://appimage.github.io/database/ai-bot-workspace/screenshot.png",
-        "alt": "ai-bot-workspace screenshot 1"
-      }
-    ]
-  },
-  {
-    "id": "ai-browser",
-    "name": "AI-Browser",
-    "tagline": "AI Browser",
-    "description": "AI Browser",
-    "category": "System/Utilities",
-    "simplifiedCategory": "System/Utilities",
-    "version": "latest",
-    "releaseDate": "",
-    "size": "",
-    "architectures": [
-      "x86_64"
-    ],
-    "formats": [
-      "AppImage"
-    ],
-    "license": "MIT",
-    "licenseCategory": "Permissive",
-    "publisher": {
-      "name": "Jun-Murakami",
-      "website": "https://github.com/Jun-Murakami/AI-Browser",
-      "verified": false,
-      "github": "https://github.com/Jun-Murakami/AI-Browser"
-    },
-    "sha256": "",
-    "downloadUrl": "https://github.com/Jun-Murakami/AI-Browser/releases",
-    "downloadMap": {
-      "x86_64": "https://github.com/Jun-Murakami/AI-Browser/releases"
-    },
-    "iconSlug": "ai-browser",
-    "icon": "https://appimage.github.io/database/AI-Browser/icons/128x128/ai-browser.png",
-    "homepageUrl": "https://github.com/Jun-Murakami/AI-Browser",
-    "sourceUrl": "https://github.com/Jun-Murakami/AI-Browser",
-    "repositoryUrl": "https://github.com/Jun-Murakami/AI-Browser",
-    "releasesUrl": "https://github.com/Jun-Murakami/AI-Browser/releases",
-    "githubRepo": "Jun-Murakami/AI-Browser",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "utility"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "versionHistory": [],
-    "screenshots": [
-      {
-        "url": "https://appimage.github.io/database/AI-Browser/screenshot.png",
-        "alt": "AI-Browser screenshot 1"
-      }
-    ]
-  },
-  {
-    "id": "ai-code-fusion",
-    "name": "ai-code-fusion",
-    "tagline": "AI Code Fusion",
-    "description": "AI Code Fusion",
-    "category": "System/Utilities",
-    "simplifiedCategory": "System/Utilities",
-    "version": "latest",
-    "releaseDate": "",
-    "size": "",
-    "architectures": [
-      "x86_64"
-    ],
-    "formats": [
-      "AppImage"
-    ],
-    "license": "GPL-3.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "codingworkflow",
-      "website": "https://github.com/codingworkflow/ai-code-fusion",
-      "verified": false,
-      "github": "https://github.com/codingworkflow/ai-code-fusion"
-    },
-    "sha256": "",
-    "downloadUrl": "https://github.com/codingworkflow/ai-code-fusion/releases",
-    "downloadMap": {
-      "x86_64": "https://github.com/codingworkflow/ai-code-fusion/releases"
-    },
-    "iconSlug": "ai-code-fusion",
-    "icon": "https://appimage.github.io/database/ai-code-fusion/icons/128x128/ai-code-fusion.png",
-    "homepageUrl": "https://github.com/codingworkflow/ai-code-fusion",
-    "sourceUrl": "https://github.com/codingworkflow/ai-code-fusion",
-    "repositoryUrl": "https://github.com/codingworkflow/ai-code-fusion",
-    "releasesUrl": "https://github.com/codingworkflow/ai-code-fusion/releases",
-    "githubRepo": "codingworkflow/ai-code-fusion",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "utility"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "versionHistory": [],
-    "screenshots": [
-      {
-        "url": "https://appimage.github.io/database/ai-code-fusion/screenshot.png",
-        "alt": "ai-code-fusion screenshot 1"
-      }
-    ]
-  },
-  {
-    "id": "ai-opensubtitles-desktop-client",
-    "name": "ai-opensubtitles-desktop-client",
-    "tagline": "Cross-platform desktop client for AI.Opensubtitles.com",
-    "description": "Cross-platform desktop client for AI.Opensubtitles.com",
-    "category": "Audio/Video",
-    "simplifiedCategory": "Audio/Video",
-    "version": "latest",
-    "releaseDate": "",
-    "size": "",
-    "architectures": [
-      "x86_64"
-    ],
-    "formats": [
-      "AppImage"
-    ],
-    "license": "MIT",
-    "licenseCategory": "Permissive",
-    "publisher": {
-      "name": "iceman1010",
-      "website": "https://github.com/iceman1010/ai-opensubtitles-desktop-client",
-      "verified": false,
-      "github": "https://github.com/iceman1010/ai-opensubtitles-desktop-client"
-    },
-    "sha256": "",
-    "downloadUrl": "https://github.com/iceman1010/ai-opensubtitles-desktop-client/releases",
-    "downloadMap": {
-      "x86_64": "https://github.com/iceman1010/ai-opensubtitles-desktop-client/releases"
-    },
-    "iconSlug": "ai-opensubtitles-desktop-client",
-    "icon": "https://appimage.github.io/database/ai-opensubtitles-desktop-client/icons/1024x1024/ai-opensubtitles-client.png",
-    "homepageUrl": "https://github.com/iceman1010/ai-opensubtitles-desktop-client",
-    "sourceUrl": "https://github.com/iceman1010/ai-opensubtitles-desktop-client",
-    "repositoryUrl": "https://github.com/iceman1010/ai-opensubtitles-desktop-client",
-    "releasesUrl": "https://github.com/iceman1010/ai-opensubtitles-desktop-client/releases",
-    "githubRepo": "iceman1010/ai-opensubtitles-desktop-client",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "audiovideo"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "versionHistory": [],
-    "screenshots": [
-      {
-        "url": "https://appimage.github.io/database/ai-opensubtitles-desktop-client/screenshot.png",
-        "alt": "ai-opensubtitles-desktop-client screenshot 1"
-      }
-    ]
-  },
-  {
-    "id": "aiden_agent",
-    "name": "Aiden Agent",
-    "tagline": "A desktop AI workspace agent for local and hosted models",
-    "description": "A desktop AI workspace agent for local and hosted models",
-    "category": "Development",
-    "simplifiedCategory": "Development",
-    "version": "latest",
-    "releaseDate": "",
-    "size": "",
-    "architectures": [
-      "x86_64"
-    ],
-    "formats": [
-      "AppImage"
-    ],
-    "license": "MIT",
-    "licenseCategory": "Permissive",
-    "publisher": {
-      "name": "sambitcreate",
-      "website": "https://github.com/sambitcreate/aiden-agent",
-      "verified": false,
-      "github": "https://github.com/sambitcreate/aiden-agent"
-    },
-    "sha256": "",
-    "downloadUrl": "https://github.com/sambitcreate/aiden-agent/releases",
-    "downloadMap": {
-      "x86_64": "https://github.com/sambitcreate/aiden-agent/releases"
-    },
-    "iconSlug": "aiden_agent",
-    "icon": "https://appimage.github.io/database/Aiden_Agent/icons/512x512/aiden-agent.png",
-    "homepageUrl": "https://github.com/sambitcreate/aiden-agent",
-    "sourceUrl": "https://github.com/sambitcreate/aiden-agent",
-    "repositoryUrl": "https://github.com/sambitcreate/aiden-agent",
-    "releasesUrl": "https://github.com/sambitcreate/aiden-agent/releases",
-    "githubRepo": "sambitcreate/aiden-agent",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "tags": [
-      "development"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "versionHistory": [],
-    "screenshots": [
-      {
-        "url": "https://appimage.github.io/database/Aiden_Agent/screenshot.png",
-        "alt": "Aiden Agent screenshot 1"
       }
     ]
   }

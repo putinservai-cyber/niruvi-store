@@ -1,5 +1,8 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { describe, it, expect } from 'vitest';
 import worker, { Env, KVNamespace } from '../src/worker';
+import { isSafeAnonKey } from '../src/lib/supabase';
 import {
   sanitizeText,
   sanitizeUrl,
@@ -162,5 +165,42 @@ describe('Cloudflare Worker Auth Security & Session Hardening', () => {
     });
     const rateLimitedRes = await worker.fetch(eleventhReq, env);
     expect(rateLimitedRes.status).toBe(429);
+  });
+
+  it('enforces Phase 2 Supabase anon-key guard (rejects service_role keys) and RLS across all 8 marketplace tables', () => {
+    const anonPayload = Buffer.from(JSON.stringify({ role: 'anon' })).toString('base64url');
+    const servicePayload = Buffer.from(JSON.stringify({ role: 'service_role' })).toString('base64url');
+    expect(isSafeAnonKey(`eyJhbGciOiJIUzI1NiJ9.${anonPayload}.sig`)).toBe(true);
+    expect(isSafeAnonKey('sb_publishable_abc123')).toBe(true);
+    expect(isSafeAnonKey(`eyJhbGciOiJIUzI1NiJ9.${servicePayload}.sig`)).toBe(false);
+    expect(isSafeAnonKey('sb_secret_live_key_123')).toBe(false);
+
+    const migrationPath = path.join(
+      process.cwd(),
+      'supabase',
+      'migrations',
+      '0001_accounts_and_marketplace_rls.sql'
+    );
+    expect(fs.existsSync(migrationPath)).toBe(true);
+    const sql = fs.readFileSync(migrationPath, 'utf-8');
+
+    const requiredTables = [
+      'profiles',
+      'apps',
+      'app_versions',
+      'reviews',
+      'library',
+      'downloads',
+      'reports',
+      'audit_log',
+    ];
+    for (const tbl of requiredTables) {
+      expect(sql).toMatch(new RegExp(`create table if not exists public\\.${tbl}\\b`, 'i'));
+      expect(sql).toMatch(new RegExp(`alter table public\\.${tbl} enable row level security`, 'i'));
+    }
+    expect(sql).toContain("role in ('user', 'publisher', 'moderator', 'admin')");
+    expect(sql).toContain("status in ('draft', 'pending', 'published', 'rejected', 'taken_down')");
+    expect(sql).toContain("trust_tier in ('publisher_verified', 'checksum_verified', 'unverified')");
+    expect(sql).toContain('insert into public.audit_log');
   });
 });

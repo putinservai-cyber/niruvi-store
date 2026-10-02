@@ -4,6 +4,7 @@ import {
   getChecksumStatus,
   isCommunitySubmitted,
   isGenuineSha256,
+  formatAppVersion,
 } from '../utils/catalogSchema';
 import {
   ShieldCheck,
@@ -39,8 +40,7 @@ export const AppCard: React.FC<AppCardProps> = ({
   const isTrulyVerified = checksumStatus === 'verified';
   const hasProvidedChecksum = checksumStatus === 'provided' && isGenuineSha256(app.sha256);
   const summaryText = (app.tagline || app.description || '').trim();
-  const displayVersion =
-    app.version && app.version !== 'latest' ? `v${app.version.replace(/^v/i, '')}` : 'latest';
+  const displayVersion = formatAppVersion(app.version);
 
   return (
     <article

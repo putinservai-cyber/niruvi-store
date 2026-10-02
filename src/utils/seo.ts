@@ -7,6 +7,7 @@ import {
   DEFAULT_OG_IMAGE,
   buildCanonicalUrl,
 } from '../config/site';
+import { formatAppVersion, hasKnownVersion } from './catalogSchema';
 
 function upsertMeta(selector: string, attrName: 'name' | 'property', attrValue: string, content: string) {
   if (typeof document === 'undefined') return;
@@ -67,11 +68,12 @@ export function updatePageSeo(options: {
   if (typeof document === 'undefined') return;
 
   const { app } = options;
+  const versionSuffix = app && hasKnownVersion(app.version) ? ` ${formatAppVersion(app.version)}` : '';
   const title = app
-    ? `${app.name} v${app.version} — Download Linux AppImage | ${SITE_NAME}`
+    ? `${app.name}${versionSuffix} — Download Linux AppImage | ${SITE_NAME}`
     : options.title || DEFAULT_TITLE;
   const description = app
-    ? `Download ${app.name} v${app.version} (${app.size}, ${app.architectures.join(', ')}) standalone Linux AppImage with SHA-256 checksum verification (${app.sha256.slice(0, 12)}…) on ${SITE_NAME}.`
+    ? `Download ${app.name}${versionSuffix} (${[app.size, app.architectures.join(', ')].filter(Boolean).join(', ')}) standalone Linux AppImage${app.sha256 ? ` with SHA-256 checksum verification (${app.sha256.slice(0, 12)}…)` : ''} on ${SITE_NAME}.`
     : options.description || DEFAULT_DESCRIPTION;
   const canonicalPath = app ? `/app/${encodeURIComponent(app.id)}` : options.path || '/';
   const canonicalUrl = buildCanonicalUrl(canonicalPath);

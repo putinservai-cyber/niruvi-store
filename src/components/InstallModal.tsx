@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AppMetadata } from '../types';
 import { generateNiruviProtocolUrl } from '../data/apps';
-import { isGenuineSha256 } from '../utils/catalogSchema';
+import { isGenuineSha256, formatAppVersion, hasKnownVersion } from '../utils/catalogSchema';
 import {
   X,
   Terminal,
@@ -32,7 +32,11 @@ export const InstallModal: React.FC<InstallModalProps> = ({
   const isTrulyVerified = Boolean(app.publisher.verified && isGenuineSha256(app.sha256));
   const protocolUrl = generateNiruviProtocolUrl(app, selectedArch);
   const activeDownloadUrl = app.downloadMap?.[selectedArch] || app.downloadUrl;
-  const fileName = `${app.id}-${app.version}-${selectedArch}.AppImage`;
+  const fileVersionSegment = hasKnownVersion(app.version)
+    ? `-${app.version.replace(/^v/i, '')}`
+    : '';
+  const fileName = `${app.id}${fileVersionSegment}-${selectedArch}.AppImage`;
+  const displayVersion = formatAppVersion(app.version);
   const cliCommand = isTrulyVerified
     ? `curl -fL "${activeDownloadUrl}" -o "${fileName}" && echo "${app.sha256}  ${fileName}" | sha256sum --check && chmod +x "${fileName}"`
     : `curl -fL "${activeDownloadUrl}" -o "${fileName}" && chmod +x "${fileName}"`;
@@ -83,7 +87,7 @@ export const InstallModal: React.FC<InstallModalProps> = ({
                   )}
                 </div>
                 <p className="text-xs text-neutral-400 font-mono mt-0.5">
-                  {app.version !== 'latest' ? `v${app.version}` : 'latest'} • {selectedArch}
+                  {displayVersion} • {selectedArch}
                   {app.size ? ` • ${app.size}` : ''}
                 </p>
               </div>

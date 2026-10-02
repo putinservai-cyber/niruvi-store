@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { formatAppVersion, hasKnownVersion } from '../src/utils/catalogSchema';
 
 const rawEnvSiteUrl = (
   process.env.VITE_SITE_URL || 'https://niruvi-store.runs-on.dev'
@@ -190,7 +191,7 @@ function runPrerender() {
         </div>
         <p class="w-full text-xs text-neutral-300 line-clamp-2 leading-relaxed">${escapeHtml(app.tagline || app.description)}</p>
         <dl class="text-xs text-neutral-300 space-y-1 font-mono">
-          <div><dt class="inline text-neutral-400">Version:</dt> <dd class="inline">v${escapeHtml(app.version)}</dd></div>
+          <div><dt class="inline text-neutral-400">Version:</dt> <dd class="inline">${escapeHtml(formatAppVersion(app.version))}</dd></div>
           <div><dt class="inline text-neutral-400">Size:</dt> <dd class="inline">${escapeHtml(app.size)}</dd></div>
           <div><dt class="inline text-neutral-400">Architecture:</dt> <dd class="inline">${escapeHtml((app.architectures || []).join(', '))}</dd></div>
           <div><dt class="inline text-neutral-400">License:</dt> <dd class="inline">${escapeHtml(app.license)}</dd></div>
@@ -244,16 +245,19 @@ function runPrerender() {
   // 2. Pre-render Individual App Detail Pages: dist/app/<id>/index.html
   for (const app of apps) {
     const appPath = `/app/${encodeURIComponent(app.id)}`;
-    const appTitle = `${app.name} v${app.version} — Download Linux AppImage | Niruvi Store`;
-    const appDesc = `Download ${app.name} v${app.version} (${app.size}, ${(app.architectures || []).join(', ')}) standalone Linux AppImage with SHA-256 checksum (${String(app.sha256).slice(0, 12)}…) on Niruvi Store.`;
-    const fileName = `${app.id}-${app.version}-${(app.architectures && app.architectures[0]) || 'x86_64'}.AppImage`;
+    const formattedVer = formatAppVersion(app.version);
+    const verSuffix = hasKnownVersion(app.version) ? ` ${formattedVer}` : '';
+    const appTitle = `${app.name}${verSuffix} — Download Linux AppImage | Niruvi Store`;
+    const appDesc = `Download ${app.name}${verSuffix} (${app.size}, ${(app.architectures || []).join(', ')}) standalone Linux AppImage with SHA-256 checksum (${String(app.sha256).slice(0, 12)}…) on Niruvi Store.`;
+    const fileVer = hasKnownVersion(app.version) ? `-${String(app.version).replace(/^v/i, '')}` : '';
+    const fileName = `${app.id}${fileVer}-${(app.architectures && app.architectures[0]) || 'x86_64'}.AppImage`;
     const niruviUri = `niruvi://install?id=${encodeURIComponent(app.id)}&name=${encodeURIComponent(app.name)}&version=${encodeURIComponent(app.version)}&url=${encodeURIComponent(app.downloadUrl)}&sha256=${encodeURIComponent(app.sha256)}`;
 
     const softwareJsonLd = {
       '@context': 'https://schema.org',
       '@type': 'SoftwareApplication',
       name: app.name,
-      softwareVersion: app.version,
+      softwareVersion: formattedVer,
       description: app.description,
       applicationCategory: app.category,
       operatingSystem: 'Linux',
@@ -284,7 +288,7 @@ function runPrerender() {
         <article class="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h1 class="text-2xl font-bold text-white">${escapeHtml(app.name)} <span class="text-sm font-mono text-neutral-300">v${escapeHtml(app.version)}</span></h1>
+              <h1 class="text-2xl font-bold text-white">${escapeHtml(app.name)} <span class="text-sm font-mono text-neutral-300">${escapeHtml(formattedVer)}</span></h1>
               <p class="text-sm text-neutral-300 mt-1">${escapeHtml(app.tagline)}</p>
             </div>
             <div class="flex items-center gap-2">
@@ -305,7 +309,7 @@ function runPrerender() {
           <p class="text-sm text-neutral-200 leading-relaxed">${escapeHtml(app.description)}</p>
           <dl class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 rounded-xl bg-neutral-950 border border-neutral-800 text-xs">
             <div><dt class="text-neutral-400">Developer</dt><dd class="text-white font-semibold">${escapeHtml(app.publisher?.name || '')}</dd></div>
-            <div><dt class="text-neutral-400">Version</dt><dd class="text-white font-mono">v${escapeHtml(app.version)}</dd></div>
+            <div><dt class="text-neutral-400">Version</dt><dd class="text-white font-mono">${escapeHtml(formattedVer)}</dd></div>
             <div><dt class="text-neutral-400">Size</dt><dd class="text-white font-mono">${escapeHtml(app.size)}</dd></div>
             <div><dt class="text-neutral-400">Architecture</dt><dd class="text-white font-mono">${escapeHtml((app.architectures || []).join(', '))}</dd></div>
             <div><dt class="text-neutral-400">License</dt><dd class="text-white">${escapeHtml(app.license)}</dd></div>

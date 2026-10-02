@@ -6,7 +6,12 @@ import '@testing-library/jest-dom/vitest';
 import axe from 'axe-core';
 import { App } from '../src/App';
 import { AuthProvider } from '../src/context/AuthContext';
-import { APPS_CATALOG, TOTAL_CATALOG_COUNT } from '../src/data/apps';
+import {
+  APPS_CATALOG,
+  TOTAL_CATALOG_COUNT,
+  VERIFIED_DIRECT_CATALOG_COUNT,
+  CATALOG_CLEANUP_REPORT,
+} from '../src/data/apps';
 import { SITE_URL } from '../src/config/site';
 import {
   isValidHttpsDownloadUrl,
@@ -110,7 +115,7 @@ describe('Niruvi Store — Search, Filtering, Pagination, and Empty State', () =
     ).not.toBeInTheDocument();
   });
 
-  it('shows 48-per-page paginated count across all 2,569+ apps on default catalog load', () => {
+  it('hides unverified imports by default on main listing and shows 48-per-page pagination when toggled', () => {
     render(
       <AuthProvider>
         <App />
@@ -119,9 +124,28 @@ describe('Niruvi Store — Search, Filtering, Pagination, and Empty State', () =
     expect(TOTAL_CATALOG_COUNT).toBeGreaterThanOrEqual(2500);
     expect(
       screen.getAllByText(
-        new RegExp(`Showing 1-48 of ${TOTAL_CATALOG_COUNT.toLocaleString()} apps`, 'i'),
+        new RegExp(`Showing 1-${VERIFIED_DIRECT_CATALOG_COUNT} of ${VERIFIED_DIRECT_CATALOG_COUNT} apps`, 'i'),
       ).length,
     ).toBeGreaterThan(0);
+
+    // Toggle "Show Unverified" to inspect unverified AppImageHub imports (excluding policy-flagged entries)
+    const showUnverifiedBtn = screen.getByRole('button', { name: /Show Unverified/i });
+    fireEvent.click(showUnverifiedBtn);
+
+    const nonPolicyTotal =
+      TOTAL_CATALOG_COUNT - CATALOG_CLEANUP_REPORT.affectedCounts.policyFlaggedCount;
+    expect(
+      screen.getAllByText(
+        new RegExp(`Showing 1-48 of ${nonPolicyTotal.toLocaleString()} apps`, 'i'),
+      ).length,
+    ).toBeGreaterThan(0);
+
+    // Open the Phase 1 Catalog Audit Report drawer
+    const reportBtn = screen.getByRole('button', { name: /Catalog Audit Report/i });
+    fireEvent.click(reportBtn);
+    expect(
+      screen.getByRole('heading', { name: /Phase 1 Catalog Cleanup & Verification Report/i }),
+    ).toBeInTheDocument();
   });
 
   it('filters catalog by search query and updates URL query string', async () => {
@@ -323,6 +347,8 @@ describe('Niruvi Store — Community Submission (/submit), Worker API Merge & Ba
     fireEvent.click(signInNavButtons[0]);
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Continue with GitHub/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Continue with Google/i })).toBeInTheDocument();
     expect(screen.getByText(/Cloudflare Turnstile Bot Protection/i)).toBeInTheDocument();
     expect(screen.getByTestId('auth-turnstile-widget-container')).toBeInTheDocument();
 
