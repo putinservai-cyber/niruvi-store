@@ -11,6 +11,7 @@ export default tseslint.config(
       'node_modules/**',
       'experimental/**',
       'scripts/**/*.cjs',
+      'scripts/**/*.mjs',
       'src/data/generated-catalog.json',
       'feed.json',
     ],

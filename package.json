@@ -16,6 +16,7 @@
     "build": "node -e \"const fs=require('fs'),cp=require('child_process');if(fs.existsSync('scripts/generate-catalog.ts'))cp.execSync('npx tsx scripts/generate-catalog.ts',{stdio:'inherit'})\" && tsc --noEmit && vite build && node -e \"const fs=require('fs'),cp=require('child_process');if(fs.existsSync('scripts/prerender-static.ts'))cp.execSync('npx tsx scripts/prerender-static.ts',{stdio:'inherit'})\"",
     "build:static": "tsx scripts/generate-catalog.ts && vite build && tsx scripts/prerender-static.ts",
     "preview": "vite preview --port 3000 --host 0.0.0.0",
+    "admin:submissions": "tsx scripts/admin-submissions.ts",
     "lint": "eslint . && tsc --noEmit",
     "lint:fix": "eslint . --fix && prettier --write \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\" \"tests/**/*.ts\"",
     "test": "NODE_OPTIONS=\"--import ./scripts/vitest-node-shim.mjs\" vitest run",

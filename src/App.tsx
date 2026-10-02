@@ -2,7 +2,12 @@ import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { APPS_CATALOG, TOTAL_CATALOG_COUNT } from './data/apps';
 import { AppMetadata } from './types';
 import { mapToSimplifiedCategory } from './utils/appimagehub';
-import { isGenuineSha256, validateCatalogAtRuntime } from './utils/catalogSchema';
+import {
+  isCommunitySubmitted,
+  isGenuineSha256,
+  mapWorkerSubmissionToAppMetadata,
+  validateCatalogAtRuntime,
+} from './utils/catalogSchema';
 import { Navbar, NavTab } from './components/Navbar';
 import { FilterBar, SortOption, SIMPLIFIED_CATEGORIES } from './components/FilterBar';
 import { AppCard } from './components/AppCard';
@@ -11,6 +16,7 @@ import { InstallModal } from './components/InstallModal';
 import { IntegrityVerifierView } from './components/IntegrityVerifierView';
 import { MyLibraryView } from './components/MyLibraryView';
 import { SubmitAppView } from './components/SubmitAppView';
+import { AdminModerationView } from './components/AdminModerationView';
 import { AuthModal } from './components/AuthModal';
 import { AccountManagementModal } from './components/AccountManagementModal';
 import { Footer, LegalRoute } from './components/Footer';
@@ -22,7 +28,7 @@ import { Refunds } from './pages/Refunds';
 import { Donate } from './pages/Donate';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { updatePageSeo } from './utils/seo';
-import { withBaseUrl, stripBaseUrl } from './config/site';
+import { withBaseUrl, stripBaseUrl, buildApiUrl } from './config/site';
 import {
   PackageOpen,
   CheckCircle2,
@@ -55,6 +61,7 @@ function parseCurrentLocation(): RouteState {
   if (lowerHash === 'verifier') return { legalRoute: 'store', activeTab: 'verifier', appId: null };
   if (lowerHash === 'library') return { legalRoute: 'store', activeTab: 'library', appId: null };
   if (lowerHash === 'submit') return { legalRoute: 'store', activeTab: 'submit', appId: null };
+  if (lowerHash === 'admin') return { legalRoute: 'store', activeTab: 'admin', appId: null };
   if (lowerHash.startsWith('app/')) {
     const hashSlug = decodeURIComponent(hash.slice(4)).trim();
     if (hashSlug) return { legalRoute: 'store', activeTab: 'browse', appId: hashSlug };
@@ -75,6 +82,7 @@ function parseCurrentLocation(): RouteState {
   if (lowerPath === '/verifier') return { legalRoute: 'store', activeTab: 'verifier', appId: null };
   if (lowerPath === '/library') return { legalRoute: 'store', activeTab: 'library', appId: null };
   if (lowerPath === '/submit') return { legalRoute: 'store', activeTab: 'submit', appId: null };
+  if (lowerPath === '/admin') return { legalRoute: 'store', activeTab: 'admin', appId: null };
 
   if (lowerPath.startsWith('/app/')) {
     const slug = decodeURIComponent(pathname.slice(5)).trim();
@@ -132,10 +140,39 @@ function filterAndSortCatalog(
       }
       if (a.publisher.verified && !b.publisher.verified) return -1;
       if (!a.publisher.verified && b.publisher.verified) return 1;
+      const aComm = isCommunitySubmitted(a);
+      const bComm = isCommunitySubmitted(b);
+      if (aComm && !bComm) return -1;
+      if (!aComm && bComm) return 1;
       if (a.featured && !b.featured) return -1;
       if (!a.featured && b.featured) return 1;
       return a.name.localeCompare(b.name);
     });
+}
+
+function mergeCatalogWithCommunity(
+  staticApps: AppMetadata[],
+  communityApps: AppMetadata[]
+): AppMetadata[] {
+  if (!communityApps || communityApps.length === 0) return staticApps;
+  const seen = new Set<string>();
+  const merged: AppMetadata[] = [];
+
+  for (const app of communityApps) {
+    const key = app.id.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      merged.push(app);
+    }
+  }
+  for (const app of staticApps) {
+    const key = app.id.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      merged.push(app);
+    }
+  }
+  return merged;
 }
 
 export interface AppProps {
@@ -150,12 +187,58 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
     return validateCatalogAtRuntime(initialCatalogOverride);
   }, [initialCatalogOverride]);
 
+  const [communityApps, setCommunityApps] = useState<AppMetadata[]>([]);
+
+  // Clear any legacy local preview apps (e.g. "Supabase Preview") stored in localStorage
+  // and fetch published community submissions from Cloudflare Worker GET /api/apps.
+  // Handles errors/offline gracefully so the static catalog always works when the Worker is down.
+  useEffect(() => {
+    try {
+      localStorage.removeItem('niruvi_custom_apps');
+    } catch {}
+
+    if (initialCatalogOverride) return;
+    let cancelled = false;
+
+    async function fetchWorkerApps() {
+      try {
+        const res = await fetch(buildApiUrl('/api/apps'));
+        const contentType = res.headers?.get?.('content-type') || '';
+        if (!res.ok || !contentType.includes('application/json')) return;
+        const data = await res.json();
+        if (cancelled || !Array.isArray(data?.apps)) return;
+
+        const mappedWorkerApps: AppMetadata[] = [];
+        for (const raw of data.apps) {
+          const mapped = mapWorkerSubmissionToAppMetadata(raw);
+          if (mapped && !/supabase\s*preview/i.test(mapped.name)) {
+            mappedWorkerApps.push(mapped);
+          }
+        }
+
+        if (mappedWorkerApps.length > 0) {
+          setCommunityApps((prev) => mergeCatalogWithCommunity(prev, mappedWorkerApps));
+        }
+      } catch {
+        // Worker is offline or unreachable; fall back silently to static catalog
+      }
+    }
+
+    fetchWorkerApps();
+    return () => {
+      cancelled = true;
+    };
+  }, [initialCatalogOverride]);
+
   const baseSeedCatalog = useMemo(() => {
     if (overrideValidation && overrideValidation.errors.length === 0) {
-      return overrideValidation.validApps as unknown as AppMetadata[];
+      return mergeCatalogWithCommunity(
+        overrideValidation.validApps as unknown as AppMetadata[],
+        communityApps
+      );
     }
-    return APPS_CATALOG;
-  }, [overrideValidation]);
+    return mergeCatalogWithCommunity(APPS_CATALOG, communityApps);
+  }, [overrideValidation, communityApps]);
 
   const [legalRoute, setLegalRoute] = useState<LegalRoute>(initialRoute.legalRoute);
   const [activeTab, setActiveTab] = useState<NavTab>(initialRoute.activeTab);
@@ -261,7 +344,8 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
       }
 
       if (fullCatalogCacheRef.current) {
-        const filtered = filterAndSortCatalog(fullCatalogCacheRef.current, {
+        const mergedFull = mergeCatalogWithCommunity(fullCatalogCacheRef.current, communityApps);
+        const filtered = filterAndSortCatalog(mergedFull, {
           q: searchQuery,
           category: selectedCategory,
           arch: selectedArch,
@@ -280,7 +364,16 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
     } finally {
       setCatalogLoading(false);
     }
-  }, [currentPage, searchQuery, selectedCategory, selectedArch, onlyVerified, sortBy, queryKey]);
+  }, [
+    currentPage,
+    searchQuery,
+    selectedCategory,
+    selectedArch,
+    onlyVerified,
+    sortBy,
+    queryKey,
+    communityApps,
+  ]);
 
   useEffect(() => {
     loadPaginatedPage();
@@ -336,7 +429,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
   const syncFiltered = useMemo(() => {
     const source = initialCatalogOverride
       ? baseSeedCatalog
-      : fullCatalogCacheRef.current || baseSeedCatalog;
+      : mergeCatalogWithCommunity(fullCatalogCacheRef.current || baseSeedCatalog, communityApps);
     return filterAndSortCatalog(source, {
       q: searchQuery,
       category: selectedCategory,
@@ -347,6 +440,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
   }, [
     initialCatalogOverride,
     baseSeedCatalog,
+    communityApps,
     searchQuery,
     selectedCategory,
     selectedArch,
@@ -356,9 +450,22 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
 
   const activePageItems = useMemo(() => {
     if (!initialCatalogOverride && serverPage && serverPage.key === queryKey) {
+      if (currentPage === 1 && communityApps.length > 0) {
+        const merged = filterAndSortCatalog(
+          mergeCatalogWithCommunity(serverPage.items, communityApps),
+          {
+            q: searchQuery,
+            category: selectedCategory,
+            arch: selectedArch,
+            onlyVerified,
+            sortBy,
+          }
+        );
+        return merged.slice(0, PAGE_SIZE);
+      }
       return serverPage.items;
     }
-    if (!initialCatalogOverride && isDefaultFirstPage) {
+    if (!initialCatalogOverride && isDefaultFirstPage && communityApps.length === 0) {
       return baseSeedCatalog.slice(0, PAGE_SIZE);
     }
     const start = (currentPage - 1) * PAGE_SIZE;
@@ -371,17 +478,30 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
     baseSeedCatalog,
     currentPage,
     syncFiltered,
+    communityApps,
+    searchQuery,
+    selectedCategory,
+    selectedArch,
+    onlyVerified,
+    sortBy,
   ]);
 
   const totalMatchingApps = useMemo(() => {
     if (!initialCatalogOverride && serverPage && serverPage.key === queryKey) {
-      return serverPage.total;
+      return serverPage.total + communityApps.length;
     }
     if (!initialCatalogOverride && isDefaultFirstPage) {
-      return TOTAL_CATALOG_COUNT;
+      return TOTAL_CATALOG_COUNT + communityApps.length;
     }
     return syncFiltered.length;
-  }, [initialCatalogOverride, serverPage, queryKey, isDefaultFirstPage, syncFiltered]);
+  }, [
+    initialCatalogOverride,
+    serverPage,
+    queryKey,
+    isDefaultFirstPage,
+    syncFiltered,
+    communityApps.length,
+  ]);
 
   const totalPages = Math.max(1, Math.ceil(totalMatchingApps / PAGE_SIZE));
   const pageStart = totalMatchingApps === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
@@ -405,6 +525,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
   const [installApp, setInstallApp] = useState<AppMetadata | null>(null);
   const [installArch, setInstallArch] = useState<string>('x86_64');
   const [verifierInitialHash, setVerifierInitialHash] = useState<string>('');
+  const [autoOpenReportModal, setAutoOpenReportModal] = useState<boolean>(false);
 
   // Saved / Starred apps in localStorage
   const [starredIds, setStarredIds] = useState<string[]>(() => {
@@ -740,9 +861,16 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
 
             {activeTab === 'submit' && (
               <SubmitAppView
-                onAppAdded={() => showToast('Application submitted for review.', 'success')}
+                onAppAdded={(newApp) => {
+                  setCommunityApps((prev) => mergeCatalogWithCommunity([newApp], prev));
+                  showToast(`Published "${newApp.name}" to community catalog.`, 'success');
+                }}
                 onNavigateToStore={() => handleTabChange('browse')}
               />
+            )}
+
+            {activeTab === 'admin' && (
+              <AdminModerationView onBackToStore={() => handleTabChange('browse')} />
             )}
 
             {activeTab === 'donate' && (
@@ -851,10 +979,18 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
                         <AppCard
                           key={app.id}
                           app={app}
-                          onSelect={(a: AppMetadata) => handleSelectApp(a)}
+                          onSelect={(a: AppMetadata) => {
+                            setAutoOpenReportModal(false);
+                            handleSelectApp(a);
+                          }}
                           onInstall={handleInstallClick}
                           isStarred={starredIds.includes(app.id)}
                           onToggleStar={handleToggleStar}
+                          onReport={(a: AppMetadata, e: React.MouseEvent) => {
+                            e.stopPropagation();
+                            setAutoOpenReportModal(true);
+                            handleSelectApp(a);
+                          }}
                         />
                       ))}
                     </div>
@@ -964,12 +1100,16 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
 
       <AppDetailModal
         app={selectedApp}
-        onClose={() => handleSelectApp(null)}
+        onClose={() => {
+          setAutoOpenReportModal(false);
+          handleSelectApp(null);
+        }}
         onInstall={handleInstallClick}
         isStarred={selectedApp ? starredIds.includes(selectedApp.id) : false}
         onToggleStar={handleToggleStar}
         onOpenVerifierWithHash={handleOpenVerifierWithHash}
         onShowToast={showToast}
+        initialOpenReport={autoOpenReportModal}
       />
 
       <InstallModal

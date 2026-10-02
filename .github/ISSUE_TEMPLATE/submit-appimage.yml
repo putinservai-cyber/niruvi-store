@@ -1,0 +1,116 @@
+name: Submit AppImage to Catalog
+description: Submit a new Linux AppImage package to the Niruvi Store directory (external HTTPS link only)
+title: "[Submission]: "
+labels: ["submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Community AppImage Directory Submission
+        **Niruvi Store** is a software directory only: it displays application metadata and links directly to the upstream download URL. It never hosts, stores, or proxies AppImage binaries.
+        
+        When you submit this issue, an automated GitHub Actions workflow (`validate-submission.yml`) will verify the HTTPS URL, check the host allowlist (`catalog/allowed-hosts.json`), send a `HEAD` request to confirm availability, and check for catalog duplicates before a maintainer reviews and approves it.
+
+  - type: input
+    id: name
+    attributes:
+      label: Application Name
+      description: The display name of the application.
+      placeholder: e.g. FreeTube
+    validations:
+      required: true
+
+  - type: textarea
+    id: short_description
+    attributes:
+      label: Short Description
+      description: A concise summary of what the application does (1–2 sentences).
+      placeholder: e.g. Open-source, privacy-friendly desktop YouTube player built for Linux.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Upstream release version string (without leading 'v').
+      placeholder: e.g. 0.22.1
+    validations:
+      required: true
+
+  - type: dropdown
+    id: architecture
+    attributes:
+      label: Architecture
+      description: Target Linux CPU architecture for this AppImage binary.
+      options:
+        - x86_64
+        - aarch64
+        - armhf
+      default: 0
+    validations:
+      required: true
+
+  - type: input
+    id: license
+    attributes:
+      label: License
+      description: SPDX license identifier or open-source license name.
+      placeholder: e.g. GPL-3.0, MIT, Apache-2.0
+    validations:
+      required: true
+
+  - type: input
+    id: download_url
+    attributes:
+      label: Download URL (HTTPS only)
+      description: Direct HTTPS link to the .AppImage file or official release page on an allowed host (github.com, gitlab.com, sourceforge.net, etc.).
+      placeholder: https://github.com/owner/repo/releases/download/v1.0.0/App-x86_64.AppImage
+    validations:
+      required: true
+
+  - type: input
+    id: source_url
+    attributes:
+      label: Upstream Source / Repository URL
+      description: HTTPS link to the upstream source code repository or official project homepage.
+      placeholder: https://github.com/owner/repo
+    validations:
+      required: true
+
+  - type: input
+    id: icon_url
+    attributes:
+      label: Icon URL (Optional)
+      description: Optional HTTPS link to a PNG or SVG application icon.
+      placeholder: https://raw.githubusercontent.com/owner/repo/main/icon.png
+    validations:
+      required: false
+
+  - type: input
+    id: sha256
+    attributes:
+      label: SHA-256 Checksum (Optional)
+      description: Optional 64-character hexadecimal SHA-256 digest of the AppImage file.
+      placeholder: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    validations:
+      required: false
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: Store category for browsing.
+      options:
+        - Utilities
+        - Development
+        - Graphics & Design
+        - Audio & Video
+        - Productivity
+        - Internet & Network
+        - Games
+        - System & Security
+        - Education
+      default: 0
+    validations:
+      required: false

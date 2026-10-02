@@ -56,26 +56,73 @@ GitHub Repository (putinservai-cyber/niruvi-store)
 
 ---
 
-## ☁️ Deploying with Cloudflare Wrangler (Workers + D1 + KV + Secrets)
+## ☁️ Instant Community Submissions (Cloudflare Worker + D1 + Turnstile)
+
+Niruvi Store supports instant community AppImage submissions via a dedicated Cloudflare Worker and D1 database in `/worker`:
+
+- **Worker Config & Code**: `worker/wrangler.toml`, `worker/src/index.ts`, `worker/src/config.ts`
+- **D1 Schema Migration**: `worker/migrations/0001_submissions.sql` (`submissions` and `submission_reports` tables)
+- **Strict CORS Policy**: Allows only `https://putinservai-cyber.github.io` and `https://niruvi-store.runs-on.dev`.
+- **Parameterized SQL & Sanitization**: Uses `.prepare(...).bind(...)` exclusively, hashes client IPs (`SHA-256` with `IP_HASH_SALT`), escapes all user text, enforces host allowlists (`github.com`, `gitlab.com`, `sourceforge.net`, etc.), and never downloads or executes submitted binaries.
+
+### Worker API Endpoints
+
+| Endpoint | Description |
+| :--- | :--- |
+| `GET /api/apps` | Returns all `published` community submissions ordered by `created_at DESC`. |
+| `POST /api/submit` | Validates HTTPS URLs, allowed hosts, field length limits, slug uniqueness, static catalog duplicates, Cloudflare Turnstile token, and per-IP rate limits; inserts as `"published"`. |
+| `POST /api/report` | Lets visitors report broken or abusive entries (rate-limited per IP hash). |
+| `GET /api/admin/submissions` | Lists all submissions (`published` & `hidden`) and reports (`Authorization: Bearer <ADMIN_TOKEN>`). |
+| `POST /api/admin/hide` | Hides or re-publishes a submission by `id` or `slug` (`Authorization: Bearer <ADMIN_TOKEN>`). |
+| `POST /api/admin/delete` | Permanently deletes a submission by `id` or `slug` (`Authorization: Bearer <ADMIN_TOKEN>`). |
+
+### Ordered Manual Setup Checklist (Cloudflare & GitHub)
 
 ```bash
-# 1. Create the D1 database and apply schema migration
+# 1. Create the Cloudflare D1 database
+cd worker
 npx wrangler d1 create niruvi-store-db
-npx wrangler d1 execute niruvi-store-db --remote --file=./migrations/0001_catalog_pipeline.sql
+# Copy the returned `database_id` UUID into `worker/wrangler.toml` under [[d1_databases]]
 
-# 2. Provision Worker secrets (never commit secrets to git)
-npx wrangler secret put JWT_SECRET
-npx wrangler secret put GITHUB_TOKEN
+# 2. Apply the D1 schema migration (local & remote)
+npx wrangler d1 migrations apply niruvi-store-db --local
+npx wrangler d1 migrations apply niruvi-store-db --remote
 
-# 3. Build static assets + pre-rendered app pages and deploy Worker
-npm run build
+# 3. Create a Cloudflare Turnstile widget in the Cloudflare Dashboard
+#    Add hostnames: putinservai-cyber.github.io and niruvi-store.runs-on.dev
+#    Copy the Site Key (for GitHub Actions vars) and Secret Key (for Worker secrets)
+
+# 4. Set the Cloudflare Worker secrets (never commit secrets to the repo)
+npx wrangler secret put TURNSTILE_SECRET_KEY
+npx wrangler secret put ADMIN_TOKEN
+npx wrangler secret put IP_HASH_SALT
+
+# 5. Deploy the Cloudflare Worker
 npx wrangler deploy
+
+# 6. Set GitHub Repository Variables (Settings → Secrets and variables → Actions → Variables)
+#    - VITE_API_URL            = https://niruvi-store-api.<your-subdomain>.workers.dev
+#    - VITE_TURNSTILE_SITE_KEY = <your-turnstile-site-key>
+#    - VITE_BASE               = /niruvi-store/ (for github.io) or / (for custom domain)
+#    - VITE_SITE_URL           = https://putinservai-cyber.github.io (or https://niruvi-store.runs-on.dev)
 ```
 
-To test the scheduled Cron Trigger locally with Wrangler:
+### Moderating Community Submissions (CLI or `/admin` UI)
+
+You can hide, re-publish, or delete community entries using either the CLI script or the `/admin` web view (`/#/admin`):
+
 ```bash
-npx wrangler dev --test-scheduled
-curl "http://localhost:8787/__scheduled?cron=0+*/6+*+*+*"
+# List all community submissions and visitor reports
+ADMIN_TOKEN="<your-admin-token>" VITE_API_URL="https://niruvi-store-api.<subdomain>.workers.dev" \
+  npm run admin:submissions -- list
+
+# Hide an entry by slug or id
+ADMIN_TOKEN="<your-admin-token>" VITE_API_URL="https://niruvi-store-api.<subdomain>.workers.dev" \
+  npm run admin:submissions -- hide my-app-slug
+
+# Permanently delete an entry by slug or id
+ADMIN_TOKEN="<your-admin-token>" VITE_API_URL="https://niruvi-store-api.<subdomain>.workers.dev" \
+  npm run admin:submissions -- delete my-app-slug
 ```
 
 ---
@@ -129,33 +176,31 @@ Visit `http://localhost:3000` in your browser.
 
 ## 📦 How to Submit an Application
 
-Contributing an application is automated and does not require modifying frontend components!
+Niruvi Store is a software directory: it displays application details and links directly to the publisher's upstream download URL. It never hosts, stores, or proxies AppImage binaries.
 
-1. Fork this repository.
-2. Create a new file in `catalog/apps/<your-app-id>.json`:
-   ```json
-   {
-     "id": "example-tool",
-     "name": "Example Tool",
-     "tagline": "Modern developer utility for Linux",
-     "description": "Full description of your Linux tool...",
-     "version": "1.0.0",
-     "category": "Utilities",
-     "developer": "Your Name / Organization",
-     "license": "GPL-3.0",
-     "homepage": "https://example.org",
-     "repository": "https://github.com/example/example-tool",
-     "architectures": ["x86_64"],
-     "formats": ["AppImage"],
-     "download": {
-       "x86_64": "https://github.com/example/example-tool/releases/download/v1.0.0/example-tool.AppImage"
-     },
-     "sha256": "4b2e84c4e7fae29f8f4a13d80cb5f19001a1db6c1e345cb5774a38a9a202bc51",
-     "keywords": ["developer", "utility", "tools"]
-   }
-   ```
-3. Run `npm run validate:catalog` and `npm test` to ensure all fields pass validation.
-4. Open a Pull Request. Once merged, GitHub Actions automatically deploys the updated catalog to the live store.
+### Option A: Community Submission via `/submit` or GitHub Issue Form (Recommended)
+
+1. Visit the **`/submit`** page on Niruvi Store (or open a new GitHub Issue using [`.github/ISSUE_TEMPLATE/submit-appimage.yml`](.github/ISSUE_TEMPLATE/submit-appimage.yml)).
+2. Fill in the required fields:
+   - **Application Name**, **Short Description**, **Version**, **Architecture** (`x86_64`, `aarch64`, `armhf`), **License**
+   - **Download URL (`https://` only)** — must point to an `.AppImage` file or official releases page on an allowed host listed in [`catalog/allowed-hosts.json`](catalog/allowed-hosts.json) (`github.com`, `gitlab.com`, `sourceforge.net`, etc.)
+   - **Upstream Source / Repository URL (`https://` only)**
+   - **Optional**: Icon URL (`https://`) and 64-character hexadecimal **SHA-256 Checksum**
+3. Submitting `/submit` validates fields client-side (no tokens or secrets in the frontend) and opens a prefilled GitHub Issue on `putinservai-cyber/niruvi-store` with the `submission` label.
+4. **Automated Validation (`.github/workflows/validate-submission.yml`)**:
+   - Triggered when an issue with label `submission` is opened or edited (`permissions: issues: write, contents: read`).
+   - Passes issue fields via environment variables (never interpolated into shell commands) to `scripts/submission-workflow.mjs validate`.
+   - Verifies `https://` protocol, checks the hostname against `catalog/allowed-hosts.json`, sends an HTTP `HEAD` request (without downloading the binary) to confirm availability, checks that the URL ends in `.AppImage` or is a releases page, and checks for duplicates in the catalog.
+   - Posts a validation summary comment and applies the `validated` or `needs-changes` label.
+5. **Maintainer Approval (`.github/workflows/approve-submission.yml`)**:
+   - When a maintainer adds the `approved` label to a `validated` issue, GitHub Actions generates `catalog/apps/<id>.json` with `"source": "community"` and `"checksumStatus": "provided"` (if SHA-256 was supplied) or `"unverified"` (if omitted).
+   - Opens a Pull Request (`Closes #<issue>`) for maintainer review without auto-merging.
+
+### Option B: Direct Pull Request
+
+1. Fork this repository and create `catalog/apps/<your-app-id>.json`.
+2. Run `npm run validate:catalog` and `npm test` to ensure all fields pass validation.
+3. Open a Pull Request. Once merged, GitHub Actions automatically deploys the updated catalog to the live store.
 
 For complete guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
 

@@ -101,7 +101,9 @@ export const CatalogAppSchema = z.object({
   features: z.array(z.string()).optional(),
   requirements: z.string().optional(),
   isUserAdded: z.boolean().optional(),
+  source: z.enum(['community', 'official']).optional(),
   sourceType: z.enum(['Official', 'Community']).optional(),
+  checksumStatus: z.enum(['verified', 'provided', 'unverified']).optional(),
   trustTier: z
     .enum(['Official Developer', 'Verified Community', 'Unverified Community'])
     .optional(),
@@ -114,6 +116,167 @@ export interface CatalogValidationResult {
   validApps: AppMetadata[];
   errors: Array<{ id: string; message: string }>;
   isValid: boolean;
+}
+
+export const ALLOWED_SUBMISSION_HOSTS = [
+  'github.com',
+  'objects.githubusercontent.com',
+  'release-assets.githubusercontent.com',
+  'gitlab.com',
+  'sourceforge.net',
+  'downloads.sourceforge.net',
+  'codeberg.org',
+  'freedesktop.org',
+  'kde.org',
+  'download.kde.org',
+  'gnome.org',
+  'mozilla.org',
+  'niruvi-store.runs-on.dev',
+  'putinservai-cyber.github.io',
+] as const;
+
+export function isAllowedSubmissionHost(url: string): boolean {
+  try {
+    const parsed = new URL(url.trim());
+    if (parsed.protocol !== 'https:') return false;
+    const host = parsed.hostname.toLowerCase();
+    return ALLOWED_SUBMISSION_HOSTS.some((allowed) => host === allowed || host.endsWith(`.${allowed}`));
+  } catch {
+    return false;
+  }
+}
+
+export function isCommunitySubmitted(app: Pick<AppMetadata, 'source' | 'sourceType' | 'isUserAdded'>): boolean {
+  return app.source === 'community' || Boolean(app.isUserAdded);
+}
+
+export function getChecksumStatus(
+  app: Pick<AppMetadata, 'checksumStatus' | 'source' | 'sourceType' | 'isUserAdded' | 'sha256' | 'publisher'>
+): 'verified' | 'provided' | 'unverified' {
+  if (app.checksumStatus === 'provided' && isGenuineSha256(app.sha256)) {
+    return 'provided';
+  }
+  if (app.checksumStatus === 'verified' && isGenuineSha256(app.sha256)) {
+    return 'verified';
+  }
+  if (isCommunitySubmitted(app)) {
+    return isGenuineSha256(app.sha256) ? 'provided' : 'unverified';
+  }
+  if (app.publisher?.verified && isGenuineSha256(app.sha256)) {
+    return 'verified';
+  }
+  return 'unverified';
+}
+
+export interface SubmissionIssueParams {
+  name: string;
+  shortDescription: string;
+  version: string;
+  architecture: string;
+  license: string;
+  downloadUrl: string;
+  sourceUrl: string;
+  iconUrl?: string;
+  sha256?: string;
+  category?: string;
+}
+
+/**
+ * Builds the prefilled GitHub Issue Form URL for putinservai-cyber/niruvi-store
+ * using .github/ISSUE_TEMPLATE/submit-appimage.yml and label "submission".
+ */
+export function buildGitHubSubmissionIssueUrl(params: SubmissionIssueParams): string {
+  const query = new URLSearchParams();
+  query.set('template', 'submit-appimage.yml');
+  query.set('labels', 'submission');
+  const titleName = params.name.trim() || 'App';
+  const titleVersion = params.version.trim() ? ` v${params.version.trim().replace(/^v/i, '')}` : '';
+  query.set('title', `[Submission]: ${titleName}${titleVersion}`);
+  if (params.name.trim()) query.set('name', params.name.trim());
+  if (params.shortDescription.trim()) query.set('short_description', params.shortDescription.trim());
+  if (params.version.trim()) query.set('version', params.version.trim().replace(/^v/i, ''));
+  if (params.architecture.trim()) query.set('architecture', params.architecture.trim());
+  if (params.license.trim()) query.set('license', params.license.trim());
+  if (params.downloadUrl.trim()) query.set('download_url', params.downloadUrl.trim());
+  if (params.sourceUrl.trim()) query.set('source_url', params.sourceUrl.trim());
+  if (params.iconUrl?.trim()) query.set('icon_url', params.iconUrl.trim());
+  if (params.sha256?.trim()) query.set('sha256', params.sha256.trim().toLowerCase());
+  if (params.category?.trim()) query.set('category', params.category.trim());
+
+  return `https://github.com/putinservai-cyber/niruvi-store/issues/new?${query.toString()}`;
+}
+
+/**
+ * Converts a row from the Cloudflare Worker D1 `submissions` table (`GET /api/apps`)
+ * into a sanitized `AppMetadata` entry with `source: 'community'`.
+ */
+export function mapWorkerSubmissionToAppMetadata(raw: unknown): AppMetadata | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const r = raw as Record<string, unknown>;
+  if (r.status && r.status !== 'published') return null;
+
+  const slug = sanitizeText(String(r.slug || r.id || ''), 64)
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, '-');
+  const name = sanitizeText(String(r.name || ''), 80);
+  const description = sanitizeText(String(r.description || ''), 500);
+  const version = sanitizeText(String(r.version || '1.0.0').replace(/^v/i, ''), 40);
+  const archRaw = String(r.architecture || 'x86_64');
+  const architecture =
+    archRaw === 'aarch64' || archRaw === 'armhf' || archRaw === 'x86_64' ? archRaw : 'x86_64';
+  const license = sanitizeText(String(r.license || 'Open Source'), 60);
+  const downloadUrl = sanitizeUrl(String(r.download_url || r.downloadUrl || ''));
+  const sourceUrl = sanitizeUrl(String(r.source_url || r.sourceUrl || ''));
+  const iconUrl = r.icon_url || r.iconUrl ? sanitizeUrl(String(r.icon_url || r.iconUrl)) : undefined;
+  const rawSha = typeof r.sha256 === 'string' ? r.sha256.trim().toLowerCase() : '';
+  const hasValidSha = isGenuineSha256(rawSha);
+
+  if (!slug || !name || !isValidHttpsDownloadUrl(downloadUrl)) {
+    return null;
+  }
+
+  const createdAt =
+    typeof r.created_at === 'string' && r.created_at.length >= 10
+      ? r.created_at.slice(0, 10)
+      : new Date().toISOString().slice(0, 10);
+
+  return {
+    id: slug,
+    name,
+    tagline: description.slice(0, 160),
+    description,
+    category: 'Utilities',
+    simplifiedCategory: 'System/Utilities',
+    version,
+    releaseDate: createdAt,
+    size: '',
+    architectures: [architecture],
+    formats: ['AppImage'],
+    license,
+    licenseCategory: /mit|apache|bsd|isc/i.test(license) ? 'Permissive' : 'Open Source',
+    publisher: {
+      name: 'Community Submission',
+      website: sourceUrl || undefined,
+      verified: false,
+      github: sourceUrl || undefined,
+    },
+    sha256: hasValidSha ? rawSha : '',
+    downloadUrl,
+    downloadMap: { [architecture]: downloadUrl },
+    homepageUrl: sourceUrl || undefined,
+    sourceUrl: sourceUrl || undefined,
+    repositoryUrl: sourceUrl || undefined,
+    iconSlug: slug,
+    icon: iconUrl || undefined,
+    source: 'community',
+    sourceType: 'Community',
+    checksumStatus: hasValidSha ? 'provided' : 'unverified',
+    trustTier: 'Unverified Community',
+    tags: ['community', 'appimage'],
+    downloadsCount: 0,
+    rating: 0,
+    isUserAdded: true,
+  };
 }
 
 /**
@@ -191,6 +354,16 @@ export function validateCatalogAtRuntime(rawItems: unknown): CatalogValidationRe
     }
 
     const verifiedFlag = Boolean(app.publisher.verified && isUniqueGenuineHash);
+    const isCommunity = app.source === 'community' || Boolean(app.isUserAdded);
+    const resolvedChecksumStatus: 'verified' | 'provided' | 'unverified' =
+      app.checksumStatus === 'provided' && isGenuineSha256(lowerHash)
+        ? 'provided'
+        : verifiedFlag
+          ? 'verified'
+          : isCommunity && isGenuineSha256(lowerHash)
+            ? 'provided'
+            : 'unverified';
+
     const computedTier = verifiedFlag
       ? app.trustTier ||
         (app.sourceType === 'Official' ? 'Official Developer' : 'Verified Community')
@@ -198,6 +371,9 @@ export function validateCatalogAtRuntime(rawItems: unknown): CatalogValidationRe
 
     validApps.push({
       ...(app as unknown as AppMetadata),
+      source: app.source || (isCommunity ? 'community' : 'official'),
+      sourceType: app.sourceType || (isCommunity ? 'Community' : 'Official'),
+      checksumStatus: resolvedChecksumStatus,
       name: sanitizeText(app.name, 100),
       tagline: sanitizeText(app.tagline, 300),
       description: sanitizeText(app.description, 4000),

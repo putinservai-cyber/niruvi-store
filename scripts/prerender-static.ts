@@ -172,17 +172,23 @@ function runPrerender() {
   // 1. Pre-render Homepage (dist/index.html) with all catalog cards
   const cardsHtml = apps
     .map((app) => {
+      const isCommunity = app.source === 'community' || app.sourceType === 'Community';
+      const communityBadge = isCommunity
+        ? `<span class="text-amber-300 text-xs font-mono">Community submitted</span>`
+        : '';
       const verifiedBadge = app.publisher?.verified
         ? `<span class="text-emerald-400 text-xs font-mono">SHA-256 Verified</span>`
-        : `<span class="text-amber-400 text-xs font-mono">Checksum Unverified</span>`;
-      return `<article class="bg-neutral-900/70 border border-neutral-800 rounded-2xl p-5">
-        <div class="flex items-center justify-between gap-2 mb-2">
-          <h2 class="font-bold text-base text-white">
+        : app.checksumStatus === 'provided' && app.sha256
+          ? `<span class="text-sky-300 text-xs font-mono">Checksum: Provided</span>`
+          : `<span class="text-amber-400 text-xs font-mono">Checksum: Unverified</span>`;
+      return `<article class="flex flex-col gap-3 min-w-0 bg-neutral-900/70 border border-neutral-800 rounded-2xl p-5">
+        <div class="flex items-center justify-between gap-2 min-w-0">
+          <h2 class="font-bold text-base text-white truncate">
             <a href="${BASE_PATH}app/${encodeURIComponent(app.id)}">${escapeHtml(app.name)}</a>
           </h2>
-          ${verifiedBadge}
+          <div class="flex items-center gap-2">${communityBadge}${verifiedBadge}</div>
         </div>
-        <p class="text-xs text-neutral-300 mb-3">${escapeHtml(app.tagline || app.description)}</p>
+        <p class="w-full text-xs text-neutral-300 line-clamp-2 leading-relaxed">${escapeHtml(app.tagline || app.description)}</p>
         <dl class="text-xs text-neutral-300 space-y-1 font-mono">
           <div><dt class="inline text-neutral-400">Version:</dt> <dd class="inline">v${escapeHtml(app.version)}</dd></div>
           <div><dt class="inline text-neutral-400">Size:</dt> <dd class="inline">${escapeHtml(app.size)}</dd></div>
@@ -190,7 +196,7 @@ function runPrerender() {
           <div><dt class="inline text-neutral-400">License:</dt> <dd class="inline">${escapeHtml(app.license)}</dd></div>
           <div><dt class="inline text-neutral-400">SHA-256:</dt> <dd class="inline break-all">${escapeHtml(app.sha256)}</dd></div>
         </dl>
-        <div class="mt-3 flex items-center gap-3 text-xs">
+        <div class="flex items-center gap-3 text-xs">
           <a href="${BASE_PATH}app/${encodeURIComponent(app.id)}" class="underline text-sky-400">View Details &amp; Verify</a>
           <a href="${escapeHtml(app.downloadUrl)}" rel="noopener noreferrer" class="underline text-emerald-400">Direct HTTPS Download</a>
         </div>
@@ -281,11 +287,20 @@ function runPrerender() {
               <h1 class="text-2xl font-bold text-white">${escapeHtml(app.name)} <span class="text-sm font-mono text-neutral-300">v${escapeHtml(app.version)}</span></h1>
               <p class="text-sm text-neutral-300 mt-1">${escapeHtml(app.tagline)}</p>
             </div>
-            ${
-              app.publisher?.verified
-                ? '<span class="text-xs font-mono text-emerald-400">SHA-256 Verified</span>'
-                : '<span class="text-xs font-mono text-amber-400">Checksum Unverified</span>'
-            }
+            <div class="flex items-center gap-2">
+              ${
+                app.source === 'community' || app.sourceType === 'Community'
+                  ? '<span class="text-xs font-mono text-amber-300">Community submitted</span>'
+                  : ''
+              }
+              ${
+                app.publisher?.verified
+                  ? '<span class="text-xs font-mono text-emerald-400">SHA-256 Verified</span>'
+                  : app.checksumStatus === 'provided' && app.sha256
+                    ? '<span class="text-xs font-mono text-sky-300">Checksum: Provided</span>'
+                    : '<span class="text-xs font-mono text-amber-400">Checksum: Unverified</span>'
+              }
+            </div>
           </div>
           <p class="text-sm text-neutral-200 leading-relaxed">${escapeHtml(app.description)}</p>
           <dl class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 rounded-xl bg-neutral-950 border border-neutral-800 text-xs">

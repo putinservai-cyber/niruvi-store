@@ -1,0 +1,19 @@
+{
+  "description": "Allowed HTTPS hostnames (and their subdomains) for community AppImage download URLs.",
+  "allowedHosts": [
+    "github.com",
+    "objects.githubusercontent.com",
+    "release-assets.githubusercontent.com",
+    "gitlab.com",
+    "sourceforge.net",
+    "downloads.sourceforge.net",
+    "codeberg.org",
+    "freedesktop.org",
+    "kde.org",
+    "download.kde.org",
+    "gnome.org",
+    "mozilla.org",
+    "niruvi-store.runs-on.dev",
+    "putinservai-cyber.github.io"
+  ]
+}

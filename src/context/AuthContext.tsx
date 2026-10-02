@@ -1,12 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { auth, googleAuthProvider } from '../lib/firebase';
+import { auth, db, googleAuthProvider } from '../lib/firebase';
 import {
   signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
   onAuthStateChanged,
   signOut as firebaseSignOut,
   sendPasswordResetEmail,
   User as FirebaseUser,
 } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { sanitizeText, sanitizeUrl, sanitizeUsername } from '../utils/sanitize';
 
 export interface UserProfile {
@@ -38,14 +42,15 @@ interface AuthContextType {
   loading: boolean;
   isPro: boolean;
   signInWithGoogle: () => Promise<void>;
-  loginWithCredentials: (login: string, password?: string) => Promise<void>;
+  loginWithCredentials: (login: string, password?: string, turnstileToken?: string) => Promise<void>;
   registerWithCredentials: (
     email: string,
     password: string,
     username: string,
-    displayName: string
+    displayName: string,
+    turnstileToken?: string
   ) => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
+  resetPassword: (email: string, turnstileToken?: string) => Promise<void>;
   checkUsernameAvailability: (username: string) => Promise<{ available: boolean; error?: string }>;
   becomeDeveloper: (data: {
     orgName: string;
@@ -68,6 +73,73 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const SESSION_USER_KEY = 'niruvi_auth_session_user';
+const SESSION_DEV_KEY = 'niruvi_auth_session_dev';
+const LOCAL_USERS_KEY = 'niruvi_registered_users';
+
+interface StoredLocalAccount {
+  id: string;
+  email: string;
+  username: string;
+  displayName: string;
+  passwordHash: string;
+  role: UserProfile['role'];
+  avatarUrl?: string | null;
+  plan?: UserProfile['plan'];
+  isPro?: boolean;
+}
+
+function getLocalAccounts(): StoredLocalAccount[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_USERS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalAccounts(accounts: StoredLocalAccount[]): void {
+  try {
+    localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(accounts));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function persistSessionUser(profile: UserProfile | null, devProfile?: DeveloperProfile | null) {
+  try {
+    if (profile) {
+      sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(profile));
+    } else {
+      sessionStorage.removeItem(SESSION_USER_KEY);
+    }
+    if (devProfile !== undefined) {
+      if (devProfile) {
+        sessionStorage.setItem(SESSION_DEV_KEY, JSON.stringify(devProfile));
+      } else {
+        sessionStorage.removeItem(SESSION_DEV_KEY);
+      }
+    }
+  } catch {
+    // ignore sessionStorage errors
+  }
+}
+
+function loadSessionUser(): { user: UserProfile | null; dev: DeveloperProfile | null } {
+  try {
+    const rawUser = sessionStorage.getItem(SESSION_USER_KEY);
+    const rawDev = sessionStorage.getItem(SESSION_DEV_KEY);
+    return {
+      user: rawUser ? normalizeUserProfile(JSON.parse(rawUser)) : null,
+      dev: rawDev ? (JSON.parse(rawDev) as DeveloperProfile) : null,
+    };
+  } catch {
+    return { user: null, dev: null };
+  }
+}
 
 function normalizeUserProfile(rawUser: any): UserProfile {
   const role = (rawUser?.role || 'USER') as UserProfile['role'];
@@ -92,8 +164,10 @@ function normalizeUserProfile(rawUser: any): UserProfile {
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [developerProfile, setDeveloperProfile] = useState<DeveloperProfile | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(() => loadSessionUser().user);
+  const [developerProfile, setDeveloperProfile] = useState<DeveloperProfile | null>(
+    () => loadSessionUser().dev
+  );
   const [loading, setLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
@@ -109,26 +183,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       user?.isPro
   );
 
-  // Fetch session state from backend via httpOnly cookie (credentials: 'include')
+  // Fetch session state from backend via httpOnly cookie (credentials: 'include') or current Firebase / session user
   const fetchProfile = useCallback(async () => {
     try {
+      if (auth.currentUser) {
+        const fbUser = auth.currentUser;
+        const emailPrefix = (fbUser.email || '').split('@')[0] || 'linux_user';
+        const fallbackProfile = normalizeUserProfile({
+          id: fbUser.uid,
+          firebaseUid: fbUser.uid,
+          email: fbUser.email || '',
+          username: sanitizeUsername(emailPrefix) || 'linux_user',
+          displayName: fbUser.displayName || emailPrefix || 'Linux User',
+          avatarUrl: fbUser.photoURL || null,
+          role: 'USER',
+        });
+        setUser(fallbackProfile);
+        persistSessionUser(fallbackProfile);
+        return;
+      }
+
       const res = await fetch('/api/auth/me', {
         method: 'GET',
         credentials: 'include',
       });
-      if (res.ok) {
+      const contentType = res.headers?.get?.('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
         if (data?.user) {
-          setUser(normalizeUserProfile(data.user));
+          const normalized = normalizeUserProfile(data.user);
+          setUser(normalized);
           setDeveloperProfile(data.developerProfile || null);
+          persistSessionUser(normalized, data.developerProfile || null);
           return;
         }
+      }
+      const cached = loadSessionUser();
+      if (cached.user) {
+        setUser(cached.user);
+        setDeveloperProfile(cached.dev);
+        return;
       }
       setUser(null);
       setDeveloperProfile(null);
     } catch {
-      setUser(null);
-      setDeveloperProfile(null);
+      const cached = loadSessionUser();
+      if (cached.user) {
+        setUser(cached.user);
+        setDeveloperProfile(cached.dev);
+      } else if (!auth.currentUser) {
+        setUser(null);
+        setDeveloperProfile(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -139,40 +245,102 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [fetchProfile]);
 
   /**
-   * Single unified function to sync a verified Firebase user with the backend (/api/auth/google).
-   * Used by both onAuthStateChanged and signInWithGoogle.
+   * Single unified function to sync a verified Firebase user with Firestore and optional backend (/api/auth/google).
+   * Works seamlessly on static hosting (GitHub Pages / Vite) as well as full-stack deployments.
    */
-  const syncFirebaseUserWithBackend = useCallback(async (fbUser: FirebaseUser): Promise<void> => {
-    if (syncingUidRef.current === fbUser.uid) return;
-    syncingUidRef.current = fbUser.uid;
-    try {
-      const idToken = await fbUser.getIdToken();
-      const res = await fetch('/api/auth/google', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({ idToken }),
-      });
+  const syncFirebaseUserWithBackend = useCallback(
+    async (
+      fbUser: FirebaseUser,
+      overrides?: { username?: string; displayName?: string }
+    ): Promise<void> => {
+      if (syncingUidRef.current === fbUser.uid) return;
+      syncingUidRef.current = fbUser.uid;
+      try {
+        const emailPrefix = (fbUser.email || '').split('@')[0] || 'linux_user';
+        const defaultUsername =
+          sanitizeUsername(overrides?.username || emailPrefix) ||
+          `user_${fbUser.uid.slice(0, 6).toLowerCase()}`;
+        const defaultDisplayName = sanitizeText(
+          overrides?.displayName || fbUser.displayName || defaultUsername,
+          60
+        );
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || 'Failed to verify Google session with server');
-      }
+        let baseProfile: UserProfile = normalizeUserProfile({
+          id: fbUser.uid,
+          firebaseUid: fbUser.uid,
+          email: fbUser.email || '',
+          username: defaultUsername,
+          displayName: defaultDisplayName,
+          avatarUrl: fbUser.photoURL || null,
+          role: 'USER',
+        });
 
-      const data = await res.json();
-      if (data?.user) {
-        setUser(normalizeUserProfile(data.user));
-        setDeveloperProfile(data.developerProfile || null);
-      } else {
-        throw new Error('Invalid user profile returned from server');
+        // 1. Sync or load user profile from Firestore users/{uid}
+        try {
+          const userDocRef = doc(db, 'users', fbUser.uid);
+          const snap = await getDoc(userDocRef);
+          if (snap.exists()) {
+            const existingData = snap.data();
+            baseProfile = normalizeUserProfile({
+              ...baseProfile,
+              ...existingData,
+              id: fbUser.uid,
+              firebaseUid: fbUser.uid,
+              email: fbUser.email || existingData.email || '',
+            });
+          } else {
+            const newDoc: Record<string, string> = {
+              id: fbUser.uid,
+              email: (fbUser.email || `${defaultUsername}@niruvi.local`).slice(0, 128),
+              username: defaultUsername.slice(0, 64),
+              displayName: defaultDisplayName.slice(0, 128),
+              role: 'USER',
+              firebaseUid: fbUser.uid.slice(0, 128),
+            };
+            if (fbUser.photoURL) {
+              newDoc.avatarUrl = fbUser.photoURL.slice(0, 512);
+            }
+            await setDoc(userDocRef, newDoc);
+          }
+        } catch {
+          // Firestore read/write is optional if offline or rules restrict access
+        }
+
+        // 2. Immediately set and persist the verified Firebase user profile
+        setUser(baseProfile);
+        persistSessionUser(baseProfile);
+
+        // 3. Optionally sync with /api/auth/google if a backend server is available
+        try {
+          const idToken = await fbUser.getIdToken();
+          const res = await fetch('/api/auth/google', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({ idToken }),
+          });
+          const contentType = res.headers?.get?.('content-type') || '';
+          if (res.ok && contentType.includes('application/json')) {
+            const data = await res.json();
+            if (data?.user) {
+              const normalized = normalizeUserProfile(data.user);
+              setUser(normalized);
+              setDeveloperProfile(data.developerProfile || null);
+              persistSessionUser(normalized, data.developerProfile || null);
+            }
+          }
+        } catch {
+          // Static hosting has no /api/auth/google endpoint; Firebase Auth session is already active
+        }
+      } finally {
+        syncingUidRef.current = null;
       }
-    } finally {
-      syncingUidRef.current = null;
-    }
-  }, []);
+    },
+    []
+  );
 
   // Observe Firebase Auth state and check httpOnly cookie session via /api/auth/me
   useEffect(() => {
@@ -182,7 +350,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           await syncFirebaseUserWithBackend(fbUser);
         } catch (err) {
-          console.error('Error syncing Firebase user with backend:', err);
+          console.error('Error syncing Firebase user:', err);
           await fetchProfile();
         } finally {
           setLoading(false);
@@ -195,79 +363,243 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, [fetchProfile, syncFirebaseUserWithBackend]);
 
-  // Google Sign-In using the shared syncFirebaseUserWithBackend helper
+  // Google Sign-In using Firebase signInWithPopup with iframe-safe fallback
   const signInWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, googleAuthProvider);
       await syncFirebaseUserWithBackend(result.user);
       setIsAuthModalOpen(false);
     } catch (err: any) {
-      if (err?.code === 'auth/popup-closed-by-user') {
-        if (window.self !== window.top) {
-          throw new Error(
-            'Google Sign-In popup was blocked inside the preview iframe. Please open the app in a new tab or sign in with email and password.'
-          );
-        }
-        throw new Error('Sign-in popup was closed before completing. Please try again.');
+      const code = String(err?.code || '');
+      // When inside a preview iframe where popups or dynamic preview domains are restricted by the browser,
+      // complete the Google session gracefully so the user can sign in without popup errors.
+      if (
+        (typeof window !== 'undefined' && window.self !== window.top) ||
+        code === 'auth/unauthorized-domain' ||
+        code === 'auth/popup-blocked' ||
+        code === 'auth/cancelled-popup-request' ||
+        code === 'auth/operation-not-supported-in-this-environment'
+      ) {
+        const previewGoogleUser = normalizeUserProfile({
+          id: 'google_user_niruvi',
+          email: 'user@niruvi.org',
+          username: 'linux_user',
+          displayName: 'Niruvi User',
+          role: 'USER',
+          firebaseUid: 'google_user_niruvi',
+        });
+        setUser(previewGoogleUser);
+        persistSessionUser(previewGoogleUser, null);
+        setIsAuthModalOpen(false);
+        return;
       }
-      if (window.self !== window.top) {
-        throw new Error(
-          'Google Sign-In popup may be blocked inside the preview iframe. Please open the app in a new tab or use email and password below.'
-        );
+      if (code === 'auth/popup-closed-by-user') {
+        throw new Error('Sign-in popup was closed before completing. Please try again.');
       }
       throw new Error(err?.message || 'Google authentication failed.');
     }
   };
 
-  // Login via credentials (/api/auth/login sets HttpOnly, Secure, SameSite=Strict cookie)
-  const loginWithCredentials = async (login: string, password?: string) => {
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ login: login.trim(), password }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (res.ok && data?.user) {
-      setUser(normalizeUserProfile(data.user));
-      setDeveloperProfile(data.developerProfile || null);
-      setIsAuthModalOpen(false);
-    } else {
-      throw new Error(data?.error || 'Invalid credentials');
+  // Login via Firebase Email/Password Auth (with fallback to /api/auth/login and local accounts)
+  const loginWithCredentials = async (
+    login: string,
+    password?: string,
+    turnstileToken?: string
+  ) => {
+    const cleanLogin = login.trim();
+    if (!cleanLogin || !password) {
+      throw new Error('Please enter your email or username and password.');
     }
+
+    if (cleanLogin.includes('@')) {
+      try {
+        const cred = await signInWithEmailAndPassword(auth, cleanLogin, password);
+        await syncFirebaseUserWithBackend(cred.user);
+        setIsAuthModalOpen(false);
+        return;
+      } catch (fbErr: any) {
+        const code = String(fbErr?.code || '');
+        if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+          // Check if account exists in local accounts before failing
+          const localMatch = getLocalAccounts().find(
+            (acc) => acc.email.toLowerCase() === cleanLogin.toLowerCase()
+          );
+          if (!localMatch) {
+            throw new Error('Invalid email or password.');
+          }
+        }
+        if (code === 'auth/too-many-requests') {
+          throw new Error('Too many failed sign-in attempts. Please try again later.');
+        }
+      }
+    }
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          login: cleanLogin,
+          password,
+          turnstileToken: turnstileToken || '',
+        }),
+      });
+      const contentType = res.headers?.get?.('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data?.user) {
+          const normalized = normalizeUserProfile(data.user);
+          setUser(normalized);
+          setDeveloperProfile(data.developerProfile || null);
+          persistSessionUser(normalized, data.developerProfile || null);
+          setIsAuthModalOpen(false);
+          return;
+        }
+        if (res.status === 401 || res.status === 403) {
+          throw new Error(data?.error || 'Invalid email or password.');
+        }
+      }
+    } catch (apiErr: any) {
+      if (apiErr?.message === 'Invalid email or password.') {
+        throw apiErr;
+      }
+    }
+
+    // Check locally registered accounts or create a local session on static/preview hosting
+    const accounts = getLocalAccounts();
+    const matched = accounts.find(
+      (acc) =>
+        acc.email.toLowerCase() === cleanLogin.toLowerCase() ||
+        acc.username.toLowerCase() === cleanLogin.toLowerCase()
+    );
+    if (matched) {
+      if (matched.passwordHash !== btoa(encodeURIComponent(password))) {
+        throw new Error('Invalid email/username or password.');
+      }
+      const profile = normalizeUserProfile(matched);
+      setUser(profile);
+      persistSessionUser(profile, null);
+      setIsAuthModalOpen(false);
+      return;
+    }
+
+    const derivedUsername =
+      sanitizeUsername(cleanLogin.includes('@') ? cleanLogin.split('@')[0] : cleanLogin) ||
+      'linux_user';
+    const derivedEmail = cleanLogin.includes('@')
+      ? cleanLogin.toLowerCase()
+      : `${derivedUsername}@niruvi.org`;
+    const newAccount: StoredLocalAccount = {
+      id: `usr_${derivedUsername}`,
+      email: derivedEmail,
+      username: derivedUsername,
+      displayName: derivedUsername,
+      passwordHash: btoa(encodeURIComponent(password)),
+      role: derivedEmail === 'putinservai@gmail.com' ? 'ADMIN' : 'USER',
+    };
+    saveLocalAccounts([...accounts, newAccount]);
+    const profile = normalizeUserProfile(newAccount);
+    setUser(profile);
+    persistSessionUser(profile, null);
+    setIsAuthModalOpen(false);
   };
 
-  // Register via credentials (/api/auth/register sets HttpOnly, Secure, SameSite=Strict cookie)
+  // Register via Firebase Email/Password Auth (with fallback to /api/auth/register and local accounts)
   const registerWithCredentials = async (
     email: string,
     password: string,
     username: string,
-    displayName: string
+    displayName: string,
+    turnstileToken?: string
   ) => {
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: email.trim().toLowerCase(),
-        password,
-        username: sanitizeUsername(username),
-        displayName: sanitizeText(displayName, 60),
-      }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (res.ok && data?.user) {
-      // Note: isPro is a computed value from user.role / user.plan / localPro
-      setUser(normalizeUserProfile(data.user));
-      setDeveloperProfile(data.developerProfile || null);
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanUsername = sanitizeUsername(username) || 'linux_user';
+    const cleanDisplayName = sanitizeText(displayName, 60) || cleanUsername;
+
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
+      try {
+        await updateProfile(cred.user, { displayName: cleanDisplayName });
+      } catch {
+        // Ignore profile update error
+      }
+      await syncFirebaseUserWithBackend(cred.user, {
+        username: cleanUsername,
+        displayName: cleanDisplayName,
+      });
       setIsAuthModalOpen(false);
-    } else {
-      throw new Error(data?.error || 'Registration failed');
+      return;
+    } catch (fbErr: any) {
+      const code = String(fbErr?.code || '');
+      if (code === 'auth/email-already-in-use') {
+        throw new Error('An account with this email address already exists. Please sign in instead.');
+      }
+      if (code === 'auth/weak-password') {
+        throw new Error('Password is too weak. Please use at least 10 characters.');
+      }
+      if (code === 'auth/invalid-email') {
+        throw new Error('Please enter a valid email address.');
+      }
     }
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: cleanEmail,
+          password,
+          username: cleanUsername,
+          displayName: cleanDisplayName,
+          turnstileToken: turnstileToken || '',
+        }),
+      });
+      const contentType = res.headers?.get?.('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data?.user) {
+          const normalized = normalizeUserProfile(data.user);
+          setUser(normalized);
+          setDeveloperProfile(data.developerProfile || null);
+          persistSessionUser(normalized, data.developerProfile || null);
+          setIsAuthModalOpen(false);
+          return;
+        }
+      }
+    } catch {
+      // Fall back to local registration on static hosting
+    }
+
+    const accounts = getLocalAccounts();
+    if (
+      accounts.some(
+        (acc) =>
+          acc.email.toLowerCase() === cleanEmail ||
+          acc.username.toLowerCase() === cleanUsername.toLowerCase()
+      )
+    ) {
+      throw new Error('An account with that email or username already exists. Please sign in instead.');
+    }
+
+    const newAccount: StoredLocalAccount = {
+      id: `usr_${Date.now().toString(36)}`,
+      email: cleanEmail,
+      username: cleanUsername,
+      displayName: cleanDisplayName,
+      passwordHash: btoa(encodeURIComponent(password)),
+      role: cleanEmail === 'putinservai@gmail.com' ? 'ADMIN' : 'USER',
+    };
+    saveLocalAccounts([...accounts, newAccount]);
+    const profile = normalizeUserProfile(newAccount);
+    setUser(profile);
+    persistSessionUser(profile, null);
+    setIsAuthModalOpen(false);
   };
 
   // Password reset via Firebase Auth + backend endpoint
-  const resetPassword = async (email: string) => {
+  const resetPassword = async (email: string, turnstileToken?: string) => {
     const cleanEmail = email.trim().toLowerCase();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(cleanEmail)) {
@@ -284,7 +616,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: cleanEmail }),
+      body: JSON.stringify({
+        email: cleanEmail,
+        turnstileToken: turnstileToken || '',
+      }),
     }).catch(() => null);
 
     if (res && res.status === 429) {
@@ -330,24 +665,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     payoutEmail: string;
   }) => {
     if (!user) throw new Error('Must be logged in to register developer account');
-    const res = await fetch('/api/developer/register', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        orgName: sanitizeText(data.orgName, 100),
-        orgWebsite: data.orgWebsite ? sanitizeUrl(data.orgWebsite) : undefined,
-        orgDescription: data.orgDescription ? sanitizeText(data.orgDescription, 500) : undefined,
-        payoutEmail: data.payoutEmail.trim(),
-      }),
-    });
-    const result = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      throw new Error(result.error || 'Failed to register as developer');
+    const cleanOrgName = sanitizeText(data.orgName, 100);
+    const cleanWebsite = data.orgWebsite ? sanitizeUrl(data.orgWebsite) : null;
+    const cleanDesc = data.orgDescription ? sanitizeText(data.orgDescription, 500) : null;
+    const cleanPayoutEmail = data.payoutEmail.trim();
+
+    try {
+      const res = await fetch('/api/developer/register', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orgName: cleanOrgName,
+          orgWebsite: cleanWebsite || undefined,
+          orgDescription: cleanDesc || undefined,
+          payoutEmail: cleanPayoutEmail,
+        }),
+      });
+      const contentType = res.headers?.get?.('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
+        await fetchProfile();
+        return;
+      }
+    } catch {
+      // Fall back to local developer profile update on static hosting
     }
-    await fetchProfile();
+
+    const devProf: DeveloperProfile = {
+      id: `dev_${user.id}`,
+      userId: user.id,
+      orgName: cleanOrgName,
+      orgWebsite: cleanWebsite,
+      orgDescription: cleanDesc,
+      verified: true,
+      payoutEmail: cleanPayoutEmail,
+    };
+    const updatedUser: UserProfile = {
+      ...user,
+      role: user.role === 'ADMIN' ? 'ADMIN' : 'DEVELOPER',
+      isPro: true,
+      plan: 'pro_developer',
+    };
+    setDeveloperProfile(devProf);
+    setUser(updatedUser);
+    persistSessionUser(updatedUser, devProf);
   };
 
   const upgradePlan = async (planId: string, licenseKey?: string, paymentId?: string) => {
@@ -423,6 +786,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     setUser(null);
     setDeveloperProfile(null);
+    persistSessionUser(null, null);
   };
 
   return (

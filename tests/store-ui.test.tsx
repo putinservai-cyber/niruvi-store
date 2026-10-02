@@ -257,3 +257,85 @@ describe('Niruvi Store — Legal Pages, Cookie Consent & WCAG 2.2 AA Accessibili
     expect(results.violations).toEqual([]);
   });
 });
+
+describe('Niruvi Store — Community Submission (/submit), Worker API Merge & Badges', () => {
+  it('submits via /submit, handles Worker errors gracefully, and renders "Community, unreviewed" badge and "Report" button', async () => {
+    renderStore();
+
+    const submitNavBtns = screen.getAllByRole('button', { name: /Submit/i });
+    fireEvent.click(submitNavBtns[0]);
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: /Submit an AppImage to the Catalog/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/External Links Only — No Binary Hosting/i),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('turnstile-widget-container')).toBeInTheDocument();
+
+    // Fill out required fields
+    fireEvent.change(screen.getByLabelText(/Application Name/i), {
+      target: { value: 'Bottles' },
+    });
+    fireEvent.change(screen.getByLabelText(/Short Description/i), {
+      target: { value: 'Easily manage Wine prefixes on Linux.' },
+    });
+    fireEvent.change(screen.getByLabelText(/^Version/i), {
+      target: { value: '51.13' },
+    });
+    fireEvent.change(screen.getByLabelText(/^License/i), {
+      target: { value: 'GPL-3.0' },
+    });
+    fireEvent.change(screen.getByLabelText(/Download URL \(HTTPS only\)/i), {
+      target: {
+        value: 'https://github.com/bottlesdevs/Bottles/releases/download/51.13/Bottles-x86_64.AppImage',
+      },
+    });
+    fireEvent.change(screen.getByLabelText(/Upstream Source \/ Repository URL/i), {
+      target: { value: 'https://github.com/bottlesdevs/Bottles' },
+    });
+    fireEvent.change(screen.getByLabelText(/SHA-256 Checksum/i), {
+      target: {
+        value: 'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3e3b0c44298fc1c149afbf4c8',
+      },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Submit AppImage/i }));
+
+    const issueLink = await screen.findByRole('link', { name: /Open Prefilled GitHub Issue/i });
+    const href = issueLink.getAttribute('href') || '';
+    expect(href).toContain('https://github.com/putinservai-cyber/niruvi-store/issues/new?');
+    expect(href).toContain('template=submit-appimage.yml');
+    expect(href).toContain('labels=submission');
+    expect(href).toContain('name=Bottles');
+
+    // Navigate back to Store and verify "Community, unreviewed" badge, "Checksum: Provided", and "Report" button
+    fireEvent.click(screen.getByRole('button', { name: /Browse in Store/i }));
+    expect(screen.getAllByText(/Community, unreviewed/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Checksum: Provided/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: /Report Bottles/i })).toBeInTheDocument();
+  });
+
+  it('renders Cloudflare Turnstile Bot Protection on the Sign In, Create Account, and Password Reset views', () => {
+    renderStore();
+
+    const signInNavButtons = screen.getAllByRole('button', { name: /Sign In/i });
+    fireEvent.click(signInNavButtons[0]);
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText(/Cloudflare Turnstile Bot Protection/i)).toBeInTheDocument();
+    expect(screen.getByTestId('auth-turnstile-widget-container')).toBeInTheDocument();
+
+    // Switch to Create Account tab
+    fireEvent.click(screen.getByRole('tab', { name: /Create Account/i }));
+    expect(screen.getByText(/Cloudflare Turnstile Bot Protection/i)).toBeInTheDocument();
+    expect(screen.getByTestId('auth-turnstile-widget-container')).toBeInTheDocument();
+
+    // Switch back to Sign In and open Forgot password
+    fireEvent.click(screen.getByRole('tab', { name: /Sign In/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Forgot password\?/i }));
+    expect(screen.getByText(/Cloudflare Turnstile Bot Protection/i)).toBeInTheDocument();
+    expect(screen.getByTestId('auth-turnstile-widget-container')).toBeInTheDocument();
+  });
+});
+

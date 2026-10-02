@@ -52,7 +52,9 @@ interface RawAppEntry {
   repository?: string;
   repositoryUrl?: string;
   releasesUrl?: string;
+  source?: 'community' | 'official';
   sourceType?: 'Official' | 'Community';
+  checksumStatus?: 'verified' | 'provided' | 'unverified';
   officialStatus?: boolean;
   icon?: string;
   iconSlug?: string;
@@ -128,14 +130,31 @@ async function generateCatalog() {
         continue;
       }
 
-      const isVerifiedHash = isGenuineSha256(rawSha) && !seenHashes.has(rawSha);
-      if (isVerifiedHash) {
+      const isGenuineHash = isGenuineSha256(rawSha) && !seenHashes.has(rawSha);
+      if (isGenuineHash) {
         seenHashes.add(rawSha);
       }
 
-      const sourceType =
-        raw.sourceType ||
-        (raw.developer?.toLowerCase().includes('community') ? 'Community' : 'Official');
+      const isCommunity = raw.source === 'community';
+
+      const source: 'community' | 'official' = isCommunity ? 'community' : 'official';
+      const sourceType: 'Official' | 'Community' =
+        raw.sourceType || (isCommunity ? 'Community' : 'Official');
+
+      const checksumStatus: 'verified' | 'provided' | 'unverified' =
+        raw.checksumStatus === 'provided' && isGenuineHash
+          ? 'provided'
+          : raw.checksumStatus === 'unverified'
+            ? 'unverified'
+            : isCommunity
+              ? isGenuineHash
+                ? 'provided'
+                : 'unverified'
+              : isGenuineHash
+                ? 'verified'
+                : 'unverified';
+
+      const isVerifiedHash = checksumStatus === 'verified' && isGenuineHash;
 
       const trustTier = isVerifiedHash
         ? (raw as any).trustTier ||
@@ -168,7 +187,7 @@ async function generateCatalog() {
           verified: isVerifiedHash,
           github: repoUrl || undefined,
         },
-        sha256: isVerifiedHash ? rawSha : '',
+        sha256: isGenuineHash ? rawSha : '',
         downloadUrl,
         downloadMap: raw.download || { x86_64: downloadUrl },
         iconSlug: raw.iconSlug || raw.id,
@@ -185,7 +204,9 @@ async function generateCatalog() {
         releasesUrl:
           raw.releasesUrl || (repoUrl ? `${repoUrl.replace(/\/$/, '')}/releases` : downloadUrl),
         githubRepo: githubRepoMatch ? githubRepoMatch[1].replace(/\.git$/i, '') : undefined,
+        source,
         sourceType,
+        checksumStatus,
         trustTier,
         officialStatus: isVerifiedHash,
         tags: raw.keywords || [simplifiedCategory.toLowerCase()],
@@ -237,12 +258,23 @@ async function generateCatalog() {
     }
   }
 
+  for (const [, override] of verifiedOverrides) {
+    if (!matchedOverrideIds.has(override.id.toLowerCase())) {
+      matchedOverrideIds.add(override.id.toLowerCase());
+      catalogMap.set(override.id, override);
+    }
+  }
+
   const allApps = Array.from(catalogMap.values());
 
-  // Sort verified apps first, then apps with icons/descriptions, then alphabetical
+  // Sort verified apps first, then approved community submissions from catalog/apps/, then featured, then alphabetical
   allApps.sort((a, b) => {
     if (a.publisher.verified && !b.publisher.verified) return -1;
     if (!a.publisher.verified && b.publisher.verified) return 1;
+    const aCuratedCommunity = a.source === 'community';
+    const bCuratedCommunity = b.source === 'community';
+    if (aCuratedCommunity && !bCuratedCommunity) return -1;
+    if (!aCuratedCommunity && bCuratedCommunity) return 1;
     if (a.featured && !b.featured) return -1;
     if (!a.featured && b.featured) return 1;
     return a.name.localeCompare(b.name);

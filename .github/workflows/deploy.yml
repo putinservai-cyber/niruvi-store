@@ -41,6 +41,8 @@ jobs:
         env:
           VITE_BASE: ${{ vars.VITE_BASE || '/' }}
           VITE_SITE_URL: ${{ vars.VITE_SITE_URL || 'https://niruvi-store.runs-on.dev' }}
+          VITE_API_URL: ${{ vars.VITE_API_URL || '' }}
+          VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY || '' }}
 
       - name: Upload GitHub Pages Artifact
         uses: actions/upload-pages-artifact@v3

@@ -10,9 +10,13 @@
     Consolas, monospace;
 
   /* WCAG 2.2 AA compliant contrast tokens on dark surfaces (#0a0a0c / #171717):
+     neutral-300 (#d4d4d8) -> 12.6:1 on #0a0a0c, 10.2:1 on #171717
      neutral-400 (#b8b8be) -> 9.4:1 on #0a0a0c, 7.6:1 on #171717
      neutral-500 (#9ca3af) -> 6.8:1 on #0a0a0c, 5.5:1 on #171717 (passes 4.5:1 AA)
      neutral-600 (#8a8f9d) -> 5.3:1 on #0a0a0c (passes 4.5:1 AA) */
+  --color-neutral-100: #f4f4f5;
+  --color-neutral-200: #e4e4e7;
+  --color-neutral-300: #d4d4d8;
   --color-neutral-400: #b8b8be;
   --color-neutral-500: #9ca3af;
   --color-neutral-600: #8a8f9d;

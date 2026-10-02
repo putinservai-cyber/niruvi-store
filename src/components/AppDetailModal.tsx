@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { AppMetadata } from '../types';
 import { generateNiruviProtocolUrl } from '../data/apps';
-import { isGenuineSha256 } from '../utils/catalogSchema';
+import { buildApiUrl } from '../config/site';
+import {
+  getChecksumStatus,
+  isCommunitySubmitted,
+  isGenuineSha256,
+} from '../utils/catalogSchema';
 import {
   X,
   ShieldCheck,
@@ -21,6 +26,7 @@ import {
   Image as ImageIcon,
   GitBranch,
   AlertTriangle,
+  Users,
 } from 'lucide-react';
 import { AppIcon } from './AppIcon';
 
@@ -32,6 +38,7 @@ interface AppDetailModalProps {
   onToggleStar?: (appId: string, e: React.MouseEvent) => void;
   onOpenVerifierWithHash?: (hash: string) => void;
   onShowToast?: (msg: string, type?: 'success' | 'info') => void;
+  initialOpenReport?: boolean;
 }
 
 export const AppDetailModal: React.FC<AppDetailModalProps> = ({
@@ -42,6 +49,7 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
   onToggleStar,
   onOpenVerifierWithHash,
   onShowToast,
+  initialOpenReport = false,
 }) => {
   const [copiedSha, setCopiedSha] = useState(false);
   const [copiedCmd, setCopiedCmd] = useState(false);
@@ -50,7 +58,7 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
   const [loadingHistory, setLoadingHistory] = useState(false);
 
   // Report broken package form state
-  const [showReportForm, setShowReportForm] = useState(false);
+  const [showReportForm, setShowReportForm] = useState(initialOpenReport);
   const [reportReason, setReportReason] = useState('Broken download link (404)');
   const [reportDetails, setReportDetails] = useState('');
   const [reportDistro, setReportDistro] = useState('');
@@ -65,7 +73,7 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
       setSelectedArch(app.architectures[0]);
     }
     setLiveVersionHistory(app?.versionHistory || []);
-    setShowReportForm(false);
+    setShowReportForm(Boolean(initialOpenReport));
     setReportDetails('');
     setReportStatusMsg(null);
 
@@ -102,12 +110,16 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
 
   if (!app) return null;
 
-  const isTrulyVerified = Boolean(app.publisher.verified && isGenuineSha256(app.sha256));
+  const communitySubmitted = isCommunitySubmitted(app);
+  const checksumStatus = getChecksumStatus(app);
+  const isTrulyVerified = checksumStatus === 'verified';
+  const hasProvidedChecksum = checksumStatus === 'provided' && isGenuineSha256(app.sha256);
+  const hasCopyableSha = isTrulyVerified || hasProvidedChecksum;
   const activeDownloadUrl = app.downloadMap?.[selectedArch] || app.downloadUrl;
   const protocolUrl = generateNiruviProtocolUrl(app, selectedArch);
   const fileName = `${app.id}-${app.version}-${selectedArch}.AppImage`;
   const chmodCmd = `chmod +x ${fileName} && ./${fileName}`;
-  const verifyCmd = isTrulyVerified
+  const verifyCmd = hasCopyableSha
     ? `echo "${app.sha256}  ${fileName}" | sha256sum --check`
     : `sha256sum ${fileName}`;
 
@@ -118,7 +130,7 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
     app.sourceUrl;
 
   const copySha = () => {
-    if (!isTrulyVerified) return;
+    if (!hasCopyableSha) return;
     navigator.clipboard.writeText(app.sha256);
     setCopiedSha(true);
     setTimeout(() => setCopiedSha(false), 2000);
@@ -142,18 +154,29 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
     setReportSubmitting(true);
     setReportStatusMsg(null);
     try {
-      const res = await fetch('/api/reports', {
+      const reportPayload = {
+        slug: app.id,
+        appId: app.id,
+        appName: app.name,
+        reason: reportReason,
+        details: reportDetails.trim(),
+        distro: reportDistro.trim(),
+        architecture: selectedArch,
+      };
+      let res = await fetch(buildApiUrl('/api/report'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          appId: app.id,
-          appName: app.name,
-          reason: reportReason,
-          details: reportDetails.trim(),
-          distro: reportDistro.trim(),
-          architecture: selectedArch,
-        }),
-      });
+        body: JSON.stringify(reportPayload),
+      }).catch(() => null);
+
+      if (!res || res.status === 404) {
+        res = await fetch(buildApiUrl('/api/reports'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(reportPayload),
+        });
+      }
+
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.success) {
         setReportStatusMsg({
@@ -201,14 +224,25 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
               <span className="px-2.5 py-1 rounded-md bg-neutral-900 border border-neutral-800 text-xs font-medium text-neutral-300">
                 {app.simplifiedCategory || app.category}
               </span>
+              {communitySubmitted && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/30 text-xs font-medium text-amber-300">
+                  <Users className="w-3.5 h-3.5" aria-hidden="true" />
+                  <span>Community, unreviewed</span>
+                </span>
+              )}
               {isTrulyVerified ? (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-xs font-medium text-emerald-400">
                   <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
                   <span>Verified SHA-256</span>
                 </span>
+              ) : hasProvidedChecksum ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-sky-500/10 border border-sky-500/30 text-xs font-medium text-sky-300">
+                  <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
+                  <span>Checksum: Provided (unverified)</span>
+                </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-neutral-900 border border-neutral-800 text-xs font-mono text-neutral-400">
-                  <span>Checksum not available</span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-neutral-900 border border-neutral-800 text-xs font-mono text-neutral-300">
+                  <span>Checksum: Unverified</span>
                 </span>
               )}
             </div>
@@ -534,13 +568,13 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
                 {onOpenVerifierWithHash && (
                   <button
                     type="button"
-                    onClick={() => onOpenVerifierWithHash(isTrulyVerified ? app.sha256 : '')}
+                    onClick={() => onOpenVerifierWithHash(hasCopyableSha ? app.sha256 : '')}
                     className="text-xs font-medium text-sky-400 hover:text-sky-300 px-2.5 py-1 rounded-lg bg-sky-500/10 border border-sky-500/30 transition-colors cursor-pointer"
                   >
                     Open Integrity Verifier
                   </button>
                 )}
-                {isTrulyVerified && (
+                {hasCopyableSha && (
                   <button
                     type="button"
                     onClick={copySha}
@@ -561,10 +595,18 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
               <div className="p-3 rounded-lg bg-neutral-900 border border-neutral-800 font-mono text-xs text-emerald-400 break-all select-all">
                 {app.sha256}
               </div>
+            ) : hasProvidedChecksum ? (
+              <div className="space-y-1.5">
+                <div className="p-3 rounded-lg bg-neutral-900 border border-neutral-800 font-mono text-xs text-sky-300 break-all select-all">
+                  {app.sha256}
+                </div>
+                <p className="text-xs text-neutral-300">
+                  Checksum status: <span className="font-mono text-sky-300">provided</span> (supplied by the community submitter; verify locally with <code className="text-neutral-200 font-mono">sha256sum</code> before execution).
+                </p>
+              </div>
             ) : (
-              <p className="text-xs text-neutral-400 font-mono">
-                Checksum not available from upstream release metadata. Verify the downloaded file
-                locally with <code className="text-neutral-200">sha256sum</code> before execution.
+              <p className="text-xs text-neutral-300 font-mono">
+                Checksum status: <span className="text-amber-300">unverified</span>. No SHA-256 digest was provided for this package. Verify the downloaded file locally with <code className="text-neutral-200">sha256sum</code> before execution.
               </p>
             )}
           </section>

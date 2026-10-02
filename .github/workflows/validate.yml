@@ -30,7 +30,21 @@ jobs:
       - name: Typecheck / Lint
         run: npm run lint
 
-      - name: Build Static Production Site
-        run: npm run build:static
+      - name: Run Unit & Worker API Tests
+        run: npm test
+
+      - name: Build Static Production Site (GitHub Pages mode VITE_BASE=/niruvi-store/)
+        run: npm run build
         env:
-          GITHUB_PAGES: "true"
+          VITE_BASE: "/niruvi-store/"
+          VITE_SITE_URL: "https://putinservai-cyber.github.io"
+          VITE_API_URL: ${{ vars.VITE_API_URL || '' }}
+          VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY || '' }}
+
+      - name: Build Static Production Site (Custom domain mode VITE_BASE=/)
+        run: npm run build
+        env:
+          VITE_BASE: "/"
+          VITE_SITE_URL: "https://niruvi-store.runs-on.dev"
+          VITE_API_URL: ${{ vars.VITE_API_URL || '' }}
+          VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY || '' }}

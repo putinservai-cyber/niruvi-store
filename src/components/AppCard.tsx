@@ -1,7 +1,20 @@
 import React from 'react';
 import { AppMetadata } from '../types';
-import { isGenuineSha256 } from '../utils/catalogSchema';
-import { ShieldCheck, Download, Bookmark, Cpu, HardDrive, ExternalLink } from 'lucide-react';
+import {
+  getChecksumStatus,
+  isCommunitySubmitted,
+  isGenuineSha256,
+} from '../utils/catalogSchema';
+import {
+  ShieldCheck,
+  Download,
+  Bookmark,
+  Cpu,
+  HardDrive,
+  ExternalLink,
+  Users,
+  Flag,
+} from 'lucide-react';
 import { AppIcon } from './AppIcon';
 
 interface AppCardProps {
@@ -10,6 +23,7 @@ interface AppCardProps {
   onInstall: (app: AppMetadata, e: React.MouseEvent) => void;
   isStarred?: boolean;
   onToggleStar?: (appId: string, e: React.MouseEvent) => void;
+  onReport?: (app: AppMetadata, e: React.MouseEvent) => void;
 }
 
 export const AppCard: React.FC<AppCardProps> = ({
@@ -18,8 +32,12 @@ export const AppCard: React.FC<AppCardProps> = ({
   onInstall,
   isStarred = false,
   onToggleStar,
+  onReport,
 }) => {
-  const isTrulyVerified = Boolean(app.publisher.verified && isGenuineSha256(app.sha256));
+  const communitySubmitted = isCommunitySubmitted(app);
+  const checksumStatus = getChecksumStatus(app);
+  const isTrulyVerified = checksumStatus === 'verified';
+  const hasProvidedChecksum = checksumStatus === 'provided' && isGenuineSha256(app.sha256);
   const summaryText = (app.tagline || app.description || '').trim();
   const displayVersion =
     app.version && app.version !== 'latest' ? `v${app.version.replace(/^v/i, '')}` : 'latest';
@@ -27,15 +45,15 @@ export const AppCard: React.FC<AppCardProps> = ({
   return (
     <article
       aria-label={app.name}
-      className="group relative min-w-0 w-full overflow-hidden bg-neutral-900 border border-neutral-800 rounded-xl p-4 sm:p-5 hover:border-sky-500/60 hover:bg-neutral-900/90 transition-colors flex flex-col justify-between h-full"
+      className="group relative min-w-0 w-full overflow-hidden bg-neutral-900 border border-neutral-800 rounded-xl p-4 sm:p-5 hover:border-sky-500/60 hover:bg-neutral-900/90 transition-colors flex flex-col justify-between gap-4 h-full"
     >
-      <div className="min-w-0">
-        <div className="flex items-start justify-between gap-2.5 mb-3.5 min-w-0">
+      <div className="flex flex-col gap-3.5 min-w-0">
+        <div className="flex items-start justify-between gap-2.5 min-w-0">
           <button
             type="button"
             onClick={() => onSelect(app)}
             aria-label={`View details for ${app.name}`}
-            className="relative shrink-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 cursor-pointer"
+            className="relative flex shrink-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 cursor-pointer"
           >
             <AppIcon
               slug={app.iconSlug || app.id}
@@ -75,13 +93,22 @@ export const AppCard: React.FC<AppCardProps> = ({
           type="button"
           onClick={() => onSelect(app)}
           aria-label={`View details for ${app.name} — ${summaryText || app.category}`}
-          className="text-left w-full min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded-lg cursor-pointer"
+          className="flex flex-col gap-2 text-left w-full min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded-lg cursor-pointer"
         >
-          <div className="mb-2 min-w-0">
-            <div className="flex items-center gap-1.5 min-w-0">
+          <div className="min-w-0 w-full">
+            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
               <h2 className="text-base font-semibold text-white group-hover:text-sky-400 transition-colors truncate min-w-0">
                 {app.name}
               </h2>
+              {communitySubmitted && (
+                <span
+                  title="Community submitted, unreviewed entry"
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-[11px] font-medium text-amber-300 shrink-0"
+                >
+                  <Users className="w-3 h-3" aria-hidden="true" />
+                  <span>Community, unreviewed</span>
+                </span>
+              )}
               {isTrulyVerified && (
                 <span
                   title="Verified SHA-256 checksum"
@@ -91,24 +118,33 @@ export const AppCard: React.FC<AppCardProps> = ({
                   <span>Verified SHA-256</span>
                 </span>
               )}
+              {hasProvidedChecksum && (
+                <span
+                  title="SHA-256 checksum provided by submitter"
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-sky-500/10 border border-sky-500/30 text-[11px] font-medium text-sky-300 shrink-0"
+                >
+                  <ShieldCheck className="w-3 h-3" aria-hidden="true" />
+                  <span>Checksum: Provided</span>
+                </span>
+              )}
             </div>
             <p className="text-xs text-neutral-400 truncate mt-0.5">{app.publisher.name}</p>
           </div>
 
           {summaryText ? (
-            <p className="text-xs text-neutral-300 line-clamp-2 mb-4 leading-relaxed break-words">
+            <p className="w-full text-xs text-neutral-300 line-clamp-2 leading-relaxed">
               {summaryText}
             </p>
           ) : (
-            <p className="text-xs text-neutral-500 italic mb-4 leading-relaxed">
+            <p className="w-full text-xs text-neutral-500 italic leading-relaxed">
               No description provided by upstream repository.
             </p>
           )}
         </button>
       </div>
 
-      <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-1.5 mb-3.5 text-xs text-neutral-300 font-mono min-w-0">
+      <div className="flex flex-col gap-3.5 min-w-0">
+        <div className="flex flex-wrap items-center gap-1.5 text-xs text-neutral-300 font-mono min-w-0">
           <span className="px-2 py-0.5 rounded bg-neutral-800/90 border border-neutral-700/70 truncate max-w-[110px]">
             {displayVersion}
           </span>
@@ -130,15 +166,36 @@ export const AppCard: React.FC<AppCardProps> = ({
         </div>
 
         <div className="pt-3 border-t border-neutral-800 flex items-center justify-between gap-2 min-w-0">
-          <div className="text-[11px] text-neutral-400 font-mono truncate min-w-0">
+          <div className="text-[11px] text-neutral-300 font-mono truncate min-w-0">
             {isTrulyVerified ? (
-              <span className="text-emerald-400">SHA-256: {app.sha256.slice(0, 10)}…</span>
+              <span className="text-emerald-400">SHA-256: {app.sha256.slice(0, 10)}… (Verified)</span>
+            ) : hasProvidedChecksum ? (
+              <span className="text-sky-300">SHA-256: {app.sha256.slice(0, 10)}… (Provided)</span>
             ) : (
-              <span>Checksum not available</span>
+              <span className="text-neutral-400">Checksum: Unverified</span>
             )}
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
+            {communitySubmitted && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onReport) {
+                    onReport(app, e);
+                  } else {
+                    onSelect(app);
+                  }
+                }}
+                aria-label={`Report ${app.name}`}
+                title="Report this community entry"
+                className="px-2 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-amber-300 border border-neutral-700 text-xs font-medium inline-flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <Flag className="w-3 h-3" aria-hidden="true" />
+                <span>Report</span>
+              </button>
+            )}
             <a
               href={app.downloadUrl}
               target="_blank"

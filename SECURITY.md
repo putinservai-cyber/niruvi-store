@@ -16,8 +16,8 @@
      - Rate-limiting and audit logging on administrative actions.
 
 3. **SQL Injection Prevention via Parameterization**
-   - All database interactions use Drizzle ORM's parameterized statements and prepared queries.
-   - Relational schemas are openly defined (`src/db/schema.ts`). Protection against SQL injection relies entirely on parameterized query execution and strict type casting—not on concealing database table structures.
+   - All Cloudflare D1 database interactions use parameterized `.prepare(...).bind(...)` statements.
+   - Relational schemas are openly defined (`worker/migrations/0001_submissions.sql`). Protection against SQL injection relies entirely on parameterized query execution and strict input validation—not on concealing database table structures.
 
 4. **Frontend Transparency & Key Segregation**
    - Any code delivered to a client browser can be inspected via developer tools.

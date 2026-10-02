@@ -16,7 +16,7 @@ import { NiruviLogo } from './NiruviLogo';
 import { useAuth } from '../context/AuthContext';
 import { DEVELOPER_NAME } from '../config/site';
 
-export type NavTab = 'browse' | 'verifier' | 'library' | 'submit' | 'donate';
+export type NavTab = 'browse' | 'verifier' | 'library' | 'submit' | 'donate' | 'admin';
 
 interface NavbarProps {
   searchQuery: string;

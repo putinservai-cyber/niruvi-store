@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { usePreventBodyScroll } from '../hooks/usePreventBodyScroll';
+import { TURNSTILE_SITE_KEY } from '../config/site';
 import {
   X,
   Loader2,
@@ -100,12 +101,82 @@ export const AuthModal: React.FC = () => {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
+  // Cloudflare Turnstile Bot Protection state
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const turnstileContainerRef = useRef<HTMLDivElement | null>(null);
+  const turnstileWidgetIdRef = useRef<string | null>(null);
+
   // Username availability check state
   const [usernameStatus, setUsernameStatus] = useState<
     'idle' | 'checking' | 'available' | 'taken' | 'invalid'
   >('idle');
 
   usePreventBodyScroll(isAuthModalOpen);
+
+  // Load and render Cloudflare Turnstile widget when modal is open and VITE_TURNSTILE_SITE_KEY is set
+  useEffect(() => {
+    if (!isAuthModalOpen || !TURNSTILE_SITE_KEY || typeof window === 'undefined') {
+      return;
+    }
+
+    const renderWidget = () => {
+      if (!window.turnstile || !turnstileContainerRef.current) return;
+      if (turnstileWidgetIdRef.current) {
+        try {
+          window.turnstile.remove?.(turnstileWidgetIdRef.current);
+        } catch {
+          // Ignore remove error
+        }
+        turnstileWidgetIdRef.current = null;
+      }
+
+      try {
+        turnstileWidgetIdRef.current = window.turnstile.render(turnstileContainerRef.current, {
+          sitekey: TURNSTILE_SITE_KEY,
+          theme: 'dark',
+          callback: (token: string) => setTurnstileToken(token),
+          'expired-callback': () => setTurnstileToken(''),
+          'error-callback': () => setTurnstileToken(''),
+        });
+      } catch {
+        // Ignore widget render errors in headless test environments
+      }
+    };
+
+    if (window.turnstile) {
+      renderWidget();
+    } else {
+      const existingScript = document.querySelector<HTMLScriptElement>(
+        'script[src*="challenges.cloudflare.com/turnstile"]'
+      );
+      if (existingScript) {
+        existingScript.addEventListener('load', renderWidget);
+        return () => existingScript.removeEventListener('load', renderWidget);
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.async = true;
+      script.defer = true;
+      script.addEventListener('load', renderWidget);
+      document.head.appendChild(script);
+
+      return () => {
+        script.removeEventListener('load', renderWidget);
+      };
+    }
+
+    return () => {
+      if (turnstileWidgetIdRef.current && window.turnstile) {
+        try {
+          window.turnstile.remove?.(turnstileWidgetIdRef.current);
+        } catch {
+          // Ignore cleanup error
+        }
+        turnstileWidgetIdRef.current = null;
+      }
+    };
+  }, [isAuthModalOpen, mode]);
 
   // Close on Escape key
   useEffect(() => {
@@ -245,6 +316,11 @@ export const AuthModal: React.FC = () => {
       return;
     }
 
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      setFormError('Please complete the Cloudflare Turnstile bot verification check.');
+      return;
+    }
+
     setFormError(null);
     setLoadingAction('credentials');
     try {
@@ -253,13 +329,20 @@ export const AuthModal: React.FC = () => {
           email.trim(),
           password,
           username.trim(),
-          displayName.trim()
+          displayName.trim(),
+          turnstileToken
         );
       } else {
-        await loginWithCredentials(email.trim(), password);
+        await loginWithCredentials(email.trim(), password, turnstileToken);
       }
     } catch (err: any) {
       setFormError(err?.message || 'Authentication failed.');
+      if (turnstileWidgetIdRef.current && window.turnstile) {
+        try {
+          window.turnstile.reset?.(turnstileWidgetIdRef.current);
+          setTurnstileToken('');
+        } catch {}
+      }
     } finally {
       setLoadingAction(null);
     }
@@ -274,16 +357,27 @@ export const AuthModal: React.FC = () => {
     setFieldErrors(errors);
     if (errors.email) return;
 
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      setFormError('Please complete the Cloudflare Turnstile bot verification check.');
+      return;
+    }
+
     setFormError(null);
     setResetSuccessMessage(null);
     setLoadingAction('reset');
     try {
-      await resetPassword(email.trim());
+      await resetPassword(email.trim(), turnstileToken);
       setResetSuccessMessage(
         'If an account exists for that email, a password reset link has been sent. Please check your inbox.'
       );
     } catch (err: any) {
       setFormError(err?.message || 'Unable to send password reset email.');
+      if (turnstileWidgetIdRef.current && window.turnstile) {
+        try {
+          window.turnstile.reset?.(turnstileWidgetIdRef.current);
+          setTurnstileToken('');
+        } catch {}
+      }
     } finally {
       setLoadingAction(null);
     }
@@ -438,6 +532,20 @@ export const AuthModal: React.FC = () => {
                     <span>{fieldErrors.email}</span>
                   </p>
                 )}
+              </div>
+
+              {/* Cloudflare Turnstile Bot Protection (Reset Password) */}
+              <div className="p-3.5 rounded-xl bg-neutral-900/80 border border-neutral-800 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-white flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" aria-hidden="true" />
+                    Cloudflare Turnstile Bot Protection
+                  </span>
+                  <span className="text-[11px] font-mono text-neutral-400">
+                    {TURNSTILE_SITE_KEY ? 'Active' : 'Site key via VITE_TURNSTILE_SITE_KEY'}
+                  </span>
+                </div>
+                <div ref={turnstileContainerRef} data-testid="auth-turnstile-widget-container" />
               </div>
 
               <button
@@ -773,6 +881,20 @@ export const AuthModal: React.FC = () => {
                       </div>
                     </div>
                   )}
+                </div>
+
+                {/* Cloudflare Turnstile Bot Protection (Sign In & Create Account) */}
+                <div className="p-3.5 rounded-xl bg-neutral-900/80 border border-neutral-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-white flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" aria-hidden="true" />
+                      Cloudflare Turnstile Bot Protection
+                    </span>
+                    <span className="text-[11px] font-mono text-neutral-400">
+                      {TURNSTILE_SITE_KEY ? 'Active' : 'Site key via VITE_TURNSTILE_SITE_KEY'}
+                    </span>
+                  </div>
+                  <div ref={turnstileContainerRef} data-testid="auth-turnstile-widget-container" />
                 </div>
 
                 {/* Submit Button */}

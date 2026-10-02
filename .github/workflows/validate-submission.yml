@@ -1,0 +1,36 @@
+name: Validate AppImage Submission
+
+on:
+  issues:
+    types: [opened, edited, labeled]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  validate-submission:
+    name: Validate Community AppImage Submission
+    if: >-
+      contains(github.event.issue.labels.*.name, 'submission') &&
+      (github.event.action != 'labeled' || github.event.label.name == 'submission')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate Submission Issue Fields & Upstream URL
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_USER: ${{ github.event.issue.user.login }}
+        run: node scripts/submission-workflow.mjs validate

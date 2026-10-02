@@ -1,0 +1,20 @@
+name = "niruvi-store-api"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+
+# Cloudflare D1 Database Binding
+# Create with: npx wrangler d1 create niruvi-store-db
+# Then replace database_id below with the UUID printed by Wrangler.
+[[d1_databases]]
+binding = "DB"
+database_name = "niruvi-store-db"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+[vars]
+ENABLE_HEAD_CHECK = "false"
+
+# Secrets (DO NOT put secret values in this file; set via `npx wrangler secret put`):
+# - TURNSTILE_SECRET_KEY : Cloudflare Turnstile secret key for server-side token verification
+# - ADMIN_TOKEN          : Bearer token for /api/admin/* moderation endpoints (hide / delete)
+# - IP_HASH_SALT         : Random salt string used when hashing client IPs with SHA-256

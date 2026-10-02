@@ -68,6 +68,28 @@ export const DEFAULT_DESCRIPTION =
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 /**
+ * Cloudflare Worker API Base URL (configured via VITE_API_URL) and Turnstile Site Key (VITE_TURNSTILE_SITE_KEY).
+ */
+export const API_BASE_URL = (
+  (metaEnv && metaEnv.VITE_API_URL) ||
+  (typeof process !== 'undefined' && process.env && process.env.VITE_API_URL) ||
+  ''
+)
+  .trim()
+  .replace(/\/+$/, '');
+
+export const TURNSTILE_SITE_KEY = (
+  (metaEnv && metaEnv.VITE_TURNSTILE_SITE_KEY) ||
+  (typeof process !== 'undefined' && process.env && process.env.VITE_TURNSTILE_SITE_KEY) ||
+  ''
+).trim();
+
+export function buildApiUrl(apiPath: string): string {
+  const cleanPath = apiPath.startsWith('/') ? apiPath : `/${apiPath}`;
+  return API_BASE_URL ? `${API_BASE_URL}${cleanPath}` : cleanPath;
+}
+
+/**
  * Resolves a local asset or route path against Vite's configured BASE_URL
  * (e.g. '/niruvi-store/' on GitHub Pages or '/' on a custom domain).
  */

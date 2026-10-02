@@ -87,7 +87,9 @@ export interface AppMetadata {
   repositoryUrl?: string;
   releasesUrl?: string;
   githubRepo?: string;
+  source?: 'community' | 'official';
   sourceType?: 'Official' | 'Community';
+  checksumStatus?: 'verified' | 'provided' | 'unverified';
   trustTier?: 'Official Developer' | 'Verified Community' | 'Unverified Community';
   officialStatus?: boolean;
   tags: string[];

@@ -16,7 +16,9 @@ interface CatalogApp {
   repository?: string;
   repositoryUrl?: string;
   releasesUrl?: string;
+  source?: 'community' | 'official';
   sourceType?: string;
+  checksumStatus?: 'verified' | 'provided' | 'unverified';
   officialStatus?: boolean;
   icon?: string;
   iconSlug?: string;
