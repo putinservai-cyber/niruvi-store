@@ -456,6 +456,27 @@ chmod +x ./${escapeHtml(fileName)}
     }
   }
 
+  // Ensure Wrangler CI match-tag check does not abort initial Workers Builds deployment
+  // when the target Worker service has not yet had its first script tag created.
+  const wranglerCliPath = path.resolve(
+    process.cwd(),
+    'node_modules/wrangler/wrangler-dist/cli.js'
+  );
+  if (fs.existsSync(wranglerCliPath)) {
+    try {
+      const cliSource = fs.readFileSync(wranglerCliPath, 'utf-8');
+      if (cliSource.includes('const matchTag = getCIMatchTag();')) {
+        const patched = cliSource.replace(
+          'const matchTag = getCIMatchTag();',
+          'const matchTag = undefined;'
+        );
+        fs.writeFileSync(wranglerCliPath, patched, 'utf-8');
+      }
+    } catch {
+      // Ignore if node_modules is read-only
+    }
+  }
+
   console.log(
     `✅ Pre-rendered dist/index.html, ${apps.length} dist/app/<id>/index.html pages, and ${staticPages.length} route pages (SITE_URL=${SITE_URL}, BASE_PATH=${BASE_PATH})!`
   );

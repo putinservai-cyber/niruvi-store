@@ -16,6 +16,8 @@ import {
   formatAppVersion,
   hasKnownVersion,
 } from '../utils/catalogSchema';
+import { resolveAppSourceStatus } from '../providers/catalogProviders';
+import { usePreventBodyScroll } from '../hooks/usePreventBodyScroll';
 import {
   X,
   ShieldCheck,
@@ -63,6 +65,7 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
   onShowToast,
   initialOpenReport = false,
 }) => {
+  usePreventBodyScroll(Boolean(app));
   const { user, openAuthModal } = useAuth();
   const [copiedSha, setCopiedSha] = useState(false);
   const [copiedCmd, setCopiedCmd] = useState(false);
@@ -166,6 +169,7 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
   if (!app) return null;
 
   const communitySubmitted = isCommunitySubmitted(app);
+  const sourceStatusLabel = resolveAppSourceStatus(app);
   const checksumStatus = getChecksumStatus(app);
   const isTrulyVerified = checksumStatus === 'verified';
   const hasProvidedChecksum = checksumStatus === 'provided' && isGenuineSha256(app.sha256);
@@ -362,6 +366,9 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
             <div className="flex items-center gap-2 flex-wrap">
               <span className="px-2.5 py-1 rounded-md bg-neutral-900 border border-neutral-800 text-xs font-medium text-neutral-300">
                 {app.simplifiedCategory || app.category}
+              </span>
+              <span className="px-2.5 py-1 rounded-md bg-neutral-900 border border-neutral-800 text-xs font-mono text-neutral-300">
+                {sourceStatusLabel}
               </span>
               {communitySubmitted && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/30 text-xs font-medium text-amber-300">

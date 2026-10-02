@@ -4,6 +4,12 @@ import { useAuth } from '../context/AuthContext';
 import { sanitizeErrorMessage } from '../utils/sanitize';
 import { fetchWithTimeoutAndRetry } from '../utils/network';
 import {
+  createCatalogProviders,
+  setProviderEnabled,
+  CatalogProvider,
+  CatalogProviderId,
+} from '../providers/catalogProviders';
+import {
   ShieldCheck,
   EyeOff,
   Eye,
@@ -53,6 +59,7 @@ export const AdminModerationView: React.FC<AdminModerationViewProps> = ({ onBack
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [loadedOnce, setLoadedOnce] = useState(false);
+  const [providers, setProviders] = useState<CatalogProvider[]>(() => createCatalogProviders());
 
   const isAdminOrModeratorUser =
     Boolean(user) && (user?.role === 'ADMIN' || user?.role === 'MODERATOR');
@@ -405,6 +412,53 @@ export const AdminModerationView: React.FC<AdminModerationViewProps> = ({ onBack
           </div>
         </div>
       )}
+
+      {/* Catalog Source Providers & Sync Health */}
+      <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 space-y-4">
+        <div>
+          <h2 className="text-base font-bold text-white">Catalog Source Providers</h2>
+          <p className="text-xs text-neutral-400 mt-0.5">
+            Multi-provider discovery and release enrichment status across AppImageHub, GitHub Releases, GitLab Releases, SourceForge, and Community Submissions.
+          </p>
+        </div>
+
+        <div className="space-y-2.5">
+          {providers.map((prov) => (
+            <div
+              key={prov.id}
+              className="p-3.5 rounded-xl bg-neutral-950 border border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+            >
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-semibold text-white">{prov.name}</span>
+                  <span className="font-mono text-[11px] text-neutral-400">
+                    · {prov.status}
+                  </span>
+                  <span className="font-mono text-[11px] text-neutral-500">
+                    · {prov.importedCount.toLocaleString()} indexed
+                  </span>
+                </div>
+                <p className="text-neutral-400">{prov.description}</p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const next = setProviderEnabled(prov.id as CatalogProviderId, !prov.enabled);
+                  setProviders(next);
+                }}
+                className={`px-3 py-1.5 rounded-lg font-medium transition cursor-pointer shrink-0 ${
+                  prov.enabled
+                    ? 'bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700'
+                    : 'bg-neutral-900 hover:bg-neutral-800 text-neutral-400 border border-neutral-800'
+                }`}
+              >
+                {prov.enabled ? 'Enabled' : 'Disabled'}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

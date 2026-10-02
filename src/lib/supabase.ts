@@ -1,8 +1,9 @@
 import { createClient, SupabaseClient, User as SupabaseAuthUser } from '@supabase/supabase-js';
-import { SITE_URL } from '../config/site';
-import { isLikelySecretKey } from '../utils/sanitize';
+import { SITE_URL, withBaseUrl } from '../config/site';
+import { isLikelySecretKey, sanitizeText, sanitizeUrl, sanitizeUsername } from '../utils/sanitize';
 
 export type MarketplaceRole = 'user' | 'publisher' | 'moderator' | 'admin';
+export type OAuthProviderType = 'google' | 'github' | 'gitlab';
 
 export interface SupabaseProfileRow {
   id: string;
@@ -17,6 +18,21 @@ export interface SupabaseProfileRow {
   role: MarketplaceRole;
   created_at: string;
   updated_at: string;
+}
+
+export interface PublicDeveloperProfile {
+  userId: string;
+  slug: string;
+  orgName: string;
+  orgDescription: string;
+  orgWebsite: string | null;
+  sourceUrl: string | null;
+  avatarUrl: string | null;
+  verified: boolean;
+  status: 'pending' | 'approved' | 'rejected';
+  rejectionReason?: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 const metaEnv =
@@ -75,51 +91,245 @@ export const SUPABASE_URL = rawSupabaseUrl.startsWith('https://')
 
 export const SUPABASE_ANON_KEY = isSafeAnonKey(rawSupabaseAnonKey) ? rawSupabaseAnonKey : '';
 
+const defaultSupabaseClient: SupabaseClient | null =
+  SUPABASE_URL && SUPABASE_ANON_KEY
+    ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        global: {
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+          },
+        },
+        auth: {
+          flowType: 'pkce',
+          autoRefreshToken: true,
+          persistSession: true,
+          detectSessionInUrl: true,
+          storageKey: 'niruvi_supabase_auth',
+        },
+      })
+    : null;
+
+let testSupabaseClientOverride: SupabaseClient | null | undefined = undefined;
+
+/**
+ * Allows injecting a mock or test Supabase client in unit/integration tests.
+ */
+export function setSupabaseClientForTesting(client: SupabaseClient | null | undefined): void {
+  testSupabaseClientOverride = client;
+}
+
+export function getActiveSupabaseClient(): SupabaseClient | null {
+  if (testSupabaseClientOverride !== undefined) {
+    return testSupabaseClientOverride;
+  }
+  return defaultSupabaseClient;
+}
+
+export const supabase: SupabaseClient | null = defaultSupabaseClient;
+
 export function isSupabaseConfigured(): boolean {
+  if (testSupabaseClientOverride !== undefined) {
+    return Boolean(testSupabaseClientOverride);
+  }
   return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 }
 
-/**
- * Singleton Supabase client configured strictly with VITE_SUPABASE_URL,
- * VITE_SUPABASE_ANON_KEY, and OAuth PKCE flow (`flowType: 'pkce'`).
- */
-export const supabase: SupabaseClient | null = isSupabaseConfigured()
-  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      global: {
-        headers: {
-          apikey: SUPABASE_ANON_KEY,
-        },
-      },
-      auth: {
-        flowType: 'pkce',
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true,
-        storageKey: 'niruvi_supabase_auth',
-      },
-    })
-  : null;
+export function getSupabaseConfigStatus(): {
+  configured: boolean;
+  hasUrl: boolean;
+  hasAnonKey: boolean;
+  errorMessage: string | null;
+} {
+  const configured = isSupabaseConfigured();
+  if (configured) {
+    return {
+      configured: true,
+      hasUrl: true,
+      hasAnonKey: true,
+      errorMessage: null,
+    };
+  }
+  return {
+    configured: false,
+    hasUrl: Boolean(SUPABASE_URL),
+    hasAnonKey: Boolean(SUPABASE_ANON_KEY),
+    errorMessage:
+      'Supabase authentication is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment.',
+  };
+}
 
 /**
- * Initiates OAuth 2.0 PKCE sign-in with GitHub or Google.
+ * Computes the OAuth PKCE redirect URL dynamically from the current deployment origin
+ * (supporting production custom domain, GitHub Pages subpath, and localhost development).
  */
-export async function signInWithSupabaseOAuth(provider: 'github' | 'google'): Promise<void> {
-  if (!supabase) {
-    throw new Error(
-      'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.'
-    );
+export function getOAuthRedirectUrl(): string {
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    const callbackPath = withBaseUrl('auth/callback');
+    const normalizedPath = callbackPath.startsWith('/') ? callbackPath : `/${callbackPath}`;
+    return `${window.location.origin}${normalizedPath}`;
   }
-  const redirectTo = `${SITE_URL}/auth/callback`;
-  const { error } = await supabase.auth.signInWithOAuth({
+  return `${SITE_URL.replace(/\/+$/, '')}/auth/callback`;
+}
+
+/**
+ * Converts raw Supabase Auth / OAuth / PostgREST errors into clear, human-friendly messages
+ * without exposing internal stack traces, SQL syntax, or raw error objects.
+ */
+export function formatSupabaseAuthError(
+  err: unknown,
+  providerOrContext?: OAuthProviderType | 'signin' | 'signup' | 'reset'
+): string {
+  const providerLabel =
+    providerOrContext === 'google'
+      ? 'Google'
+      : providerOrContext === 'github'
+        ? 'GitHub'
+        : providerOrContext === 'gitlab'
+          ? 'GitLab'
+          : null;
+
+  const rawMessage =
+    err instanceof Error
+      ? err.message
+      : typeof err === 'object' && err !== null && 'message' in err
+        ? String((err as { message?: unknown }).message || '')
+        : typeof err === 'string'
+          ? err
+          : '';
+  const lower = rawMessage.toLowerCase();
+
+  if (
+    lower.includes('invalid login credentials') ||
+    lower.includes('invalid email or password') ||
+    lower.includes('invalid_grant') ||
+    lower.includes('wrong password')
+  ) {
+    return 'Invalid email or password.';
+  }
+  if (
+    lower.includes('user already registered') ||
+    lower.includes('already been registered') ||
+    lower.includes('email already')
+  ) {
+    return 'This email is already registered.';
+  }
+  if (lower.includes('username') && (lower.includes('taken') || lower.includes('unique') || lower.includes('duplicate'))) {
+    return 'Username is already taken.';
+  }
+  if (
+    lower.includes('provider is not enabled') ||
+    lower.includes('unsupported provider') ||
+    lower.includes('not configured')
+  ) {
+    if (providerLabel) {
+      return `${providerLabel} sign-in is not configured.`;
+    }
+    return 'Authentication is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.';
+  }
+  if (lower.includes('redirect') && (lower.includes('not allowed') || lower.includes('unauthorized') || lower.includes('mismatch'))) {
+    return 'Unauthorized redirect URL. Verify Redirect URLs in Supabase Authentication settings.';
+  }
+  if (lower.includes('popup') && lower.includes('blocked')) {
+    return 'Sign-in popup was blocked by your browser.';
+  }
+  if (lower.includes('cancel') || lower.includes('access_denied') || lower.includes('closed')) {
+    return providerLabel
+      ? `${providerLabel} sign-in was cancelled.`
+      : 'Sign-in was cancelled.';
+  }
+  if (lower.includes('rate limit') || lower.includes('too many requests')) {
+    return 'Too many attempts. Please wait a moment and try again.';
+  }
+  if (lower.includes('network') || lower.includes('failed to fetch') || lower.includes('fetch')) {
+    return providerLabel
+      ? `${providerLabel} sign-in is temporarily unavailable due to a network error.`
+      : 'Network error while contacting authentication server.';
+  }
+  if (providerLabel) {
+    return `${providerLabel} sign-in is temporarily unavailable.`;
+  }
+  if (providerOrContext === 'signin') {
+    return 'Invalid email or password.';
+  }
+  if (providerOrContext === 'signup') {
+    return 'Unable to create account. Please verify your details and try again.';
+  }
+  return 'Authentication request could not be completed.';
+}
+
+/**
+ * Initiates OAuth 2.0 PKCE sign-in with Google, GitHub, or GitLab via Supabase Auth.
+ * Never creates a fake user if OAuth fails.
+ */
+export async function signInWithSupabaseOAuth(provider: OAuthProviderType): Promise<void> {
+  const client = getActiveSupabaseClient();
+  if (!client) {
+    throw new Error(formatSupabaseAuthError('Provider is not configured', provider));
+  }
+
+  const redirectTo = getOAuthRedirectUrl();
+  const scopesByProvider: Record<OAuthProviderType, string> = {
+    google: 'openid email profile',
+    github: 'read:user user:email',
+    gitlab: 'read_user email',
+  };
+
+  const { error } = await client.auth.signInWithOAuth({
     provider,
     options: {
       redirectTo,
-      scopes: provider === 'github' ? 'read:user user:email' : 'openid email profile',
+      scopes: scopesByProvider[provider],
     },
   });
+
   if (error) {
-    throw error;
+    throw new Error(formatSupabaseAuthError(error, provider));
   }
+}
+
+/**
+ * Checks whether a username is available in `public.profiles`.
+ */
+export async function checkSupabaseUsernameAvailability(
+  username: string
+): Promise<{ available: boolean; error?: string }> {
+  const clean = sanitizeUsername(username, 24);
+  if (!clean || clean.length < 3 || clean.length > 24) {
+    return {
+      available: false,
+      error: 'Username must be 3–24 characters (letters, numbers, underscores).',
+    };
+  }
+
+  const client = getActiveSupabaseClient();
+  if (!client) {
+    return {
+      available: false,
+      error: 'Authentication database is not configured.',
+    };
+  }
+
+  const { data, error } = await client
+    .from('profiles')
+    .select('id')
+    .ilike('username', clean)
+    .maybeSingle();
+
+  if (error) {
+    return {
+      available: false,
+      error: 'Unable to verify username availability right now.',
+    };
+  }
+
+  if (data && data.id) {
+    return {
+      available: false,
+      error: 'Username is already taken.',
+    };
+  }
+
+  return { available: true };
 }
 
 /**
@@ -129,9 +339,10 @@ export async function signInWithSupabaseOAuth(provider: 'github' | 'google'): Pr
 export async function fetchSupabaseUserProfile(
   authUser: SupabaseAuthUser
 ): Promise<SupabaseProfileRow | null> {
-  if (!supabase) return null;
+  const client = getActiveSupabaseClient();
+  if (!client) return null;
 
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('profiles')
     .select(
       'id, email, username, display_name, avatar_url, bio, website_url, github_username, auth_provider, role, created_at, updated_at'
@@ -143,20 +354,25 @@ export async function fetchSupabaseUserProfile(
     return data as SupabaseProfileRow;
   }
 
-  // Fallback insert if the trigger has not run yet (role is strictly omitted so Postgres defaults to 'user')
+  // Fallback insert if the database trigger has not run yet (role is strictly omitted so Postgres defaults to 'user')
   const meta = authUser.user_metadata || {};
   const rawUsername = String(
-    meta.user_name || meta.preferred_username || (authUser.email || 'linux_user').split('@')[0]
+    meta.username ||
+      meta.user_name ||
+      meta.preferred_username ||
+      (authUser.email || 'user').split('@')[0]
   )
     .toLowerCase()
     .replace(/[^a-z0-9_]/g, '_')
     .slice(0, 20);
   const safeUsername = rawUsername.length >= 3 ? rawUsername : `user_${authUser.id.slice(0, 6)}`;
-  const displayName = String(meta.full_name || meta.name || safeUsername).slice(0, 60);
+  const displayName = String(
+    meta.display_name || meta.full_name || meta.name || safeUsername
+  ).slice(0, 60);
   const avatarUrl = typeof meta.avatar_url === 'string' ? meta.avatar_url : null;
-  const provider = String(authUser.app_metadata?.provider || 'oauth');
+  const provider = String(authUser.app_metadata?.provider || 'email');
 
-  const { data: inserted } = await supabase
+  const { data: inserted } = await client
     .from('profiles')
     .upsert(
       {
@@ -175,7 +391,24 @@ export async function fetchSupabaseUserProfile(
     )
     .maybeSingle();
 
-  return (inserted as SupabaseProfileRow) || null;
+  if (inserted) {
+    return inserted as SupabaseProfileRow;
+  }
+
+  return {
+    id: authUser.id,
+    email: authUser.email || null,
+    username: safeUsername,
+    display_name: displayName,
+    avatar_url: avatarUrl,
+    bio: '',
+    website_url: null,
+    github_username: provider === 'github' ? safeUsername : null,
+    auth_provider: provider,
+    role: 'user',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
 }
 
 /**
@@ -192,8 +425,9 @@ export async function updateSupabaseUserProfile(
     avatar_url?: string | null;
   }
 ): Promise<SupabaseProfileRow> {
-  if (!supabase) {
-    throw new Error('Supabase client is not initialized.');
+  const client = getActiveSupabaseClient();
+  if (!client) {
+    throw new Error('Authentication database is not configured.');
   }
 
   const cleanUpdates: Record<string, unknown> = {};
@@ -213,7 +447,7 @@ export async function updateSupabaseUserProfile(
     cleanUpdates.avatar_url = updates.avatar_url ? updates.avatar_url.trim() : null;
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('profiles')
     .update(cleanUpdates)
     .eq('id', userId)
@@ -223,9 +457,144 @@ export async function updateSupabaseUserProfile(
     .single();
 
   if (error || !data) {
-    throw new Error(error?.message || 'Failed to update profile.');
+    if (error?.message?.toLowerCase().includes('unique') || error?.message?.toLowerCase().includes('username')) {
+      throw new Error('Username is already taken.');
+    }
+    throw new Error('Unable to update profile changes.');
   }
   return data as SupabaseProfileRow;
+}
+
+/**
+ * Fetches the signed-in user's developer profile / request status from `public.developer_profiles`.
+ */
+export async function fetchUserDeveloperProfile(
+  userId: string
+): Promise<PublicDeveloperProfile | null> {
+  const client = getActiveSupabaseClient();
+  if (!client || !userId) return null;
+
+  try {
+    const { data, error } = await client
+      .from('developer_profiles')
+      .select(
+        'user_id, slug, org_name, org_description, org_website, source_url, avatar_url, verified, status, rejection_reason, created_at, updated_at'
+      )
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error || !data) return null;
+    return {
+      userId: String(data.user_id),
+      slug: String(data.slug),
+      orgName: String(data.org_name),
+      orgDescription: String(data.org_description || ''),
+      orgWebsite: data.org_website ? String(data.org_website) : null,
+      sourceUrl: data.source_url ? String(data.source_url) : null,
+      avatarUrl: data.avatar_url ? String(data.avatar_url) : null,
+      verified: Boolean(data.verified),
+      status:
+        data.status === 'approved' || data.status === 'rejected' ? data.status : 'pending',
+      rejectionReason: data.rejection_reason ? String(data.rejection_reason) : null,
+      createdAt: String(data.created_at || new Date().toISOString()),
+      updatedAt: String(data.updated_at || new Date().toISOString()),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Submits or updates a publisher/developer request in `public.developer_profiles`
+ * and stores private payout/contact email in `public.developer_private_settings`.
+ * NEVER promotes the user's role locally if the database request fails.
+ */
+export async function submitDeveloperProfileRequest(params: {
+  userId: string;
+  orgName: string;
+  orgWebsite?: string | null;
+  orgDescription?: string | null;
+  sourceUrl?: string | null;
+  payoutEmail?: string | null;
+}): Promise<PublicDeveloperProfile> {
+  const client = getActiveSupabaseClient();
+  if (!client) {
+    throw new Error('Database connection is required to register a developer profile.');
+  }
+
+  const cleanOrgName = sanitizeText(params.orgName, 100);
+  if (!cleanOrgName || cleanOrgName.length < 2) {
+    throw new Error('Publisher name must be at least 2 characters.');
+  }
+  const slug = cleanOrgName
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 48);
+
+  const cleanWebsite = params.orgWebsite?.trim() ? sanitizeUrl(params.orgWebsite.trim()) : null;
+  if (params.orgWebsite?.trim() && !cleanWebsite) {
+    throw new Error('Website URL must start with https://');
+  }
+
+  const cleanSourceUrl = params.sourceUrl?.trim() ? sanitizeUrl(params.sourceUrl.trim()) : null;
+  if (params.sourceUrl?.trim() && !cleanSourceUrl) {
+    throw new Error('Source repository URL must start with https://');
+  }
+
+  const cleanDesc = params.orgDescription ? sanitizeText(params.orgDescription, 1000) : '';
+
+  const { data, error } = await client
+    .from('developer_profiles')
+    .upsert(
+      {
+        user_id: params.userId,
+        slug: slug || `dev-${params.userId.slice(0, 8)}`,
+        org_name: cleanOrgName,
+        org_description: cleanDesc,
+        org_website: cleanWebsite,
+        source_url: cleanSourceUrl,
+        status: 'pending',
+        verified: false,
+      },
+      { onConflict: 'user_id' }
+    )
+    .select(
+      'user_id, slug, org_name, org_description, org_website, source_url, avatar_url, verified, status, rejection_reason, created_at, updated_at'
+    )
+    .single();
+
+  if (error || !data) {
+    throw new Error('Could not submit developer profile request. Please try again later.');
+  }
+
+  if (params.payoutEmail?.trim()) {
+    await client
+      .from('developer_private_settings')
+      .upsert(
+        {
+          user_id: params.userId,
+          payout_email: params.payoutEmail.trim().slice(0, 160),
+        },
+        { onConflict: 'user_id' }
+      )
+      .then(() => {});
+  }
+
+  return {
+    userId: String(data.user_id),
+    slug: String(data.slug),
+    orgName: String(data.org_name),
+    orgDescription: String(data.org_description || ''),
+    orgWebsite: data.org_website ? String(data.org_website) : null,
+    sourceUrl: data.source_url ? String(data.source_url) : null,
+    avatarUrl: data.avatar_url ? String(data.avatar_url) : null,
+    verified: Boolean(data.verified),
+    status: data.status === 'approved' || data.status === 'rejected' ? data.status : 'pending',
+    rejectionReason: data.rejection_reason ? String(data.rejection_reason) : null,
+    createdAt: String(data.created_at || new Date().toISOString()),
+    updatedAt: String(data.updated_at || new Date().toISOString()),
+  };
 }
 
 // ============================================================================
@@ -311,9 +680,10 @@ export async function setLibraryUpdateNotification(
     // ignore storage error
   }
 
-  if (supabase && userId) {
+  const client = getActiveSupabaseClient();
+  if (client && userId) {
     try {
-      await supabase
+      await client
         .from('library')
         .upsert(
           {
@@ -324,7 +694,7 @@ export async function setLibraryUpdateNotification(
           { onConflict: 'user_id,app_slug' }
         );
     } catch {
-      // Fallback already persisted locally
+      // Local preference preserved
     }
   }
 }
@@ -338,32 +708,37 @@ export async function recordAppDownload(params: {
   version: string;
   arch: string;
 }): Promise<void> {
-  if (!supabase) return;
+  const client = getActiveSupabaseClient();
+  if (!client) return;
   try {
-    await supabase.from('downloads').insert({
+    await client.from('downloads').insert({
       user_id: params.userId || null,
       app_slug: params.appSlug,
       version: params.version,
       arch: params.arch === 'aarch64' || params.arch === 'armhf' ? params.arch : 'x86_64',
     });
   } catch {
-    // Non-blocking telemetry-free download record for user's own history
+    // Non-blocking download history record
   }
 }
 
 /**
  * Syncs a bookmarked app into `public.library` for signed-in users.
+ * Never deletes local bookmarks if sync fails.
  */
 export async function syncLibraryBookmarkWithSupabase(params: {
   userId: string;
   appSlug: string;
   pinnedVersion?: string;
   bookmarked: boolean;
-}): Promise<void> {
-  if (!supabase || !params.userId) return;
+}): Promise<{ synced: boolean; error?: string }> {
+  const client = getActiveSupabaseClient();
+  if (!client || !params.userId) {
+    return { synced: false };
+  }
   try {
     if (params.bookmarked) {
-      await supabase.from('library').upsert(
+      const { error } = await client.from('library').upsert(
         {
           user_id: params.userId,
           app_slug: params.appSlug,
@@ -372,15 +747,22 @@ export async function syncLibraryBookmarkWithSupabase(params: {
         },
         { onConflict: 'user_id,app_slug' }
       );
+      if (error) {
+        return { synced: false, error: 'Sync temporarily unavailable' };
+      }
     } else {
-      await supabase
+      const { error } = await client
         .from('library')
         .delete()
         .eq('user_id', params.userId)
         .eq('app_slug', params.appSlug);
+      if (error) {
+        return { synced: false, error: 'Sync temporarily unavailable' };
+      }
     }
+    return { synced: true };
   } catch {
-    // Local bookmark state remains intact if offline
+    return { synced: false, error: 'Sync temporarily unavailable' };
   }
 }
 
@@ -393,9 +775,10 @@ export interface SupabaseLibraryRow {
 export async function fetchUserLibraryFromSupabase(
   userId: string
 ): Promise<SupabaseLibraryRow[]> {
-  if (!supabase || !userId) return [];
+  const client = getActiveSupabaseClient();
+  if (!client || !userId) return [];
   try {
-    const { data } = await supabase
+    const { data } = await client
       .from('library')
       .select('app_slug, pinned_version, notify_updates')
       .eq('user_id', userId)
@@ -433,9 +816,10 @@ export interface SupabaseDownloadRow {
 export async function fetchUserDownloadsFromSupabase(
   userId: string
 ): Promise<SupabaseDownloadRow[]> {
-  if (!supabase || !userId) return [];
+  const client = getActiveSupabaseClient();
+  if (!client || !userId) return [];
   try {
-    const { data } = await supabase
+    const { data } = await client
       .from('downloads')
       .select('app_slug, version, arch, created_at')
       .eq('user_id', userId)
@@ -445,7 +829,7 @@ export async function fetchUserDownloadsFromSupabase(
     return data
       .map((r: any) => ({
         appId: String(r.app_slug || ''),
-        version: String(r.version || 'unknown'),
+        version: String(r.version || 'Version information unavailable'),
         arch: String(r.arch || 'x86_64'),
         timestamp: String(r.created_at || new Date().toISOString()),
       }))
@@ -461,16 +845,17 @@ export async function fetchUserDownloadsFromSupabase(
  */
 export async function fetchAppReviews(appSlug: string): Promise<AppReviewRecord[]> {
   const cleanSlug = appSlug.trim().toLowerCase();
-  if (supabase) {
+  const client = getActiveSupabaseClient();
+  if (client) {
     try {
-      const { data: appRow } = await supabase
+      const { data: appRow } = await client
         .from('apps')
         .select('id')
         .eq('slug', cleanSlug)
         .maybeSingle();
 
       if (appRow?.id) {
-        const { data: rows } = await supabase
+        const { data: rows } = await client
           .from('reviews')
           .select(
             'id, user_id, rating, title, body, distro, created_at, updated_at, profiles(username, display_name)'
@@ -483,8 +868,8 @@ export async function fetchAppReviews(appSlug: string): Promise<AppReviewRecord[
             id: String(r.id),
             appSlug: cleanSlug,
             userId: String(r.user_id),
-            username: r.profiles?.username || 'linux_user',
-            displayName: r.profiles?.display_name || 'Linux User',
+            username: r.profiles?.username || 'user',
+            displayName: r.profiles?.display_name || 'User',
             rating: Number(r.rating) || 5,
             title: String(r.title || ''),
             body: String(r.body || ''),
@@ -495,7 +880,7 @@ export async function fetchAppReviews(appSlug: string): Promise<AppReviewRecord[
         }
       }
     } catch {
-      // Fall back to local reviews store
+      // Fall back to local reviews store when offline
     }
   }
 
@@ -506,6 +891,7 @@ export async function fetchAppReviews(appSlug: string): Promise<AppReviewRecord[
 
 /**
  * Creates or updates the signed-in user's review for `appSlug` (1 review per user per app).
+ * Requires an authenticated `userId`.
  */
 export async function upsertAppReview(params: {
   appSlug: string;
@@ -517,23 +903,27 @@ export async function upsertAppReview(params: {
   body: string;
   distro: string;
 }): Promise<AppReviewRecord> {
+  if (!params.userId || !params.userId.trim()) {
+    throw new Error('Authentication is required to post a review.');
+  }
   const cleanSlug = params.appSlug.trim().toLowerCase();
   const clampedRating = Math.min(5, Math.max(1, Math.round(Number(params.rating) || 5)));
-  const cleanTitle = params.title.trim().slice(0, 120);
-  const cleanBody = params.body.trim().slice(0, 2000);
-  const cleanDistro = params.distro.trim().slice(0, 80);
+  const cleanTitle = sanitizeText(params.title, 120);
+  const cleanBody = sanitizeText(params.body, 2000);
+  const cleanDistro = sanitizeText(params.distro, 80);
   const now = new Date().toISOString();
 
-  if (supabase) {
+  const client = getActiveSupabaseClient();
+  if (client) {
     try {
-      const { data: appRow } = await supabase
+      const { data: appRow } = await client
         .from('apps')
         .select('id')
         .eq('slug', cleanSlug)
         .maybeSingle();
 
       if (appRow?.id) {
-        const { data: saved, error } = await supabase
+        const { data: saved, error } = await client
           .from('reviews')
           .upsert(
             {
@@ -567,7 +957,7 @@ export async function upsertAppReview(params: {
         }
       }
     } catch {
-      // Fall back to local persistence
+      // Fall back to local persistence if offline
     }
   }
 
@@ -577,7 +967,10 @@ export async function upsertAppReview(params: {
   );
 
   const record: AppReviewRecord = {
-    id: existingIdx >= 0 ? all[existingIdx].id : `rev_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    id:
+      existingIdx >= 0
+        ? all[existingIdx].id
+        : `rev_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
     appSlug: cleanSlug,
     userId: params.userId,
     username: params.username,
@@ -607,9 +1000,10 @@ export async function deleteAppReview(params: {
   userId: string;
   isModeratorOrAdmin?: boolean;
 }): Promise<void> {
-  if (supabase) {
+  const client = getActiveSupabaseClient();
+  if (client) {
     try {
-      const query = supabase.from('reviews').delete().eq('id', params.reviewId);
+      const query = client.from('reviews').delete().eq('id', params.reviewId);
       if (!params.isModeratorOrAdmin) {
         query.eq('user_id', params.userId);
       }

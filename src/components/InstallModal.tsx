@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AppMetadata } from '../types';
 import { generateNiruviProtocolUrl } from '../data/apps';
 import { isGenuineSha256, formatAppVersion, hasKnownVersion } from '../utils/catalogSchema';
+import { usePreventBodyScroll } from '../hooks/usePreventBodyScroll';
 import {
   X,
   Terminal,
@@ -24,6 +25,7 @@ export const InstallModal: React.FC<InstallModalProps> = ({
   selectedArch = 'x86_64',
   onClose,
 }) => {
+  usePreventBodyScroll(Boolean(app));
   const [copiedUri, setCopiedUri] = useState(false);
   const [copiedCli, setCopiedCli] = useState(false);
 

@@ -1,26 +1,20 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { auth, db, googleAuthProvider, githubAuthProvider } from '../lib/firebase';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { User as SupabaseAuthUser } from '@supabase/supabase-js';
 import {
-  supabase,
+  getActiveSupabaseClient,
   isSupabaseConfigured,
   signInWithSupabaseOAuth,
   fetchSupabaseUserProfile,
   updateSupabaseUserProfile,
+  checkSupabaseUsernameAvailability,
+  fetchUserDeveloperProfile,
+  submitDeveloperProfileRequest,
+  formatSupabaseAuthError,
+  getOAuthRedirectUrl,
   MarketplaceRole,
+  SupabaseProfileRow,
 } from '../lib/supabase';
-import {
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  updateProfile,
-  onAuthStateChanged,
-  signOut as firebaseSignOut,
-  sendPasswordResetEmail,
-  User as FirebaseUser,
-} from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { sanitizeText, sanitizeUrl, sanitizeUsername } from '../utils/sanitize';
-import { buildApiUrl } from '../config/site';
 
 export interface UserProfile {
   id: string;
@@ -30,9 +24,9 @@ export interface UserProfile {
   bio?: string;
   websiteUrl?: string | null;
   role: 'USER' | 'DEVELOPER' | 'ADMIN' | 'MODERATOR';
-  dbRole?: MarketplaceRole;
+  dbRole: MarketplaceRole;
+  authProvider?: string | null;
   avatarUrl?: string | null;
-  firebaseUid?: string | null;
   plan?: 'free' | 'supporter' | 'pro_developer' | 'team';
   isPro?: boolean;
 }
@@ -40,10 +34,14 @@ export interface UserProfile {
 export interface DeveloperProfile {
   id: string;
   userId: string;
+  slug?: string;
   orgName: string;
   orgWebsite?: string | null;
   orgDescription?: string | null;
+  sourceUrl?: string | null;
   verified: boolean;
+  status?: 'pending' | 'approved' | 'rejected';
+  rejectionReason?: string | null;
   payoutEmail: string;
 }
 
@@ -55,13 +53,18 @@ interface AuthContextType {
   isPro: boolean;
   signInWithGoogle: () => Promise<void>;
   signInWithGithub: () => Promise<void>;
+  signInWithGitlab: () => Promise<void>;
   updateUserProfile: (updates: {
     displayName: string;
     username: string;
     bio?: string;
     websiteUrl?: string;
   }) => Promise<void>;
-  loginWithCredentials: (login: string, password?: string, turnstileToken?: string) => Promise<void>;
+  loginWithCredentials: (
+    login: string,
+    password?: string,
+    turnstileToken?: string
+  ) => Promise<void>;
   registerWithCredentials: (
     email: string,
     password: string,
@@ -70,11 +73,14 @@ interface AuthContextType {
     turnstileToken?: string
   ) => Promise<void>;
   resetPassword: (email: string, turnstileToken?: string) => Promise<void>;
-  checkUsernameAvailability: (username: string) => Promise<{ available: boolean; error?: string }>;
+  checkUsernameAvailability: (
+    username: string
+  ) => Promise<{ available: boolean; error?: string }>;
   becomeDeveloper: (data: {
     orgName: string;
     orgWebsite?: string;
     orgDescription?: string;
+    sourceUrl?: string;
     payoutEmail: string;
   }) => Promise<void>;
   upgradePlan: (planId: string, licenseKey?: string, paymentId?: string) => Promise<void>;
@@ -93,393 +99,374 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const SESSION_USER_KEY = 'niruvi_auth_session_user';
-const SESSION_DEV_KEY = 'niruvi_auth_session_dev';
-const LOCAL_USERS_KEY = 'niruvi_registered_users';
-
-interface StoredLocalAccount {
-  id: string;
-  email: string;
-  username: string;
-  displayName: string;
-  passwordHash: string;
-  role: UserProfile['role'];
-  avatarUrl?: string | null;
-  plan?: UserProfile['plan'];
-  isPro?: boolean;
-}
-
-function getLocalAccounts(): StoredLocalAccount[] {
-  try {
-    const raw = localStorage.getItem(LOCAL_USERS_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
+function mapDatabaseRoleToUiRole(dbRole?: MarketplaceRole | null): UserProfile['role'] {
+  switch (dbRole) {
+    case 'admin':
+      return 'ADMIN';
+    case 'moderator':
+      return 'MODERATOR';
+    case 'publisher':
+      return 'DEVELOPER';
+    case 'user':
+    default:
+      return 'USER';
   }
 }
 
-function saveLocalAccounts(accounts: StoredLocalAccount[]): void {
-  try {
-    localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(accounts));
-  } catch {
-    // ignore storage errors
-  }
-}
+function buildUserProfileFromDatabase(
+  authUser: SupabaseAuthUser,
+  profileRow: SupabaseProfileRow | null
+): UserProfile {
+  const authoritativeDbRole: MarketplaceRole =
+    profileRow?.role === 'admin' ||
+    profileRow?.role === 'moderator' ||
+    profileRow?.role === 'publisher'
+      ? profileRow.role
+      : 'user';
 
-function persistSessionUser(profile: UserProfile | null, devProfile?: DeveloperProfile | null) {
-  try {
-    if (profile) {
-      sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(profile));
-    } else {
-      sessionStorage.removeItem(SESSION_USER_KEY);
-    }
-    if (devProfile !== undefined) {
-      if (devProfile) {
-        sessionStorage.setItem(SESSION_DEV_KEY, JSON.stringify(devProfile));
-      } else {
-        sessionStorage.removeItem(SESSION_DEV_KEY);
-      }
-    }
-  } catch {
-    // ignore sessionStorage errors
-  }
-}
+  const uiRole = mapDatabaseRoleToUiRole(authoritativeDbRole);
+  const rawUsername =
+    profileRow?.username ||
+    String(authUser.user_metadata?.username || authUser.user_metadata?.user_name || '') ||
+    (authUser.email || '').split('@')[0] ||
+    `user_${authUser.id.slice(0, 6)}`;
 
-function loadSessionUser(): { user: UserProfile | null; dev: DeveloperProfile | null } {
-  try {
-    const rawUser = sessionStorage.getItem(SESSION_USER_KEY);
-    const rawDev = sessionStorage.getItem(SESSION_DEV_KEY);
-    return {
-      user: rawUser ? normalizeUserProfile(JSON.parse(rawUser)) : null,
-      dev: rawDev ? (JSON.parse(rawDev) as DeveloperProfile) : null,
-    };
-  } catch {
-    return { user: null, dev: null };
-  }
-}
+  const cleanUsername = sanitizeUsername(rawUsername, 24) || `user_${authUser.id.slice(0, 6)}`;
+  const cleanDisplayName = sanitizeText(
+    profileRow?.display_name ||
+      String(
+        authUser.user_metadata?.display_name ||
+          authUser.user_metadata?.full_name ||
+          authUser.user_metadata?.name ||
+          cleanUsername
+      ),
+    60
+  );
 
-function normalizeUserProfile(rawUser: any): UserProfile {
-  const role = (rawUser?.role || 'USER') as UserProfile['role'];
-  const isServerPro =
-    role === 'DEVELOPER' ||
-    role === 'ADMIN' ||
-    rawUser?.plan === 'pro_developer' ||
-    rawUser?.plan === 'team' ||
-    Boolean(rawUser?.isPro);
+  const provider =
+    profileRow?.auth_provider ||
+    String(authUser.app_metadata?.provider || 'email');
 
   return {
-    id: String(rawUser?.id || ''),
-    email: String(rawUser?.email || ''),
-    username: sanitizeUsername(rawUser?.username) || 'linux_user',
-    displayName: sanitizeText(rawUser?.displayName || rawUser?.username || 'Linux User', 60),
-    bio: rawUser?.bio ? sanitizeText(rawUser.bio, 500) : '',
-    websiteUrl: rawUser?.websiteUrl ? sanitizeUrl(rawUser.websiteUrl) : null,
-    role,
-    dbRole:
-      rawUser?.dbRole ||
-      (role === 'ADMIN'
-        ? 'admin'
-        : role === 'MODERATOR'
-          ? 'moderator'
-          : role === 'DEVELOPER'
-            ? 'publisher'
-            : 'user'),
-    avatarUrl: rawUser?.avatarUrl ? sanitizeUrl(rawUser.avatarUrl) : null,
-    firebaseUid: rawUser?.firebaseUid || null,
-    plan: rawUser?.plan || (isServerPro ? 'pro_developer' : 'free'),
-    isPro: isServerPro,
+    id: authUser.id,
+    email: authUser.email || profileRow?.email || '',
+    username: cleanUsername,
+    displayName: cleanDisplayName,
+    bio: profileRow?.bio ? sanitizeText(profileRow.bio, 500) : '',
+    websiteUrl: profileRow?.website_url ? sanitizeUrl(profileRow.website_url) : null,
+    role: uiRole,
+    dbRole: authoritativeDbRole,
+    authProvider: provider,
+    avatarUrl: profileRow?.avatar_url
+      ? sanitizeUrl(profileRow.avatar_url)
+      : typeof authUser.user_metadata?.avatar_url === 'string'
+        ? sanitizeUrl(authUser.user_metadata.avatar_url)
+        : null,
+    plan: uiRole === 'DEVELOPER' || uiRole === 'ADMIN' ? 'pro_developer' : 'free',
+    isPro: uiRole === 'DEVELOPER' || uiRole === 'ADMIN',
   };
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserProfile | null>(() => loadSessionUser().user);
-  const [developerProfile, setDeveloperProfile] = useState<DeveloperProfile | null>(
-    () => loadSessionUser().dev
-  );
-  const [loading, setLoading] = useState(true);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
-  const [localPro, setLocalPro] = useState(false);
-  const syncingUidRef = useRef<string | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [developerProfile, setDeveloperProfile] = useState<DeveloperProfile | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState<boolean>(false);
 
-  const isPro = Boolean(
-    localPro ||
-      user?.role === 'DEVELOPER' ||
-      user?.role === 'ADMIN' ||
-      user?.plan === 'pro_developer' ||
-      user?.plan === 'team' ||
-      user?.isPro
-  );
+  const isPro = Boolean(user?.role === 'DEVELOPER' || user?.role === 'ADMIN');
 
-  // Fetch session state from backend via httpOnly cookie (credentials: 'include') or current Firebase / session user
-  const fetchProfile = useCallback(async () => {
-    try {
-      if (auth.currentUser) {
-        const fbUser = auth.currentUser;
-        const emailPrefix = (fbUser.email || '').split('@')[0] || 'linux_user';
-        const fallbackProfile = normalizeUserProfile({
-          id: fbUser.uid,
-          firebaseUid: fbUser.uid,
-          email: fbUser.email || '',
-          username: sanitizeUsername(emailPrefix) || 'linux_user',
-          displayName: fbUser.displayName || emailPrefix || 'Linux User',
-          avatarUrl: fbUser.photoURL || null,
-          role: 'USER',
-        });
-        setUser(fallbackProfile);
-        persistSessionUser(fallbackProfile);
-        return;
-      }
-
-      const res = await fetch(buildApiUrl('/api/auth/me'), {
-        method: 'GET',
-        credentials: 'include',
-      });
-      const contentType = res.headers?.get?.('content-type') || '';
-      if (res.ok && contentType.includes('application/json')) {
-        const data = await res.json();
-        if (data?.user) {
-          const normalized = normalizeUserProfile(data.user);
-          setUser(normalized);
-          setDeveloperProfile(data.developerProfile || null);
-          persistSessionUser(normalized, data.developerProfile || null);
-          return;
-        }
-      }
-      const cached = loadSessionUser();
-      if (cached.user) {
-        setUser(cached.user);
-        setDeveloperProfile(cached.dev);
-        return;
-      }
-      setUser(null);
-      setDeveloperProfile(null);
-    } catch {
-      const cached = loadSessionUser();
-      if (cached.user) {
-        setUser(cached.user);
-        setDeveloperProfile(cached.dev);
-      } else if (!auth.currentUser) {
+  const loadAuthenticatedProfile = useCallback(
+    async (authUser: SupabaseAuthUser | null, accessToken: string | null) => {
+      if (!authUser) {
         setUser(null);
         setDeveloperProfile(null);
+        setToken(null);
+        setLoading(false);
+        return;
       }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
-  const refreshProfile = useCallback(async () => {
-    await fetchProfile();
-  }, [fetchProfile]);
-
-  /**
-   * Single unified function to sync a verified Firebase user with Firestore and optional backend (/api/auth/google).
-   * Works seamlessly on static hosting (GitHub Pages / Vite) as well as full-stack deployments.
-   */
-  const syncFirebaseUserWithBackend = useCallback(
-    async (
-      fbUser: FirebaseUser,
-      overrides?: { username?: string; displayName?: string }
-    ): Promise<void> => {
-      if (syncingUidRef.current === fbUser.uid) return;
-      syncingUidRef.current = fbUser.uid;
       try {
-        const emailPrefix = (fbUser.email || '').split('@')[0] || 'linux_user';
-        const defaultUsername =
-          sanitizeUsername(overrides?.username || emailPrefix) ||
-          `user_${fbUser.uid.slice(0, 6).toLowerCase()}`;
-        const defaultDisplayName = sanitizeText(
-          overrides?.displayName || fbUser.displayName || defaultUsername,
-          60
-        );
+        const [profileRow, devRow] = await Promise.all([
+          fetchSupabaseUserProfile(authUser),
+          fetchUserDeveloperProfile(authUser.id),
+        ]);
+        const nextUser = buildUserProfileFromDatabase(authUser, profileRow);
+        setUser(nextUser);
+        setToken(accessToken);
 
-        let baseProfile: UserProfile = normalizeUserProfile({
-          id: fbUser.uid,
-          firebaseUid: fbUser.uid,
-          email: fbUser.email || '',
-          username: defaultUsername,
-          displayName: defaultDisplayName,
-          avatarUrl: fbUser.photoURL || null,
-          role: 'USER',
-        });
-
-        // 1. Sync or load user profile from Firestore users/{uid}
-        try {
-          const userDocRef = doc(db, 'users', fbUser.uid);
-          const snap = await getDoc(userDocRef);
-          if (snap.exists()) {
-            const existingData = snap.data();
-            baseProfile = normalizeUserProfile({
-              ...baseProfile,
-              ...existingData,
-              id: fbUser.uid,
-              firebaseUid: fbUser.uid,
-              email: fbUser.email || existingData.email || '',
-            });
-          } else {
-            const newDoc: Record<string, string> = {
-              id: fbUser.uid,
-              email: (fbUser.email || `${defaultUsername}@niruvi.local`).slice(0, 128),
-              username: defaultUsername.slice(0, 64),
-              displayName: defaultDisplayName.slice(0, 128),
-              role: 'USER',
-              firebaseUid: fbUser.uid.slice(0, 128),
-            };
-            if (fbUser.photoURL) {
-              newDoc.avatarUrl = fbUser.photoURL.slice(0, 512);
-            }
-            await setDoc(userDocRef, newDoc);
-          }
-        } catch {
-          // Firestore read/write is optional if offline or rules restrict access
-        }
-
-        // 2. Immediately set and persist the verified Firebase user profile
-        setUser(baseProfile);
-        persistSessionUser(baseProfile);
-
-        // 3. Optionally sync with /api/auth/google if a backend server is available
-        try {
-          const idToken = await fbUser.getIdToken();
-          const res = await fetch(buildApiUrl('/api/auth/google'), {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${idToken}`,
-            },
-            body: JSON.stringify({ idToken }),
+        if (devRow) {
+          setDeveloperProfile({
+            id: `dev_${devRow.userId}`,
+            userId: devRow.userId,
+            slug: devRow.slug,
+            orgName: devRow.orgName,
+            orgWebsite: devRow.orgWebsite,
+            orgDescription: devRow.orgDescription,
+            sourceUrl: devRow.sourceUrl,
+            verified: devRow.verified,
+            status: devRow.status,
+            rejectionReason: devRow.rejectionReason,
+            payoutEmail: '',
           });
-          const contentType = res.headers?.get?.('content-type') || '';
-          if (res.ok && contentType.includes('application/json')) {
-            const data = await res.json();
-            if (data?.user) {
-              const normalized = normalizeUserProfile(data.user);
-              setUser(normalized);
-              setDeveloperProfile(data.developerProfile || null);
-              persistSessionUser(normalized, data.developerProfile || null);
-            }
-          }
-        } catch {
-          // Static hosting has no /api/auth/google endpoint; Firebase Auth session is already active
+        } else {
+          setDeveloperProfile(null);
         }
+      } catch {
+        const fallbackUser = buildUserProfileFromDatabase(authUser, null);
+        setUser(fallbackUser);
+        setToken(accessToken);
       } finally {
-        syncingUidRef.current = null;
+        setLoading(false);
       }
     },
     []
   );
 
-  // Observe Firebase Auth state and check httpOnly cookie session via /api/auth/me
+  const refreshProfile = useCallback(async () => {
+    const client = getActiveSupabaseClient();
+    if (!client) {
+      setUser(null);
+      setDeveloperProfile(null);
+      setToken(null);
+      setLoading(false);
+      return;
+    }
+
+    const { data, error } = await client.auth.getSession();
+    if (error || !data?.session?.user) {
+      setUser(null);
+      setDeveloperProfile(null);
+      setToken(null);
+      setLoading(false);
+      return;
+    }
+
+    await loadAuthenticatedProfile(data.session.user, data.session.access_token || null);
+  }, [loadAuthenticatedProfile]);
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (fbUser: FirebaseUser | null) => {
-      if (fbUser) {
-        setLoading(true);
-        try {
-          await syncFirebaseUserWithBackend(fbUser);
-        } catch {
-          await fetchProfile();
-        } finally {
+    const client = getActiveSupabaseClient();
+    if (!client || !isSupabaseConfigured()) {
+      setUser(null);
+      setDeveloperProfile(null);
+      setToken(null);
+      setLoading(false);
+      return;
+    }
+
+    let mounted = true;
+
+    const params =
+      typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const authCode = params?.get('code');
+    if (authCode && typeof client.auth.exchangeCodeForSession === 'function') {
+      client.auth.exchangeCodeForSession(authCode).catch(() => {});
+    }
+
+    client.auth
+      .getSession()
+      .then(({ data, error }) => {
+        if (!mounted) return;
+        if (error || !data?.session?.user) {
+          setUser(null);
+          setDeveloperProfile(null);
+          setToken(null);
+          setLoading(false);
+          return;
+        }
+        loadAuthenticatedProfile(data.session.user, data.session.access_token || null);
+      })
+      .catch(() => {
+        if (mounted) {
+          setUser(null);
+          setDeveloperProfile(null);
+          setToken(null);
           setLoading(false);
         }
+      });
+
+    const { data: listener } = client.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      if (session?.user) {
+        loadAuthenticatedProfile(session.user, session.access_token || null);
+        setIsAuthModalOpen(false);
       } else {
-        await fetchProfile();
+        setUser(null);
+        setDeveloperProfile(null);
+        setToken(null);
+        setLoading(false);
       }
     });
 
-    return () => unsubscribe();
-  }, [fetchProfile, syncFirebaseUserWithBackend]);
+    return () => {
+      mounted = false;
+      listener?.subscription?.unsubscribe();
+    };
+  }, [loadAuthenticatedProfile]);
 
-  // Google Sign-In using Supabase OAuth PKCE (when configured) or Firebase signInWithPopup with iframe-safe fallback
   const signInWithGoogle = async () => {
-    if (isSupabaseConfigured()) {
-      await signInWithSupabaseOAuth('google');
-      return;
-    }
-    try {
-      const result = await signInWithPopup(auth, googleAuthProvider);
-      await syncFirebaseUserWithBackend(result.user);
-      setIsAuthModalOpen(false);
-    } catch (err: any) {
-      const code = String(err?.code || '');
-      // When inside a preview iframe where popups or dynamic preview domains are restricted by the browser,
-      // complete the Google session gracefully so the user can sign in without popup errors.
-      if (
-        (typeof window !== 'undefined' && window.self !== window.top) ||
-        code === 'auth/unauthorized-domain' ||
-        code === 'auth/popup-blocked' ||
-        code === 'auth/cancelled-popup-request' ||
-        code === 'auth/operation-not-supported-in-this-environment'
-      ) {
-        const previewGoogleUser = normalizeUserProfile({
-          id: 'google_user_niruvi',
-          email: 'user@niruvi.org',
-          username: 'linux_user',
-          displayName: 'Niruvi User',
-          role: 'USER',
-          firebaseUid: 'google_user_niruvi',
-        });
-        setUser(previewGoogleUser);
-        persistSessionUser(previewGoogleUser, null);
-        setIsAuthModalOpen(false);
-        return;
-      }
-      if (code === 'auth/popup-closed-by-user') {
-        throw new Error('Sign-in popup was closed before completing. Please try again.');
-      }
-      throw new Error(err?.message || 'Google authentication failed.');
-    }
+    await signInWithSupabaseOAuth('google');
   };
 
-  // GitHub Sign-In using Supabase OAuth PKCE (when configured) or Firebase GithubAuthProvider with iframe-safe fallback
   const signInWithGithub = async () => {
-    if (isSupabaseConfigured()) {
-      await signInWithSupabaseOAuth('github');
-      return;
+    await signInWithSupabaseOAuth('github');
+  };
+
+  const signInWithGitlab = async () => {
+    await signInWithSupabaseOAuth('gitlab');
+  };
+
+  const loginWithCredentials = async (
+    login: string,
+    password?: string,
+    turnstileToken?: string
+  ) => {
+    const cleanLogin = login.trim();
+    if (!cleanLogin || !password) {
+      throw new Error('Please enter your email address and password.');
     }
-    try {
-      const result = await signInWithPopup(auth, githubAuthProvider);
-      await syncFirebaseUserWithBackend(result.user);
+
+    const client = getActiveSupabaseClient();
+    if (!client) {
+      throw new Error(formatSupabaseAuthError('Provider is not configured', 'signin'));
+    }
+
+    let emailToUse = cleanLogin;
+    if (!cleanLogin.includes('@')) {
+      const { data: row } = await client
+        .from('profiles')
+        .select('email')
+        .ilike('username', cleanLogin)
+        .maybeSingle();
+      if (!row?.email) {
+        throw new Error('Invalid email or password.');
+      }
+      emailToUse = String(row.email);
+    }
+
+    const { data, error } = await client.auth.signInWithPassword({
+      email: emailToUse.toLowerCase(),
+      password,
+      options: turnstileToken ? { captchaToken: turnstileToken } : undefined,
+    });
+
+    if (error || !data?.user) {
+      throw new Error(formatSupabaseAuthError(error || 'Invalid login credentials', 'signin'));
+    }
+
+    await loadAuthenticatedProfile(data.user, data.session?.access_token || null);
+    setIsAuthModalOpen(false);
+  };
+
+  const registerWithCredentials = async (
+    email: string,
+    password: string,
+    username: string,
+    displayName: string,
+    turnstileToken?: string
+  ) => {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanUsername = sanitizeUsername(username, 24);
+    const cleanDisplayName = sanitizeText(displayName, 60);
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      throw new Error('Please enter a valid email address.');
+    }
+    if (!cleanUsername || cleanUsername.length < 3 || cleanUsername.length > 24) {
+      throw new Error('Username must be 3–24 characters (letters, numbers, underscores).');
+    }
+    if (!cleanDisplayName || cleanDisplayName.length < 2) {
+      throw new Error('Display name must be at least 2 characters.');
+    }
+    if (!password || password.length < 10) {
+      throw new Error('Password must be at least 10 characters long.');
+    }
+
+    const client = getActiveSupabaseClient();
+    if (!client) {
+      throw new Error(formatSupabaseAuthError('Provider is not configured', 'signup'));
+    }
+
+    const availability = await checkSupabaseUsernameAvailability(cleanUsername);
+    if (!availability.available) {
+      throw new Error(availability.error || 'Username is already taken.');
+    }
+
+    const { data, error } = await client.auth.signUp({
+      email: cleanEmail,
+      password,
+      options: {
+        emailRedirectTo: getOAuthRedirectUrl(),
+        captchaToken: turnstileToken || undefined,
+        data: {
+          username: cleanUsername,
+          display_name: cleanDisplayName,
+        },
+      },
+    });
+
+    if (error) {
+      throw new Error(formatSupabaseAuthError(error, 'signup'));
+    }
+
+    if (!data?.user) {
+      throw new Error('Unable to create account. Please try again.');
+    }
+
+    // Supabase returns an empty identities array when email is already registered and obfuscation is enabled
+    if (Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      throw new Error('This email is already registered.');
+    }
+
+    if (data.session?.user) {
+      await loadAuthenticatedProfile(data.session.user, data.session.access_token || null);
       setIsAuthModalOpen(false);
-    } catch (err: any) {
-      const code = String(err?.code || '');
-      if (
-        (typeof window !== 'undefined' && window.self !== window.top) ||
-        code === 'auth/unauthorized-domain' ||
-        code === 'auth/popup-blocked' ||
-        code === 'auth/cancelled-popup-request' ||
-        code === 'auth/operation-not-supported-in-this-environment'
-      ) {
-        const previewGithubUser = normalizeUserProfile({
-          id: 'github_user_niruvi',
-          email: 'developer@github.niruvi.org',
-          username: 'github_linux_dev',
-          displayName: 'GitHub Linux User',
-          role: 'USER',
-          firebaseUid: 'github_user_niruvi',
-        });
-        setUser(previewGithubUser);
-        persistSessionUser(previewGithubUser, null);
-        setIsAuthModalOpen(false);
-        return;
-      }
-      if (code === 'auth/popup-closed-by-user') {
-        throw new Error('GitHub sign-in popup was closed before completing. Please try again.');
-      }
-      throw new Error(err?.message || 'GitHub authentication failed.');
+    } else {
+      await loadAuthenticatedProfile(data.user, null);
+      setIsAuthModalOpen(false);
     }
   };
 
-  // Update user-editable profile fields (displayName, username, bio, websiteUrl) while keeping role strictly DB-controlled
+  const resetPassword = async (email: string, turnstileToken?: string) => {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      throw new Error('Please enter a valid email address.');
+    }
+
+    const client = getActiveSupabaseClient();
+    if (!client) {
+      throw new Error(formatSupabaseAuthError('Provider is not configured', 'reset'));
+    }
+
+    const { error } = await client.auth.resetPasswordForEmail(cleanEmail, {
+      redirectTo: getOAuthRedirectUrl(),
+      captchaToken: turnstileToken || undefined,
+    });
+
+    if (error) {
+      throw new Error(formatSupabaseAuthError(error, 'reset'));
+    }
+  };
+
+  const checkUsernameAvailability = useCallback(
+    async (username: string): Promise<{ available: boolean; error?: string }> => {
+      return checkSupabaseUsernameAvailability(username);
+    },
+    []
+  );
+
   const updateUserProfile = async (updates: {
     displayName: string;
     username: string;
     bio?: string;
     websiteUrl?: string;
   }) => {
-    if (!user) throw new Error('You must be signed in to update your profile.');
+    if (!user) {
+      throw new Error('You must be signed in to update your profile.');
+    }
+
     const cleanDisplayName = sanitizeText(updates.displayName, 60);
     const cleanUsername = sanitizeUsername(updates.username, 24);
     const cleanBio = updates.bio !== undefined ? sanitizeText(updates.bio, 500) : user.bio || '';
@@ -494,552 +481,112 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error('Display name must be at least 2 characters.');
     }
     if (!cleanUsername || cleanUsername.length < 3) {
-      throw new Error('Username must be 3–24 alphanumeric or underscore characters.');
+      throw new Error('Username must be 3–24 letters, numbers, or underscores.');
     }
     if (updates.websiteUrl && updates.websiteUrl.trim() && !cleanWebsite) {
       throw new Error('Website URL must start with https://');
     }
 
-    if (isSupabaseConfigured() && supabase) {
-      const updatedRow = await updateSupabaseUserProfile(user.id, {
-        display_name: cleanDisplayName,
-        username: cleanUsername,
-        bio: cleanBio,
-        website_url: cleanWebsite,
-      });
-      const mappedRole =
-        updatedRow.role === 'admin'
-          ? 'ADMIN'
-          : updatedRow.role === 'moderator'
-            ? 'MODERATOR'
-            : updatedRow.role === 'publisher'
-              ? 'DEVELOPER'
-              : 'USER';
-      const nextProfile: UserProfile = {
-        ...user,
-        displayName: updatedRow.display_name,
-        username: updatedRow.username || cleanUsername,
-        bio: updatedRow.bio || cleanBio,
-        websiteUrl: updatedRow.website_url || cleanWebsite,
-        role: mappedRole,
-        dbRole: updatedRow.role,
-      };
-      setUser(nextProfile);
-      persistSessionUser(nextProfile, developerProfile);
-      return;
-    }
-
-    // Try Worker API if available
-    try {
-      const res = await fetch(buildApiUrl('/api/user/profile'), {
-        method: 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          displayName: cleanDisplayName,
-          username: cleanUsername,
-          bio: cleanBio,
-          websiteUrl: cleanWebsite,
-        }),
-      });
-      const contentType = res.headers?.get?.('content-type') || '';
-      if (res.ok && contentType.includes('application/json')) {
-        const data = await res.json();
-        if (data?.user) {
-          const next = normalizeUserProfile({
-            ...data.user,
-            bio: cleanBio,
-            websiteUrl: cleanWebsite,
-          });
-          setUser(next);
-          persistSessionUser(next, developerProfile);
-          return;
-        }
-      }
-    } catch {
-      // Fall back to Firestore + local session update
-    }
-
-    if (auth.currentUser) {
-      try {
-        await updateProfile(auth.currentUser, { displayName: cleanDisplayName });
-        const userDocRef = doc(db, 'users', auth.currentUser.uid);
-        await setDoc(
-          userDocRef,
-          {
-            id: auth.currentUser.uid,
-            email: (user.email || `${cleanUsername}@niruvi.local`).slice(0, 128),
-            username: cleanUsername.slice(0, 64),
-            displayName: cleanDisplayName.slice(0, 128),
-            role: user.role,
-            firebaseUid: auth.currentUser.uid.slice(0, 128),
-          },
-          { merge: true }
-        );
-      } catch {
-        // Ignore Firestore offline error
-      }
-    }
-
-    const nextProfile: UserProfile = {
-      ...user,
-      displayName: cleanDisplayName,
+    const updatedRow = await updateSupabaseUserProfile(user.id, {
+      display_name: cleanDisplayName,
       username: cleanUsername,
       bio: cleanBio,
-      websiteUrl: cleanWebsite,
-    };
-    setUser(nextProfile);
-    persistSessionUser(nextProfile, developerProfile);
+      website_url: cleanWebsite,
+    });
+
+    const mappedRole = mapDatabaseRoleToUiRole(updatedRow.role);
+    setUser({
+      ...user,
+      displayName: updatedRow.display_name,
+      username: updatedRow.username || cleanUsername,
+      bio: updatedRow.bio || cleanBio,
+      websiteUrl: updatedRow.website_url || cleanWebsite,
+      role: mappedRole,
+      dbRole: updatedRow.role,
+    });
   };
 
-  // Login via Firebase Email/Password Auth (with fallback to /api/auth/login and local accounts)
-  const loginWithCredentials = async (
-    login: string,
-    password?: string,
-    turnstileToken?: string
-  ) => {
-    const cleanLogin = login.trim();
-    if (!cleanLogin || !password) {
-      throw new Error('Please enter your email or username and password.');
-    }
-
-    if (cleanLogin.includes('@')) {
-      try {
-        const cred = await signInWithEmailAndPassword(auth, cleanLogin, password);
-        await syncFirebaseUserWithBackend(cred.user);
-        setIsAuthModalOpen(false);
-        return;
-      } catch (fbErr: any) {
-        const code = String(fbErr?.code || '');
-        if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
-          // Check if account exists in local accounts before failing
-          const localMatch = getLocalAccounts().find(
-            (acc) => acc.email.toLowerCase() === cleanLogin.toLowerCase()
-          );
-          if (!localMatch) {
-            throw new Error('Invalid email or password.');
-          }
-        }
-        if (code === 'auth/too-many-requests') {
-          throw new Error('Too many failed sign-in attempts. Please try again later.');
-        }
-      }
-    }
-
-    try {
-      const res = await fetch(buildApiUrl('/api/auth/login'), {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          login: cleanLogin,
-          password,
-          turnstileToken: turnstileToken || '',
-        }),
-      });
-      const contentType = res.headers?.get?.('content-type') || '';
-      if (contentType.includes('application/json')) {
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data?.user) {
-          const normalized = normalizeUserProfile(data.user);
-          setUser(normalized);
-          setDeveloperProfile(data.developerProfile || null);
-          persistSessionUser(normalized, data.developerProfile || null);
-          setIsAuthModalOpen(false);
-          return;
-        }
-        if (res.status === 401 || res.status === 403) {
-          throw new Error(data?.error || 'Invalid email or password.');
-        }
-      }
-    } catch (apiErr: any) {
-      if (apiErr?.message === 'Invalid email or password.') {
-        throw apiErr;
-      }
-    }
-
-    // Check locally registered accounts or create a local session on static/preview hosting
-    const accounts = getLocalAccounts();
-    const matched = accounts.find(
-      (acc) =>
-        acc.email.toLowerCase() === cleanLogin.toLowerCase() ||
-        acc.username.toLowerCase() === cleanLogin.toLowerCase()
-    );
-    if (matched) {
-      if (matched.passwordHash !== btoa(encodeURIComponent(password))) {
-        throw new Error('Invalid email/username or password.');
-      }
-      const profile = normalizeUserProfile(matched);
-      setUser(profile);
-      persistSessionUser(profile, null);
-      setIsAuthModalOpen(false);
-      return;
-    }
-
-    const derivedUsername =
-      sanitizeUsername(cleanLogin.includes('@') ? cleanLogin.split('@')[0] : cleanLogin) ||
-      'linux_user';
-    const derivedEmail = cleanLogin.includes('@')
-      ? cleanLogin.toLowerCase()
-      : `${derivedUsername}@niruvi.org`;
-    const newAccount: StoredLocalAccount = {
-      id: `usr_${derivedUsername}`,
-      email: derivedEmail,
-      username: derivedUsername,
-      displayName: derivedUsername,
-      passwordHash: btoa(encodeURIComponent(password)),
-      role: derivedEmail === 'putinservai@gmail.com' ? 'ADMIN' : 'USER',
-    };
-    saveLocalAccounts([...accounts, newAccount]);
-    const profile = normalizeUserProfile(newAccount);
-    setUser(profile);
-    persistSessionUser(profile, null);
-    setIsAuthModalOpen(false);
-  };
-
-  // Register via Firebase Email/Password Auth (with fallback to /api/auth/register and local accounts)
-  const registerWithCredentials = async (
-    email: string,
-    password: string,
-    username: string,
-    displayName: string,
-    turnstileToken?: string
-  ) => {
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanUsername = sanitizeUsername(username) || 'linux_user';
-    const cleanDisplayName = sanitizeText(displayName, 60) || cleanUsername;
-
-    try {
-      const cred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
-      try {
-        await updateProfile(cred.user, { displayName: cleanDisplayName });
-      } catch {
-        // Ignore profile update error
-      }
-      await syncFirebaseUserWithBackend(cred.user, {
-        username: cleanUsername,
-        displayName: cleanDisplayName,
-      });
-      setIsAuthModalOpen(false);
-      return;
-    } catch (fbErr: any) {
-      const code = String(fbErr?.code || '');
-      if (code === 'auth/email-already-in-use') {
-        throw new Error('An account with this email address already exists. Please sign in instead.');
-      }
-      if (code === 'auth/weak-password') {
-        throw new Error('Password is too weak. Please use at least 10 characters.');
-      }
-      if (code === 'auth/invalid-email') {
-        throw new Error('Please enter a valid email address.');
-      }
-    }
-
-    try {
-      const res = await fetch(buildApiUrl('/api/auth/register'), {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: cleanEmail,
-          password,
-          username: cleanUsername,
-          displayName: cleanDisplayName,
-          turnstileToken: turnstileToken || '',
-        }),
-      });
-      const contentType = res.headers?.get?.('content-type') || '';
-      if (contentType.includes('application/json')) {
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data?.user) {
-          const normalized = normalizeUserProfile(data.user);
-          setUser(normalized);
-          setDeveloperProfile(data.developerProfile || null);
-          persistSessionUser(normalized, data.developerProfile || null);
-          setIsAuthModalOpen(false);
-          return;
-        }
-      }
-    } catch {
-      // Fall back to local registration on static hosting
-    }
-
-    const accounts = getLocalAccounts();
-    if (
-      accounts.some(
-        (acc) =>
-          acc.email.toLowerCase() === cleanEmail ||
-          acc.username.toLowerCase() === cleanUsername.toLowerCase()
-      )
-    ) {
-      throw new Error('An account with that email or username already exists. Please sign in instead.');
-    }
-
-    const newAccount: StoredLocalAccount = {
-      id: `usr_${Date.now().toString(36)}`,
-      email: cleanEmail,
-      username: cleanUsername,
-      displayName: cleanDisplayName,
-      passwordHash: btoa(encodeURIComponent(password)),
-      role: cleanEmail === 'putinservai@gmail.com' ? 'ADMIN' : 'USER',
-    };
-    saveLocalAccounts([...accounts, newAccount]);
-    const profile = normalizeUserProfile(newAccount);
-    setUser(profile);
-    persistSessionUser(profile, null);
-    setIsAuthModalOpen(false);
-  };
-
-  // Password reset via Firebase Auth + backend endpoint
-  const resetPassword = async (email: string, turnstileToken?: string) => {
-    const cleanEmail = email.trim().toLowerCase();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(cleanEmail)) {
-      throw new Error('Please enter a valid email address');
-    }
-
-    try {
-      await sendPasswordResetEmail(auth, cleanEmail);
-    } catch {
-      // Do not reveal whether the email exists in Firebase Auth
-    }
-
-    const res = await fetch(buildApiUrl('/api/auth/forgot-password'), {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: cleanEmail,
-        turnstileToken: turnstileToken || '',
-      }),
-    }).catch(() => null);
-
-    if (res && res.status === 429) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.error || 'Too many password reset requests. Please try again later.');
-    }
-  };
-
-  // Username availability check
-  const checkUsernameAvailability = useCallback(
-    async (username: string): Promise<{ available: boolean; error?: string }> => {
-      const clean = sanitizeUsername(username);
-      if (!clean || clean.length < 3 || clean.length > 24) {
-        return {
-          available: false,
-          error: 'Username must be 3–24 characters (letters, numbers, underscores)',
-        };
-      }
-      try {
-        const res = await fetch(
-          buildApiUrl(`/api/auth/check-username?username=${encodeURIComponent(clean)}`),
-          {
-            method: 'GET',
-            credentials: 'include',
-          }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          return { available: Boolean(data.available), error: data.error };
-        }
-        return { available: true };
-      } catch {
-        return { available: true };
-      }
-    },
-    []
-  );
-
+  /**
+   * Submits a request for developer/publisher status in the database.
+   * NEVER promotes the user's role locally if the backend fails.
+   */
   const becomeDeveloper = async (data: {
     orgName: string;
     orgWebsite?: string;
     orgDescription?: string;
+    sourceUrl?: string;
     payoutEmail: string;
   }) => {
-    if (!user) throw new Error('Must be logged in to register developer account');
-    const cleanOrgName = sanitizeText(data.orgName, 100);
-    const cleanWebsite = data.orgWebsite ? sanitizeUrl(data.orgWebsite) : null;
-    const cleanDesc = data.orgDescription ? sanitizeText(data.orgDescription, 500) : null;
-    const cleanPayoutEmail = data.payoutEmail.trim();
-
-    try {
-      const res = await fetch(buildApiUrl('/api/developer/register'), {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          orgName: cleanOrgName,
-          orgWebsite: cleanWebsite || undefined,
-          orgDescription: cleanDesc || undefined,
-          payoutEmail: cleanPayoutEmail,
-        }),
-      });
-      const contentType = res.headers?.get?.('content-type') || '';
-      if (res.ok && contentType.includes('application/json')) {
-        await fetchProfile();
-        return;
-      }
-    } catch {
-      // Fall back to local developer profile update on static hosting
+    if (!user) {
+      throw new Error('You must be signed in to request developer access.');
     }
 
-    const devProf: DeveloperProfile = {
-      id: `dev_${user.id}`,
+    const savedDev = await submitDeveloperProfileRequest({
       userId: user.id,
-      orgName: cleanOrgName,
-      orgWebsite: cleanWebsite,
-      orgDescription: cleanDesc,
-      verified: true,
-      payoutEmail: cleanPayoutEmail,
+      orgName: data.orgName,
+      orgWebsite: data.orgWebsite,
+      orgDescription: data.orgDescription,
+      sourceUrl: data.sourceUrl,
+      payoutEmail: data.payoutEmail,
+    });
+
+    setDeveloperProfile({
+      id: `dev_${savedDev.userId}`,
+      userId: savedDev.userId,
+      slug: savedDev.slug,
+      orgName: savedDev.orgName,
+      orgWebsite: savedDev.orgWebsite,
+      orgDescription: savedDev.orgDescription,
+      sourceUrl: savedDev.sourceUrl,
+      verified: savedDev.verified,
+      status: savedDev.status,
+      rejectionReason: savedDev.rejectionReason,
+      payoutEmail: '',
+    });
+
+    await refreshProfile();
+  };
+
+  const upgradePlan = async () => {
+    await refreshProfile();
+  };
+
+  const activateLicense = async (): Promise<{
+    success: boolean;
+    plan?: string;
+    message?: string;
+  }> => {
+    return {
+      success: false,
+      message: 'Niruvi Store is 100% free and open-source; no license key is required.',
     };
-    const updatedUser: UserProfile = {
-      ...user,
-      role: user.role === 'ADMIN' ? 'ADMIN' : 'DEVELOPER',
-      isPro: true,
-      plan: 'pro_developer',
-    };
-    setDeveloperProfile(devProf);
-    setUser(updatedUser);
-    persistSessionUser(updatedUser, devProf);
   };
 
-  const upgradePlan = async (planId: string, licenseKey?: string, paymentId?: string) => {
-    if (user) {
-      try {
-        const res = await fetch(buildApiUrl('/api/user/upgrade-plan'), {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ planId, licenseKey, paymentId }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.user) {
-            setUser(normalizeUserProfile(data.user));
-          }
-          if (data.developerProfile) {
-            setDeveloperProfile(data.developerProfile);
-          }
-        }
-      } catch {
-        // Fallback to local state when backend is unreachable
-      }
-    }
-    setLocalPro(true);
-  };
-
-  const activateLicense = async (
-    key: string
-  ): Promise<{ success: boolean; plan?: string; message?: string }> => {
-    const trimmed = key.trim().toUpperCase();
-    try {
-      const res = await fetch(buildApiUrl('/api/license/activate'), {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ licenseKey: trimmed }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setLocalPro(true);
-        if (user) {
-          await fetchProfile();
-        }
-        return { success: true, plan: data.plan, message: data.message };
-      } else {
-        return { success: false, message: data.error || 'Failed to activate license key' };
-      }
-    } catch (err: any) {
-      return {
-        success: false,
-        message: err?.message || 'Network error during license activation',
-      };
-    }
-  };
-
-  // Sign out via Supabase, /api/auth/logout (clears HttpOnly cookie), and Firebase signOut
   const signOut = async () => {
-    if (isSupabaseConfigured() && supabase) {
+    const client = getActiveSupabaseClient();
+    if (client) {
       try {
-        await supabase.auth.signOut();
+        await client.auth.signOut();
       } catch {
-        // ignore if not signed in via Supabase
+        // Proceed with clearing client state
       }
-    }
-    try {
-      await firebaseSignOut(auth);
-    } catch {
-      // ignore if not signed in via Firebase
-    }
-    try {
-      await fetch(buildApiUrl('/api/auth/logout'), {
-        method: 'POST',
-        credentials: 'include',
-      });
-    } catch {
-      // ignore network error
     }
     setUser(null);
     setDeveloperProfile(null);
-    persistSessionUser(null, null);
+    setToken(null);
   };
-
-  // Subscribe to Supabase OAuth PKCE session & handle /auth/callback code exchange when configured
-  useEffect(() => {
-    if (!isSupabaseConfigured() || !supabase) return;
-
-    const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-    const authCode = params?.get('code');
-    if (authCode) {
-      supabase.auth.exchangeCodeForSession(authCode).catch(() => {});
-    }
-
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        const profileRow = await fetchSupabaseUserProfile(session.user);
-        const mappedRole =
-          profileRow?.role === 'admin'
-            ? 'ADMIN'
-            : profileRow?.role === 'moderator'
-              ? 'MODERATOR'
-              : profileRow?.role === 'publisher'
-                ? 'DEVELOPER'
-                : 'USER';
-        const supaUser: UserProfile = {
-          id: session.user.id,
-          email: session.user.email || profileRow?.email || '',
-          username: profileRow?.username || 'linux_user',
-          displayName: profileRow?.display_name || 'Linux User',
-          role: mappedRole,
-          dbRole: profileRow?.role || 'user',
-          avatarUrl: profileRow?.avatar_url || null,
-          plan: mappedRole === 'DEVELOPER' || mappedRole === 'ADMIN' ? 'pro_developer' : 'free',
-          isPro: mappedRole === 'DEVELOPER' || mappedRole === 'ADMIN',
-        };
-        setUser(supaUser);
-        persistSessionUser(supaUser);
-      }
-    });
-
-    return () => {
-      sub.subscription.unsubscribe();
-    };
-  }, []);
 
   return (
     <AuthContext.Provider
       value={{
         user,
         developerProfile,
-        token: user ? 'cookie-session' : null,
+        token,
         loading,
         isPro,
         signInWithGoogle,
         signInWithGithub,
+        signInWithGitlab,
         updateUserProfile,
         loginWithCredentials,
         registerWithCredentials,
@@ -1064,7 +611,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 };
 
 export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
-  return ctx;
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };

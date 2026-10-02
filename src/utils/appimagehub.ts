@@ -750,3 +750,5 @@ export function buildAppMetadataFromNormalized(
     })),
   };
 }
+
+export const convertAppImageHubItemToMetadata = buildAppMetadataFromNormalized;

@@ -56,10 +56,15 @@ export default defineConfig(({ command }) => ({
   build: {
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
+      onwarn(warning, warn) {
+        if (warning.code === 'INVALID_ANNOTATION' && warning.id?.includes('node_modules/zod')) {
+          return;
+        }
+        warn(warning);
+      },
       output: {
         manualChunks: {
           react: ['react', 'react-dom'],
-          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
           icons: ['lucide-react'],
         },
       },

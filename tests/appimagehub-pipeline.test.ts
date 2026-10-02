@@ -18,6 +18,14 @@ import {
   parseSha256ChecksumText,
   GitHubReleaseResponse,
 } from '../src/utils/appimagehub';
+import {
+  detectArchitectureFromAssetName,
+  resolveAppSourceStatus,
+  resolveAppDownloadState,
+  deduplicateAndMergeCatalogApps,
+  createCatalogProviders,
+  setProviderEnabled,
+} from '../src/providers/catalogProviders';
 
 class MockKV implements KVNamespace {
   private store = new Map<string, string>();
@@ -332,5 +340,73 @@ describe('Worker Catalog Pipeline, Cron Batch Sync & API Routes', () => {
     const sitemapContent = fs.readFileSync(sitemapPath, 'utf-8');
     const appUrlCount = (sitemapContent.match(/\/app\//g) || []).length;
     expect(appUrlCount).toBe(TOTAL_CATALOG_COUNT);
+  });
+
+  it('deduplicates multi-provider apps by priority, detects architectures, resolves download states, and validates 0003 migration', () => {
+    expect(detectArchitectureFromAssetName('Blender-4.3.0-linux-x86_64.AppImage')).toBe('x86_64');
+    expect(detectArchitectureFromAssetName('Obsidian-1.7.4-arm64.AppImage')).toBe('aarch64');
+    expect(detectArchitectureFromAssetName('Tool-1.0-armv7l.AppImage')).toBe('armhf');
+
+    const realSha = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
+    const appImageHubEntry = buildAppMetadataFromNormalized(
+      normalizeAppImageHubItem({
+        name: 'Krita',
+        description: 'Professional digital painting application.',
+        categories: ['Graphics'],
+        links: [{ type: 'GitHub', url: 'KDE/krita' }],
+      })!,
+      null
+    );
+
+    const officialReleaseEntry = {
+      ...appImageHubEntry,
+      version: '5.2.6',
+      downloadUrl: 'https://github.com/KDE/krita/releases/download/v5.2.6/krita-5.2.6-x86_64.AppImage',
+      sha256: realSha,
+      publisher: { ...appImageHubEntry.publisher, verified: true },
+      architectures: ['x86_64', 'aarch64'] as any,
+    };
+
+    const merged = deduplicateAndMergeCatalogApps([appImageHubEntry, officialReleaseEntry]);
+    expect(merged).toHaveLength(1);
+    expect(merged[0].version).toBe('5.2.6');
+    expect(merged[0].publisher.verified).toBe(true);
+    expect(resolveAppSourceStatus(merged[0])).toBe('Official release');
+
+    const dlVerified = resolveAppDownloadState(merged[0], 'x86_64');
+    expect(dlVerified.state).toBe('available');
+    expect(dlVerified.buttonLabel).toBe('Download');
+    expect(dlVerified.checksumLabel).toBe('Verified');
+
+    const dlUpstreamOnly = resolveAppDownloadState(appImageHubEntry, 'x86_64');
+    expect(dlUpstreamOnly.state).toBe('upstream_only');
+    expect(dlUpstreamOnly.buttonLabel).toBe('View Releases');
+
+    const dlUnavailable = resolveAppDownloadState(merged[0], 'x86_64', 'temporarily_unavailable');
+    expect(dlUnavailable.disabled).toBe(true);
+    expect(dlUnavailable.buttonLabel).toBe('Currently unavailable');
+
+    const providers = createCatalogProviders();
+    expect(providers.map((p) => p.id)).toEqual([
+      'appimagehub',
+      'github',
+      'gitlab',
+      'sourceforge',
+      'community',
+    ]);
+    const toggled = setProviderEnabled('sourceforge', true);
+    expect(toggled.find((p) => p.id === 'sourceforge')?.enabled).toBe(true);
+
+    const mig3Path = path.join(
+      process.cwd(),
+      'supabase',
+      'migrations',
+      '0003_developer_publishing_and_providers.sql'
+    );
+    expect(fs.existsSync(mig3Path)).toBe(true);
+    const mig3Sql = fs.readFileSync(mig3Path, 'utf-8');
+    expect(mig3Sql).toContain('create table if not exists public.developer_profiles');
+    expect(mig3Sql).toContain('create table if not exists public.developer_private_settings');
+    expect(mig3Sql).toContain('create table if not exists public.catalog_providers');
   });
 });

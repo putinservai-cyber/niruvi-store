@@ -89,23 +89,28 @@ export function isPolicyFlaggedEntry(app: {
 }
 
 /**
- * Formats an application version string without ever outputting "vlatest".
- * Returns "Version unknown" when a real version is unavailable.
+ * Formats an application version string without ever outputting "vlatest", "latest", or "unknown".
+ * Returns "Version information unavailable" when a real version is unavailable.
  */
 export function formatAppVersion(version?: string | null): string {
-  if (!version || typeof version !== 'string') return 'Version unknown';
+  if (!version || typeof version !== 'string') return 'Version information unavailable';
   const trimmed = version.trim();
-  if (!trimmed || /^(v?latest|unknown|version\s+unknown|n\/a|-)$/i.test(trimmed)) {
-    return 'Version unknown';
+  if (
+    !trimmed ||
+    /^(v?latest|unknown|version\s+unknown|version\s+information\s+unavailable|n\/a|-)$/i.test(
+      trimmed
+    )
+  ) {
+    return 'Version information unavailable';
   }
   return `v${trimmed.replace(/^v/i, '')}`;
 }
 
 /**
- * Returns true if the version string represents a known release version (not "latest" or "Version unknown").
+ * Returns true if the version string represents a known release version (not "latest", "unknown", or unavailable).
  */
 export function hasKnownVersion(version?: string | null): boolean {
-  return formatAppVersion(version) !== 'Version unknown';
+  return formatAppVersion(version) !== 'Version information unavailable';
 }
 
 /**
