@@ -97,6 +97,7 @@ export interface KVNamespace {
 
 export interface Env {
   JWT_SECRET?: string;
+  ADMIN_TOKEN?: string;
   GITHUB_TOKEN?: string;
   FIREBASE_PROJECT_ID?: string;
   NIRUVI_AUTH_KV?: KVNamespace;
@@ -153,7 +154,7 @@ export function buildSecurityHeaders(requestOrigin?: string | null): Record<stri
   const allowedOrigin = requestOrigin || '*';
   return {
     'Content-Security-Policy':
-      "default-src 'self'; script-src 'self' 'unsafe-inline' https://apis.google.com https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https:; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://api.razorpay.com; frame-ancestors 'self' https://*.ai.studio https://*.google.com; object-src 'none'; base-uri 'self';",
+      "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://apis.google.com https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https:; frame-src 'self' https://challenges.cloudflare.com https://*.firebaseapp.com https://accounts.google.com https://api.razorpay.com; frame-ancestors 'self' https://*.ai.studio https://*.google.com; object-src 'none'; base-uri 'self';",
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
@@ -387,13 +388,14 @@ async function ensureD1Tables(db?: D1Database): Promise<void> {
 }
 
 /**
- * KV-backed Rate Limiter (10 attempts / 10 minutes per IP per auth route)
+ * KV-backed Rate Limiter (default 10 attempts / 10 minutes per IP per route)
  */
 async function checkAuthRateLimit(
   request: Request,
   env: Env,
-  routeKey: string
-): Promise<{ allowed: boolean; remaining: number; retryAfterSeconds: number }> {
+  routeKey: string,
+  maxAttempts: number = RATE_LIMIT_MAX_ATTEMPTS
+): Promise<{ allowed: boolean; remaining: number; limit: number; retryAfterSeconds: number }> {
   const ip =
     request.headers.get('CF-Connecting-IP') ||
     request.headers.get('X-Forwarded-For')?.split(',')[0]?.trim() ||
@@ -412,10 +414,11 @@ async function checkAuthRateLimit(
       }
       const ttl = Math.max(60, Math.ceil((state.expiresAt - now) / 1000));
       await env.NIRUVI_AUTH_KV.put(kvKey, JSON.stringify(state), { expirationTtl: ttl });
-      const allowed = state.count <= RATE_LIMIT_MAX_ATTEMPTS;
+      const allowed = state.count <= maxAttempts;
       return {
         allowed,
-        remaining: Math.max(0, RATE_LIMIT_MAX_ATTEMPTS - state.count),
+        remaining: Math.max(0, maxAttempts - state.count),
+        limit: maxAttempts,
         retryAfterSeconds: ttl,
       };
     } catch {
@@ -433,10 +436,35 @@ async function checkAuthRateLimit(
 
   const retryAfterSeconds = Math.max(1, Math.ceil((entry.expiresAt - now) / 1000));
   return {
-    allowed: entry.count <= RATE_LIMIT_MAX_ATTEMPTS,
-    remaining: Math.max(0, RATE_LIMIT_MAX_ATTEMPTS - entry.count),
+    allowed: entry.count <= maxAttempts,
+    remaining: Math.max(0, maxAttempts - entry.count),
+    limit: maxAttempts,
     retryAfterSeconds,
   };
+}
+
+async function verifyConstantTimeAdminBearer(
+  authHeader: string,
+  adminToken?: string
+): Promise<boolean> {
+  if (!adminToken || !adminToken.trim() || !authHeader.startsWith('Bearer ')) {
+    return false;
+  }
+  const candidate = authHeader.slice(7).trim();
+  if (!candidate) return false;
+  const enc = new TextEncoder();
+  const [aBuf, bBuf] = await Promise.all([
+    crypto.subtle.digest('SHA-256', enc.encode(candidate)),
+    crypto.subtle.digest('SHA-256', enc.encode(adminToken.trim())),
+  ]);
+  const a = new Uint8Array(aBuf);
+  const b = new Uint8Array(bBuf);
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a[i] ^ b[i];
+  }
+  return diff === 0;
 }
 
 /**
@@ -637,7 +665,18 @@ export default {
 
     // Serve pre-rendered static assets with security and cache headers for non-API routes
     if (!path.startsWith('/api/') && env?.ASSETS) {
-      const assetRes = await env.ASSETS.fetch(request);
+      let assetRes = await env.ASSETS.fetch(request);
+      if (
+        assetRes.status === 404 &&
+        method === 'GET' &&
+        !path.startsWith('/assets/') &&
+        !path.startsWith('/icons/') &&
+        !/\.[a-z0-9]{1,8}$/i.test(path)
+      ) {
+        assetRes = await env.ASSETS.fetch(
+          new Request(new URL('/index.html', request.url), request)
+        );
+      }
       const headers = new Headers(assetRes.headers);
       const secHeaders = buildSecurityHeaders(origin);
       for (const [k, v] of Object.entries(secHeaders)) {
@@ -662,13 +701,22 @@ export default {
       });
     }
 
+    // Reject oversized request payloads (> 64 KB) before parsing JSON
+    const contentLengthHeader = request.headers.get('Content-Length');
+    if (contentLengthHeader) {
+      const contentLength = parseInt(contentLengthHeader, 10);
+      if (Number.isFinite(contentLength) && contentLength > 65536) {
+        return jsonResponse({ error: 'Payload too large (maximum 64 KB).' }, 413, origin);
+      }
+    }
+
     const isPublicCatalogRead =
       method === 'GET' && (path === '/api/catalog' || path.startsWith('/api/catalog/'));
     const secret = env?.JWT_SECRET || '';
     if (!secret && !isPublicCatalogRead) {
       return jsonResponse(
         {
-          error: 'JWT_SECRET is not configured. Run `wrangler secret put JWT_SECRET` to configure it.',
+          error: 'Authentication service is temporarily unavailable.',
         },
         500,
         origin
@@ -678,6 +726,15 @@ export default {
     try {
       // 1. GET /api/auth/check-username?username=...
       if (path === '/api/auth/check-username' && method === 'GET') {
+        const rl = await checkAuthRateLimit(request, env, 'check_username');
+        if (!rl.allowed) {
+          return jsonResponse(
+            { available: false, error: 'Too many requests. Please try again shortly.' },
+            429,
+            origin,
+            { 'Retry-After': String(rl.retryAfterSeconds) }
+          );
+        }
         const rawUsername = url.searchParams.get('username') || '';
         const username = sanitizeUsername(rawUsername);
         if (!username || username.length < 3 || username.length > 24) {
@@ -985,6 +1042,16 @@ export default {
 
       // 8. PUT /api/user/profile
       if (path === '/api/user/profile' && method === 'PUT') {
+        const rl = await checkAuthRateLimit(request, env, 'profile_update', 20);
+        if (!rl.allowed) {
+          return jsonResponse(
+            { error: 'Too many profile update requests. Please try again later.' },
+            429,
+            origin,
+            { 'Retry-After': String(rl.retryAfterSeconds) }
+          );
+        }
+
         const dbUser = await authenticateAndVerifyD1User(request, env, secret);
         if (!dbUser) {
           return jsonResponse({ error: 'Authentication required' }, 401, origin);
@@ -994,8 +1061,16 @@ export default {
         const newDisplayName = sanitizeText(body.displayName || dbUser.displayName, 60);
         const newUsername = sanitizeUsername(body.username || dbUser.username);
 
-        if (!newUsername || newUsername.length < 3) {
+        if (!newUsername || newUsername.length < 3 || newUsername.length > 24) {
           return jsonResponse({ error: 'Username must be 3–24 characters' }, 400, origin);
+        }
+
+        if (typeof body.avatarUrl === 'string' && body.avatarUrl.trim()) {
+          const cleanAvatar = sanitizeUrl(body.avatarUrl);
+          if (!cleanAvatar || !cleanAvatar.startsWith('https://')) {
+            return jsonResponse({ error: 'Avatar URL must be a valid https:// URL' }, 400, origin);
+          }
+          dbUser.avatarUrl = cleanAvatar;
         }
 
         if (newUsername !== dbUser.username) {
@@ -1015,6 +1090,16 @@ export default {
 
       // 9. POST /api/developer/register — Re-checks D1 user and updates D1 developer_profiles
       if (path === '/api/developer/register' && method === 'POST') {
+        const rl = await checkAuthRateLimit(request, env, 'developer_register', 10);
+        if (!rl.allowed) {
+          return jsonResponse(
+            { error: 'Too many developer registration attempts. Please try again later.' },
+            429,
+            origin,
+            { 'Retry-After': String(rl.retryAfterSeconds) }
+          );
+        }
+
         const dbUser = await authenticateAndVerifyD1User(request, env, secret);
         if (!dbUser) {
           return jsonResponse({ error: 'Authentication required' }, 401, origin);
@@ -1022,12 +1107,25 @@ export default {
 
         const body = (await request.json().catch(() => ({}))) as Record<string, any>;
         const orgName = sanitizeText(body.orgName, 100);
-        const orgWebsite = body.orgWebsite ? sanitizeUrl(body.orgWebsite) : null;
+        const rawOrgWebsite = typeof body.orgWebsite === 'string' ? body.orgWebsite.trim() : '';
+        const orgWebsite = rawOrgWebsite ? sanitizeUrl(rawOrgWebsite) : null;
+        if (rawOrgWebsite && (!orgWebsite || !orgWebsite.startsWith('https://'))) {
+          return jsonResponse(
+            { error: 'Organization website must be a valid https:// URL' },
+            400,
+            origin
+          );
+        }
         const orgDescription = sanitizeText(body.orgDescription || '', 500);
         const payoutEmail = typeof body.payoutEmail === 'string' ? body.payoutEmail.trim().toLowerCase() : '';
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        if (!orgName || !payoutEmail) {
-          return jsonResponse({ error: 'Organization name and payout email are required' }, 400, origin);
+        if (!orgName || !payoutEmail || !emailRegex.test(payoutEmail) || payoutEmail.length > 120) {
+          return jsonResponse(
+            { error: 'Organization name and a valid payout email are required' },
+            400,
+            origin
+          );
         }
 
         if (dbUser.role === 'USER') {
@@ -1081,6 +1179,15 @@ export default {
 
       // 11. GET /api/catalog — Paginated, filterable catalog combining built-in + D1/AppImageHub apps
       if (path === '/api/catalog' && method === 'GET') {
+        const rl = await checkAuthRateLimit(request, env, 'catalog_read', 120);
+        if (!rl.allowed) {
+          return jsonResponse(
+            { error: 'Rate limit exceeded for catalog queries. Please retry shortly.' },
+            429,
+            origin,
+            { 'Retry-After': String(rl.retryAfterSeconds) }
+          );
+        }
         const q = (url.searchParams.get('q') || '').trim().toLowerCase();
         const category = (url.searchParams.get('category') || 'All').trim();
         const arch = (url.searchParams.get('arch') || 'All').trim();
@@ -1146,7 +1253,11 @@ export default {
             totalPages: Math.max(1, Math.ceil(total / limit)),
           },
           200,
-          origin
+          origin,
+          {
+            'X-RateLimit-Limit': '120',
+            'X-RateLimit-Remaining': String(rl.remaining),
+          }
         );
       }
 
@@ -1219,8 +1330,34 @@ export default {
         return jsonResponse({ app: enriched }, 200, origin);
       }
 
-      // 13. POST /api/catalog/sync — Idempotent AppImageHub + GitHub Releases batch sync
+      // 13. POST /api/catalog/sync — Protected Admin Idempotent AppImageHub + GitHub Releases batch sync
       if (path === '/api/catalog/sync' && method === 'POST') {
+        const rl = await checkAuthRateLimit(request, env, 'admin_sync', 10);
+        if (!rl.allowed) {
+          return jsonResponse(
+            { error: 'Too many catalog sync requests. Please wait before retrying.' },
+            429,
+            origin,
+            { 'Retry-After': String(rl.retryAfterSeconds) }
+          );
+        }
+
+        const authHeader = request.headers.get('Authorization') || '';
+        const hasValidAdminToken = await verifyConstantTimeAdminBearer(authHeader, env?.ADMIN_TOKEN);
+        if (!hasValidAdminToken) {
+          const dbUser = secret ? await authenticateAndVerifyD1User(request, env, secret) : null;
+          if (!dbUser) {
+            return jsonResponse({ error: 'Authentication required' }, 401, origin);
+          }
+          if (dbUser.role !== 'ADMIN' && dbUser.role !== 'MODERATOR') {
+            return jsonResponse(
+              { error: 'Forbidden: Admin privileges required to trigger catalog sync' },
+              403,
+              origin
+            );
+          }
+        }
+
         const body = (await request.json().catch(() => ({}))) as Record<string, any>;
         const maxItems = Math.min(200, Math.max(1, Number(body.maxItems) || 50));
         const maxGithubEnrich = Math.min(25, Math.max(0, Number(body.maxGithubEnrich) || 5));
@@ -1231,19 +1368,33 @@ export default {
         return jsonResponse({ success: true, ...summary }, 200, origin);
       }
 
-      // 14. POST /api/reports — "Report broken app" endpoint
-      if (path === '/api/reports' && method === 'POST') {
+      // 14. POST /api/reports or /api/report — "Report broken app" endpoint
+      if ((path === '/api/reports' || path === '/api/report') && method === 'POST') {
+        const rl = await checkAuthRateLimit(request, env, 'reports');
+        if (!rl.allowed) {
+          return jsonResponse(
+            { error: 'Too many reports submitted. Please try again later.' },
+            429,
+            origin,
+            { 'Retry-After': String(rl.retryAfterSeconds) }
+          );
+        }
         const body = (await request.json().catch(() => ({}))) as Record<string, any>;
-        const appId = sanitizeText(body.appId || '', 64).toLowerCase();
+        const appId = sanitizeText(body.appId || body.app_slug || body.slug || '', 64).toLowerCase();
         const appName = sanitizeText(body.appName || appId, 100);
         const reason = sanitizeText(body.reason || '', 80);
-        const details = sanitizeText(body.details || '', 1500);
+        const details = sanitizeText(body.details || reason, 1500);
         const distro = sanitizeText(body.distro || '', 80);
         const architecture = sanitizeText(body.architecture || 'x86_64', 20);
         const reporterEmail =
           typeof body.reporterEmail === 'string' ? body.reporterEmail.trim().slice(0, 120) : '';
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        if (!appId || !reason || details.length < 5) {
+        if (reporterEmail && !emailRegex.test(reporterEmail)) {
+          return jsonResponse({ error: 'Please provide a valid reporter email address.' }, 400, origin);
+        }
+
+        if (!appId || !reason || details.length < 3) {
           return jsonResponse(
             { error: 'Please provide an application ID, issue reason, and brief details.' },
             400,
@@ -1298,19 +1449,41 @@ export default {
         );
       }
 
-      // 15. POST /api/submissions — "Submit an app" endpoint
-      if (path === '/api/submissions' && method === 'POST') {
+      // 15. POST /api/submissions or /api/submit — "Submit an app" endpoint
+      if ((path === '/api/submissions' || path === '/api/submit') && method === 'POST') {
+        const rl = await checkAuthRateLimit(request, env, 'submissions');
+        if (!rl.allowed) {
+          return jsonResponse(
+            { error: 'Too many package submissions. Please try again later.' },
+            429,
+            origin,
+            { 'Retry-After': String(rl.retryAfterSeconds) }
+          );
+        }
         const body = (await request.json().catch(() => ({}))) as Record<string, any>;
         const name = sanitizeText(body.name || '', 100);
         const description = sanitizeText(body.description || '', 2000);
         const category = mapToSimplifiedCategory(body.category || 'System/Utilities');
         const homepageUrl = body.homepageUrl ? sanitizeUrl(body.homepageUrl) : '';
         const githubRepo = sanitizeText(body.githubRepo || '', 120);
-        const downloadUrl = sanitizeUrl(body.downloadUrl || '');
+        const downloadUrl = sanitizeUrl(body.downloadUrl || body.download_url || '');
         const sha256Raw = typeof body.sha256 === 'string' ? body.sha256.trim().toLowerCase() : '';
         const license = sanitizeText(body.license || 'Open Source', 60);
         const submitterEmail =
           typeof body.submitterEmail === 'string' ? body.submitterEmail.trim().slice(0, 120) : '';
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (submitterEmail && !emailRegex.test(submitterEmail)) {
+          return jsonResponse({ error: 'Please provide a valid submitter email address.' }, 400, origin);
+        }
+
+        if (sha256Raw && !/^[a-f0-9]{64}$/i.test(sha256Raw)) {
+          return jsonResponse(
+            { error: 'Optional SHA-256 checksum must be exactly 64 hexadecimal characters.' },
+            400,
+            origin
+          );
+        }
 
         if (!name || !description || !downloadUrl.startsWith('https://')) {
           return jsonResponse(
@@ -1355,12 +1528,14 @@ export default {
           memorySubmissions.push({
             id: submissionId,
             appId,
+            slug: appId,
             name,
             description,
             category,
             homepageUrl,
             githubRepo,
             downloadUrl,
+            download_url: downloadUrl,
             sha256: verifiedSha,
             verified: Boolean(verifiedSha),
             license,
@@ -1382,17 +1557,97 @@ export default {
       }
 
       if (path.startsWith('/api/admin/')) {
-        const dbUser = await authenticateAndVerifyD1User(request, env, secret);
-        if (!dbUser) {
-          return jsonResponse({ error: 'Authentication required' }, 401, origin);
+        const rl = await checkAuthRateLimit(request, env, 'admin');
+        if (!rl.allowed) {
+          return jsonResponse(
+            { error: 'Too many admin authentication attempts. Please wait 10 minutes.' },
+            429,
+            origin,
+            { 'Retry-After': String(rl.retryAfterSeconds) }
+          );
         }
-        if (dbUser.role !== 'ADMIN' && dbUser.role !== 'MODERATOR') {
-          return jsonResponse({ error: 'Forbidden: Admin privileges required (verified via D1)' }, 403, origin);
+
+        // Allow either constant-time ADMIN_TOKEN Bearer secret OR D1-verified ADMIN / MODERATOR session
+        const authHeader = request.headers.get('Authorization') || '';
+        const hasValidAdminToken = await verifyConstantTimeAdminBearer(authHeader, env?.ADMIN_TOKEN);
+
+        let dbUser: WorkerUserRecord | null = null;
+        if (!hasValidAdminToken) {
+          dbUser = await authenticateAndVerifyD1User(request, env, secret);
+          if (!dbUser) {
+            return jsonResponse({ error: 'Authentication required' }, 401, origin);
+          }
+          if (dbUser.role !== 'ADMIN' && dbUser.role !== 'MODERATOR') {
+            return jsonResponse(
+              { error: 'Forbidden: Admin privileges required (verified via D1)' },
+              403,
+              origin
+            );
+          }
         }
-        return jsonResponse({ status: 'authorized', role: dbUser.role, plan: dbUser.plan }, 200, origin);
+
+        if (path === '/api/admin/submissions' && method === 'GET') {
+          return jsonResponse(
+            {
+              submissions: memorySubmissions,
+              reports: memoryReports,
+            },
+            200,
+            origin
+          );
+        }
+
+        if (path === '/api/admin/hide' && method === 'POST') {
+          const body = (await request.json().catch(() => ({}))) as Record<string, any>;
+          const target = sanitizeText(body.id || body.slug || '', 128);
+          const nextStatus = body.status === 'published' ? 'published' : 'hidden';
+          if (!target) {
+            return jsonResponse({ error: 'Submission id or slug is required.' }, 400, origin);
+          }
+          for (const item of memorySubmissions) {
+            if (item.id === target || item.appId === target || item.slug === target) {
+              item.status = nextStatus;
+            }
+          }
+          return jsonResponse({ success: true, target, status: nextStatus }, 200, origin);
+        }
+
+        if (path === '/api/admin/delete' && method === 'POST') {
+          const body = (await request.json().catch(() => ({}))) as Record<string, any>;
+          const target = sanitizeText(body.id || body.slug || '', 128);
+          if (!target) {
+            return jsonResponse({ error: 'Submission id or slug is required.' }, 400, origin);
+          }
+          const idx = memorySubmissions.findIndex(
+            (item) => item.id === target || item.appId === target || item.slug === target
+          );
+          if (idx !== -1) {
+            memorySubmissions.splice(idx, 1);
+          }
+          return jsonResponse({ success: true, deleted: target }, 200, origin);
+        }
+
+        return jsonResponse(
+          {
+            status: 'authorized',
+            role: dbUser?.role || 'ADMIN',
+            plan: dbUser?.plan || 'pro_developer',
+          },
+          200,
+          origin
+        );
       }
 
       if (path.startsWith('/api/security/')) {
+        const rl = await checkAuthRateLimit(request, env, 'security_route', 20);
+        if (!rl.allowed) {
+          return jsonResponse(
+            { error: 'Too many requests to security endpoint. Please wait.' },
+            429,
+            origin,
+            { 'Retry-After': String(rl.retryAfterSeconds) }
+          );
+        }
         const dbUser = await authenticateAndVerifyD1User(request, env, secret);
         if (!dbUser) {
           return jsonResponse({ error: 'Authentication required' }, 401, origin);

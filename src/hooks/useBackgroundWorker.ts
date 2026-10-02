@@ -16,7 +16,6 @@ export function useBackgroundWorker(fetchCatalogApps: () => void) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      console.log('[Background Hook] Synchronizing live AppImage catalog...');
       fetchRef.current();
       setLastFetched(new Date());
     }, 300 * 1000); // 300 seconds (5 minutes)

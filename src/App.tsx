@@ -35,8 +35,15 @@ import { Cookies } from './pages/Cookies';
 import { Refunds } from './pages/Refunds';
 import { Donate } from './pages/Donate';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import {
+  WelcomeIntroScreen,
+  CatalogLoadingScreen,
+  SearchDiscoveryBar,
+  EmptyErrorOfflineScreen,
+} from './components/EssentialScreens';
 import { updatePageSeo } from './utils/seo';
 import { withBaseUrl, stripBaseUrl, buildApiUrl } from './config/site';
+import { fetchWithTimeoutAndRetry, isSlowOrOfflineConnection } from './utils/network';
 import { useAuth } from './context/AuthContext';
 import {
   recordAppDownload,
@@ -45,12 +52,9 @@ import {
   fetchUserDownloadsFromSupabase,
 } from './lib/supabase';
 import {
-  PackageOpen,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  AlertCircle,
-  RefreshCw,
 } from 'lucide-react';
 
 const PAGE_SIZE = 48;
@@ -128,8 +132,12 @@ function filterAndSortCatalog(
   const qLower = options.q.trim().toLowerCase();
   return apps
     .filter((app) => {
-      // Always block policy-flagged entries (e.g. account-scraper)
-      if (app.moderationFlag === 'flagged_policy' || isPolicyFlaggedEntry(app).flagged) {
+      // Always block policy-flagged entries (e.g. account-scraper) and any synthetic test/demo IDs
+      if (
+        app.moderationFlag === 'flagged_policy' ||
+        isPolicyFlaggedEntry(app).flagged ||
+        /^(?:test[-_]?app|demo[-_]?app|mock[-_]?app|supabase[-_]?preview)$/i.test(app.id)
+      ) {
         return false;
       }
       // Phase 1: Hide every catalog entry that lacks a direct .AppImage URL and a SHA-256 from the main listing by default
@@ -214,12 +222,15 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
 
   const [communityApps, setCommunityApps] = useState<AppMetadata[]>([]);
 
-  // Clear any legacy local preview apps (e.g. "Supabase Preview") stored in localStorage
+  // Clear any legacy local preview/test apps stored in localStorage
   // and fetch published community submissions from Cloudflare Worker GET /api/apps.
   // Handles errors/offline gracefully so the static catalog always works when the Worker is down.
   useEffect(() => {
     try {
       localStorage.removeItem('niruvi_custom_apps');
+      localStorage.removeItem('niruvi_test_data');
+      localStorage.removeItem('niruvi_demo_user');
+      localStorage.removeItem('niruvi_mock_session');
     } catch {}
 
     if (initialCatalogOverride) return;
@@ -227,7 +238,10 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
 
     async function fetchWorkerApps() {
       try {
-        const res = await fetch(buildApiUrl('/api/apps'));
+        const res = await fetchWithTimeoutAndRetry(buildApiUrl('/api/apps'), {
+          timeoutMs: 6000,
+          retries: 1,
+        });
         const contentType = res.headers?.get?.('content-type') || '';
         if (!res.ok || !contentType.includes('application/json')) return;
         const data = await res.json();
@@ -236,7 +250,11 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
         const mappedWorkerApps: AppMetadata[] = [];
         for (const raw of data.apps) {
           const mapped = mapWorkerSubmissionToAppMetadata(raw);
-          if (mapped && !/supabase\s*preview/i.test(mapped.name)) {
+          if (
+            mapped &&
+            !/supabase\s*preview/i.test(mapped.name) &&
+            !/^(?:test[-_]?app|demo[-_]?app|mock[-_]?app)$/i.test(mapped.id)
+          ) {
             mappedWorkerApps.push(mapped);
           }
         }
@@ -303,6 +321,16 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
     () => initialUrlParams.get('unverified') === '1'
   );
   const [showCleanupReport, setShowCleanupReport] = useState(false);
+  const [welcomeDismissed, setWelcomeDismissed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('niruvi_welcome_dismissed') === '1';
+    } catch {
+      return false;
+    }
+  });
+  const [forceLoadingPreview, setForceLoadingPreview] = useState<boolean>(
+    () => initialUrlParams.get('screen') === 'loading'
+  );
   const [sortBy, setSortBy] = useState<SortOption>(() => {
     const s = initialUrlParams.get('sort');
     return s === 'name' || s === 'recent' || s === 'featured' ? s : 'featured';
@@ -321,6 +349,19 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
   } | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [catalogError, setCatalogError] = useState<string | null>(null);
+  const [isOffline, setIsOffline] = useState<boolean>(() => isSlowOrOfflineConnection().offline);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const queryKey = `${currentPage}|${searchQuery.trim()}|${selectedCategory}|${selectedArch}|${onlyVerified}|${includeUnverifiedImports}|${sortBy}`;
   const isDefaultFirstPage =
@@ -895,7 +936,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
   };
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-[#0a0a0c] text-neutral-100 font-sans selection:bg-sky-500/30 selection:text-sky-200 flex flex-col items-center">
+    <div className="min-h-screen w-full bg-[#0a0a0c] text-neutral-100 font-sans selection:bg-sky-500/30 selection:text-sky-200 flex flex-col">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2.5 focus:rounded-lg focus:bg-sky-500 focus:text-black focus:font-semibold focus:text-xs"
@@ -935,38 +976,45 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
       {/* Main Content */}
       <ErrorBoundary>
         {legalRoute === 'privacy' ? (
-          <main id="main-content" className="flex-1 w-full max-w-7xl min-w-0 mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <main id="main-content" className="flex-1 w-full max-w-5xl min-w-0 mx-auto px-4 sm:px-6 lg:px-12 py-6">
             <Privacy
               onBackToStore={() => navigateLegal('store')}
               onOpenCookieSettings={() => setCookieSettingsOpen(true)}
             />
           </main>
         ) : legalRoute === 'terms' ? (
-          <main id="main-content" className="flex-1 w-full max-w-7xl min-w-0 mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <main id="main-content" className="flex-1 w-full max-w-5xl min-w-0 mx-auto px-4 sm:px-6 lg:px-12 py-6">
             <Terms onBackToStore={() => navigateLegal('store')} />
           </main>
         ) : legalRoute === 'cookies' ? (
-          <main id="main-content" className="flex-1 w-full max-w-7xl min-w-0 mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <main id="main-content" className="flex-1 w-full max-w-5xl min-w-0 mx-auto px-4 sm:px-6 lg:px-12 py-6">
             <Cookies
               onBackToStore={() => navigateLegal('store')}
               onOpenCookieSettings={() => setCookieSettingsOpen(true)}
             />
           </main>
         ) : legalRoute === 'refunds' ? (
-          <main id="main-content" className="flex-1 w-full max-w-7xl min-w-0 mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <main id="main-content" className="flex-1 w-full max-w-5xl min-w-0 mx-auto px-4 sm:px-6 lg:px-12 py-6">
             <Refunds onBackToStore={() => navigateLegal('store')} />
           </main>
         ) : (
           <main
             id="main-content"
             tabIndex={-1}
-            className="flex-1 w-full max-w-7xl min-w-0 mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 focus:outline-none"
+            className="flex-1 w-full max-w-5xl min-w-0 mx-auto px-4 sm:px-6 lg:px-12 py-6 focus:outline-none"
           >
-            <div className="w-full max-w-7xl mx-auto min-w-0">
+            {isOffline && (
+              <EmptyErrorOfflineScreen
+                mode="offline"
+                onRetry={loadPaginatedPage}
+              />
+            )}
+
             {activeTab === 'verifier' && (
               <IntegrityVerifierView
                 catalog={APPS_CATALOG}
                 onSelectApp={(app) => handleSelectApp(app)}
+                initialExpectedHash={verifierInitialHash}
               />
             )}
 
@@ -1148,6 +1196,30 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
                   </section>
                 )}
 
+                {/* Welcome / Intro Screen (Dismissible Quick-Start Guide) */}
+                <WelcomeIntroScreen
+                  totalVerifiedCount={VERIFIED_DIRECT_CATALOG_COUNT}
+                  isDismissed={welcomeDismissed}
+                  onDismiss={() => {
+                    setWelcomeDismissed(true);
+                    try {
+                      localStorage.setItem('niruvi_welcome_dismissed', '1');
+                    } catch {}
+                  }}
+                  onReopen={() => {
+                    setWelcomeDismissed(false);
+                    try {
+                      localStorage.removeItem('niruvi_welcome_dismissed');
+                    } catch {}
+                  }}
+                  onOpenVerifier={() => handleTabChange('verifier')}
+                  onOpenSubmit={() => handleTabChange('submit')}
+                  onQuickSearch={(q) => {
+                    setSearchQuery(q);
+                    setCurrentPage(1);
+                  }}
+                />
+
                 {/* Filter Bar with Category, Arch, Verified SHA-256, Sort & Visible Count */}
                 <FilterBar
                   selectedCategory={selectedCategory}
@@ -1176,24 +1248,42 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
                   onResetFilters={resetAllFilters}
                 />
 
+                {/* Search Screen Suggestions & Active Search Summary */}
+                <SearchDiscoveryBar
+                  searchQuery={searchQuery}
+                  resultCount={totalMatchingApps}
+                  onSearchChange={(q) => {
+                    setSearchQuery(q);
+                    setCurrentPage(1);
+                  }}
+                  onClearSearch={() => {
+                    setSearchQuery('');
+                    setCurrentPage(1);
+                  }}
+                />
+
                 {/* Error State */}
                 {catalogError && (
-                  <div
-                    role="alert"
-                    className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-between gap-4 text-xs text-rose-300"
-                  >
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
-                      <span>{catalogError}</span>
+                  <EmptyErrorOfflineScreen
+                    mode="error"
+                    description={catalogError}
+                    onRetry={loadPaginatedPage}
+                  />
+                )}
+
+                {/* Loading Screen State */}
+                {forceLoadingPreview && (
+                  <div className="mb-6">
+                    <CatalogLoadingScreen />
+                    <div className="mt-2 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setForceLoadingPreview(false)}
+                        className="text-xs text-sky-400 hover:text-sky-300 underline cursor-pointer"
+                      >
+                        Dismiss loading preview
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={loadPaginatedPage}
-                      className="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-white font-medium inline-flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
-                      <span>Retry</span>
-                    </button>
                   </div>
                 )}
 
@@ -1201,7 +1291,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
                 {activePageItems.length > 0 ? (
                   <>
                     <div
-                      className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 items-stretch w-full min-w-0 transition-opacity ${
+                      className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 items-stretch w-full min-w-0 transition-opacity ${
                         catalogLoading ? 'opacity-75' : 'opacity-100'
                       }`}
                     >
@@ -1291,28 +1381,17 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
                     )}
                   </>
                 ) : (
-                  <div className="text-center py-16 bg-neutral-900/40 border border-neutral-800 rounded-xl my-4">
-                    <div className="w-12 h-12 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-center mx-auto mb-3 text-neutral-400">
-                      <PackageOpen className="w-6 h-6" aria-hidden="true" />
-                    </div>
-                    <h2 className="text-base font-semibold text-white mb-1">
-                      No apps match your filters
-                    </h2>
-                    <p className="text-xs text-neutral-400 max-w-md mx-auto mb-5">
-                      No applications matched your current search or filter criteria.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={resetAllFilters}
-                      className="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs transition-colors cursor-pointer"
-                    >
-                      Reset All Filters
-                    </button>
-                  </div>
+                  <EmptyErrorOfflineScreen
+                    mode="empty"
+                    onResetFilters={resetAllFilters}
+                    onSuggestionClick={(q) => {
+                      resetAllFilters();
+                      setSearchQuery(q);
+                    }}
+                  />
                 )}
               </>
             )}
-            </div>
           </main>
         )}
       </ErrorBoundary>

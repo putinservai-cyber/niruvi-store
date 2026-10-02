@@ -379,8 +379,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(true);
         try {
           await syncFirebaseUserWithBackend(fbUser);
-        } catch (err) {
-          console.error('Error syncing Firebase user:', err);
+        } catch {
           await fetchProfile();
         } finally {
           setLoading(false);
@@ -926,8 +925,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setDeveloperProfile(data.developerProfile);
           }
         }
-      } catch (e) {
-        console.warn('Server plan upgrade notice:', e);
+      } catch {
+        // Fallback to local state when backend is unreachable
       }
     }
     setLocalPro(true);

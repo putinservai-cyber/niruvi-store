@@ -30,9 +30,9 @@ export function getInstalledApps(): InstalledAppRecord[] {
   try {
     const data = localStorage.getItem(INSTALLED_STORAGE_KEY);
     if (!data) return [];
-    return JSON.parse(data);
-  } catch (err) {
-    console.error('Failed to load installed apps from localStorage', err);
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
     return [];
   }
 }
@@ -43,8 +43,8 @@ export function saveInstalledApp(record: InstalledAppRecord): void {
     const filtered = current.filter((item) => item.appId !== record.appId);
     filtered.push(record);
     localStorage.setItem(INSTALLED_STORAGE_KEY, JSON.stringify(filtered));
-  } catch (err) {
-    console.error('Failed to save installed app to localStorage', err);
+  } catch {
+    // Ignore localStorage quota/privacy errors
   }
 }
 
@@ -53,8 +53,8 @@ export function removeInstalledApp(appId: string): void {
     const current = getInstalledApps();
     const updated = current.filter((item) => item.appId !== appId);
     localStorage.setItem(INSTALLED_STORAGE_KEY, JSON.stringify(updated));
-  } catch (err) {
-    console.error('Failed to remove installed app from localStorage', err);
+  } catch {
+    // Ignore localStorage errors
   }
 }
 
@@ -62,9 +62,9 @@ export function getBookmarkedAppIds(): string[] {
   try {
     const data = localStorage.getItem(BOOKMARKS_STORAGE_KEY);
     if (!data) return [];
-    return JSON.parse(data);
-  } catch (err) {
-    console.error('Failed to load bookmarks', err);
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed) ? parsed.filter((id) => typeof id === 'string') : [];
+  } catch {
     return [];
   }
 }
@@ -76,20 +76,29 @@ export function toggleBookmark(appId: string): string[] {
     const updated = exists ? current.filter((id) => id !== appId) : [...current, appId];
     localStorage.setItem(BOOKMARKS_STORAGE_KEY, JSON.stringify(updated));
     return updated;
-  } catch (err) {
-    console.error('Failed to toggle bookmark', err);
+  } catch {
     return [];
   }
 }
+
+const TEST_ENTRY_ID_REGEX = /^(?:test[-_]?app|demo[-_]?app|mock[-_]?app|supabase[-_]?preview)$/i;
 
 export function getCustomApps(): AppMetadata[] {
   try {
     const data = localStorage.getItem(CUSTOM_APPS_STORAGE_KEY);
     if (!data) return [];
     const parsed = JSON.parse(data);
-    return Array.isArray(parsed) ? parsed.map(sanitizeAppMetadata) : [];
-  } catch (err) {
-    console.error('Failed to load custom apps', err);
+    return Array.isArray(parsed)
+      ? parsed
+          .map(sanitizeAppMetadata)
+          .filter(
+            (app) =>
+              Boolean(app.id && app.name) &&
+              !TEST_ENTRY_ID_REGEX.test(app.id) &&
+              !/supabase\s*preview/i.test(app.name)
+          )
+      : [];
+  } catch {
     return [];
   }
 }
@@ -97,11 +106,14 @@ export function getCustomApps(): AppMetadata[] {
 export function saveCustomApp(app: AppMetadata): void {
   try {
     const sanitized = sanitizeAppMetadata(app);
+    if (TEST_ENTRY_ID_REGEX.test(sanitized.id) || /supabase\s*preview/i.test(sanitized.name)) {
+      return;
+    }
     const current = getCustomApps();
     const filtered = current.filter((item) => item.id !== sanitized.id);
     filtered.unshift(sanitized);
     localStorage.setItem(CUSTOM_APPS_STORAGE_KEY, JSON.stringify(filtered));
-  } catch (err) {
-    console.error('Failed to save custom app', err);
+  } catch {
+    // Ignore localStorage quota/privacy errors
   }
 }

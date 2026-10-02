@@ -41,8 +41,8 @@ export function saveStoredConsent(
   try {
     localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(record));
     window.dispatchEvent(new CustomEvent('niruvi-consent-updated', { detail: record }));
-  } catch (err) {
-    console.warn('Could not persist consent choice in localStorage:', err);
+  } catch {
+    // Ignore localStorage quota/privacy restrictions
   }
   return record;
 }

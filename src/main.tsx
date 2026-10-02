@@ -15,7 +15,6 @@ if (typeof window !== 'undefined') {
       reason.includes('HMR') ||
       reason.includes('vite')
     ) {
-      console.warn('Caught and suppressed benign websocket/HMR rejection:', event.reason);
       event.preventDefault();
       event.stopPropagation();
     }
@@ -27,7 +26,6 @@ if (typeof window !== 'undefined') {
     (event) => {
       const message = event.message || '';
       if (message.includes('WebSocket') || message.includes('websocket')) {
-        console.warn('Caught and suppressed benign websocket error:', event.message);
         event.preventDefault();
         event.stopPropagation();
       }

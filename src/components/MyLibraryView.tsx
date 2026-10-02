@@ -124,7 +124,7 @@ export const MyLibraryView: React.FC<MyLibraryViewProps> = ({
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-200">
+    <div className="w-full min-w-0 space-y-8">
       {/* Header & Stats Banner */}
       <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">

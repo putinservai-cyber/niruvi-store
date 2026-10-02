@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { buildApiUrl } from '../config/site';
+import { useAuth } from '../context/AuthContext';
+import { sanitizeErrorMessage } from '../utils/sanitize';
+import { fetchWithTimeoutAndRetry } from '../utils/network';
 import {
   ShieldCheck,
   EyeOff,
@@ -42,6 +45,7 @@ interface AdminModerationViewProps {
 }
 
 export const AdminModerationView: React.FC<AdminModerationViewProps> = ({ onBackToStore }) => {
+  const { user } = useAuth();
   const [adminToken, setAdminToken] = useState('');
   const [submissions, setSubmissions] = useState<AdminSubmissionItem[]>([]);
   const [reports, setReports] = useState<AdminReportItem[]>([]);
@@ -50,10 +54,40 @@ export const AdminModerationView: React.FC<AdminModerationViewProps> = ({ onBack
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [loadedOnce, setLoadedOnce] = useState(false);
 
+  const isAdminOrModeratorUser =
+    Boolean(user) && (user?.role === 'ADMIN' || user?.role === 'MODERATOR');
+  const isNonAdminSignedInUser = Boolean(user) && !isAdminOrModeratorUser;
+
+  // Wipe in-memory admin token when leaving the console
+  useEffect(() => {
+    return () => {
+      setAdminToken('');
+    };
+  }, []);
+
+  const buildAdminHeaders = (includeJson = false): Record<string, string> => {
+    const headers: Record<string, string> = {};
+    if (includeJson) {
+      headers['Content-Type'] = 'application/json';
+    }
+    if (adminToken.trim()) {
+      headers.Authorization = `Bearer ${adminToken.trim()}`;
+    }
+    return headers;
+  };
+
+  const handleLockConsole = () => {
+    setAdminToken('');
+    setSubmissions([]);
+    setReports([]);
+    setLoadedOnce(false);
+    setStatusMessage('Admin console locked and credentials cleared from memory.');
+  };
+
   const fetchAdminData = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!adminToken.trim()) {
-      setError('Enter the Worker ADMIN_TOKEN secret to load community submissions.');
+    if (!adminToken.trim() && !isAdminOrModeratorUser) {
+      setError('Enter the Worker ADMIN_TOKEN secret or sign in with an Administrator account.');
       return;
     }
 
@@ -62,47 +96,51 @@ export const AdminModerationView: React.FC<AdminModerationViewProps> = ({ onBack
     setStatusMessage(null);
 
     try {
-      const res = await fetch(buildApiUrl('/api/admin/submissions'), {
+      const res = await fetchWithTimeoutAndRetry(buildApiUrl('/api/admin/submissions'), {
         method: 'GET',
-        headers: {
-          Authorization: `Bearer ${adminToken.trim()}`,
-        },
+        credentials: 'include',
+        headers: buildAdminHeaders(false),
+        timeoutMs: 8000,
       });
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data?.error || `HTTP ${res.status}: Failed to load admin submissions.`);
+        setError(
+          sanitizeErrorMessage(
+            data?.error,
+            `HTTP ${res.status}: Failed to load admin submissions.`
+          )
+        );
         return;
       }
 
       setSubmissions(Array.isArray(data?.submissions) ? data.submissions : []);
       setReports(Array.isArray(data?.reports) ? data.reports : []);
       setLoadedOnce(true);
-    } catch {
-      setError('Could not connect to Worker admin endpoint.');
+    } catch (err) {
+      setError(sanitizeErrorMessage(err, 'Could not connect to Worker admin endpoint.'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleToggleVisibility = async (target: string, nextStatus: 'published' | 'hidden') => {
-    if (!adminToken.trim()) return;
+    if (!adminToken.trim() && !isAdminOrModeratorUser) return;
     setError(null);
     setStatusMessage(null);
 
     try {
-      const res = await fetch(buildApiUrl('/api/admin/hide'), {
+      const res = await fetchWithTimeoutAndRetry(buildApiUrl('/api/admin/hide'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${adminToken.trim()}`,
-        },
+        credentials: 'include',
+        headers: buildAdminHeaders(true),
         body: JSON.stringify({ id: target, status: nextStatus }),
+        timeoutMs: 8000,
       });
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data?.error || `Failed to update status for "${target}".`);
+        setError(sanitizeErrorMessage(data?.error, `Failed to update status for "${target}".`));
         return;
       }
 
@@ -116,41 +154,40 @@ export const AdminModerationView: React.FC<AdminModerationViewProps> = ({ onBack
           ? `Hidden submission "${target}" from public catalog.`
           : `Re-published submission "${target}".`
       );
-    } catch {
-      setError('Network error while updating submission status.');
+    } catch (err) {
+      setError(sanitizeErrorMessage(err, 'Network error while updating submission status.'));
     }
   };
 
   const handleDeleteSubmission = async (target: string) => {
-    if (!adminToken.trim()) return;
+    if (!adminToken.trim() && !isAdminOrModeratorUser) return;
     setError(null);
     setStatusMessage(null);
 
     try {
-      const res = await fetch(buildApiUrl('/api/admin/delete'), {
+      const res = await fetchWithTimeoutAndRetry(buildApiUrl('/api/admin/delete'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${adminToken.trim()}`,
-        },
+        credentials: 'include',
+        headers: buildAdminHeaders(true),
         body: JSON.stringify({ id: target }),
+        timeoutMs: 8000,
       });
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data?.error || `Failed to delete "${target}".`);
+        setError(sanitizeErrorMessage(data?.error, `Failed to delete "${target}".`));
         return;
       }
 
       setSubmissions((prev) => prev.filter((item) => item.id !== target && item.slug !== target));
       setStatusMessage(`Deleted submission "${target}" permanently.`);
-    } catch {
-      setError('Network error while deleting submission.');
+    } catch (err) {
+      setError(sanitizeErrorMessage(err, 'Network error while deleting submission.'));
     }
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
+    <div className="w-full min-w-0 space-y-6">
       <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-amber-300 uppercase tracking-wider mb-1">
@@ -166,14 +203,39 @@ export const AdminModerationView: React.FC<AdminModerationViewProps> = ({ onBack
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={onBackToStore}
-          className="min-h-[40px] px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-xs font-semibold text-white border border-neutral-700 cursor-pointer shrink-0"
-        >
-          Back to Catalog
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          {(loadedOnce || adminToken) && (
+            <button
+              type="button"
+              onClick={handleLockConsole}
+              className="min-h-[40px] px-3.5 py-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-xs font-semibold text-amber-300 border border-amber-500/30 cursor-pointer"
+            >
+              Lock Console
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onBackToStore}
+            className="min-h-[40px] px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-xs font-semibold text-white border border-neutral-700 cursor-pointer shrink-0"
+          >
+            Back to Catalog
+          </button>
+        </div>
       </div>
+
+      {isNonAdminSignedInUser && !loadedOnce && (
+        <div
+          role="status"
+          className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 flex items-center gap-2"
+        >
+          <Lock className="w-4 h-4 text-amber-400 shrink-0" aria-hidden="true" />
+          <span>
+            Signed in as <strong>@{user?.username}</strong> ({user?.role}). Admin routes require an{' '}
+            <code className="font-mono">ADMIN</code> / <code className="font-mono">MODERATOR</code>{' '}
+            role or a valid Worker <code className="font-mono">ADMIN_TOKEN</code> secret.
+          </span>
+        </div>
+      )}
 
       {/* Admin Token Form */}
       <form

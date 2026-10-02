@@ -92,3 +92,86 @@ export function calculatePasswordStrength(password: string): PasswordStrengthRes
     isValid: hasMinLen,
   };
 }
+
+/**
+ * Detects whether a string resembles a sensitive backend/server secret key
+ * (e.g., Supabase service_role JWT, sb_secret_, GitHub PAT, Stripe/Razorpay secret).
+ */
+export function isLikelySecretKey(input: unknown): boolean {
+  if (typeof input !== 'string') return false;
+  const trimmed = input.trim();
+  if (!trimmed) return false;
+
+  if (
+    /service_role/i.test(trimmed) ||
+    trimmed.startsWith('sb_secret_') ||
+    trimmed.startsWith('ghp_') ||
+    trimmed.startsWith('github_pat_') ||
+    trimmed.startsWith('sk_live_') ||
+    trimmed.startsWith('sk_test_') ||
+    trimmed.startsWith('rk_live_') ||
+    trimmed.startsWith('whsec_')
+  ) {
+    return true;
+  }
+
+  const parts = trimmed.split('.');
+  if (parts.length === 3) {
+    try {
+      const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
+      const decoded = JSON.parse(atob(padded));
+      if (decoded && (decoded.role === 'service_role' || decoded.role === 'supabase_admin')) {
+        return true;
+      }
+    } catch {
+      // Not a standard JSON JWT payload
+    }
+  }
+
+  return false;
+}
+
+const SENSITIVE_ERROR_PATTERNS = [
+  /\b(?:SQLITE_[A-Z_]+|D1_ERROR|PGRST\d+|ER_[A-Z_]+)\b/i,
+  /\b(?:syntax error at or near|relation ["'][^"']+["'] does not exist|column ["'][^"']+["'] does not exist)\b/i,
+  /\b(?:at\s+[A-Za-z0-9_$.]+\s*\([^)]*:\d+:\d+\))/i,
+  /(?:\/home\/|\/Users\/|\/var\/|\/app\/|\/src\/|node_modules\/|[A-Z]:\\)/i,
+  /\b(?:Bearer\s+[A-Za-z0-9\-._~+/]+=*|eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{5,})\b/,
+  /\b(?:sb_secret_[A-Za-z0-9_]+|ghp_[A-Za-z0-9]+|sk_live_[A-Za-z0-9]+|ADMIN_TOKEN|JWT_SECRET|TURNSTILE_SECRET_KEY)\b/i,
+  /\b(?:postgres:\/\/|postgresql:\/\/|mongodb(?:\+srv)?:\/\/|mysql:\/\/|redis:\/\/)/i,
+];
+
+/**
+ * Masks sensitive server/database/stack-trace details from any error object or message
+ * before displaying it in the UI or returning it to a client.
+ */
+export function sanitizeErrorMessage(
+  error: unknown,
+  fallback = 'An unexpected error occurred. Please try again.'
+): string {
+  const rawMessage =
+    typeof error === 'string'
+      ? error
+      : error instanceof Error
+        ? error.message
+        : error && typeof (error as any).message === 'string'
+          ? (error as any).message
+          : '';
+
+  const cleaned = sanitizeText(rawMessage, 280);
+  if (!cleaned) return fallback;
+
+  for (const pattern of SENSITIVE_ERROR_PATTERNS) {
+    if (pattern.test(cleaned)) {
+      return fallback;
+    }
+  }
+
+  if (cleaned.includes('\n') && /\bat\s+/.test(cleaned)) {
+    return fallback;
+  }
+
+  return cleaned;
+}
+

@@ -206,8 +206,8 @@ function runPrerender() {
     .join('\n');
 
   const homeInnerHtml = `
-    <header class="border-b border-neutral-800 bg-[#0a0a0c] px-6 py-4">
-      <div class="max-w-7xl mx-auto flex items-center justify-between">
+    <header class="border-b border-neutral-800 bg-[#0a0a0c] py-4">
+      <div class="max-w-5xl mx-auto px-6 lg:px-12 flex items-center justify-between">
         <a href="${BASE_PATH}" class="font-bold text-lg text-white">Niruvi Store</a>
         <nav aria-label="Primary store navigation" class="flex items-center gap-4 text-xs text-neutral-300">
           <a href="${BASE_PATH}">Store Browse</a>
@@ -219,7 +219,7 @@ function runPrerender() {
         </nav>
       </div>
     </header>
-    <main id="main-content" class="max-w-7xl mx-auto px-6 py-8 space-y-6">
+    <main id="main-content" class="max-w-5xl mx-auto px-6 lg:px-12 py-8 space-y-6">
       <div>
         <h1 class="text-2xl sm:text-3xl font-bold text-white">Linux AppImage Software Directory</h1>
         <p class="text-sm text-neutral-300 mt-1">

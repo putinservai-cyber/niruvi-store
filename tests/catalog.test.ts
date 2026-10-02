@@ -149,6 +149,18 @@ describe('Security & Configuration Hygiene', () => {
     const config = JSON.parse(fs.readFileSync(wranglerPath, 'utf-8'));
     expect(config.vars?.JWT_SECRET).toBeUndefined();
     expect(config.assets?.not_found_handling).toBe('404-page');
+
+    const redirectsPath = path.join(process.cwd(), 'public', '_redirects');
+    if (fs.existsSync(redirectsPath)) {
+      const redirectsContent = fs.readFileSync(redirectsPath, 'utf-8');
+      const activeRules = redirectsContent
+        .split('\n')
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0 && !line.startsWith('#'));
+      for (const rule of activeRules) {
+        expect(rule).not.toMatch(/\/index(\.html)?\b/i);
+      }
+    }
   });
 
   it('validates community issue-form submissions, allowlist, HEAD request, duplicate detection, and catalog entry generation', async () => {

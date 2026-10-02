@@ -22,10 +22,11 @@ export const Privacy: React.FC<PrivacyPageProps> = ({
       localStorage.removeItem('niruvi_starred_apps');
       localStorage.removeItem('niruvi_download_history');
       localStorage.removeItem('niruvi_custom_apps');
+      localStorage.removeItem('niruvi_test_data');
       setClearedSuccess(true);
       setTimeout(() => setClearedSuccess(false), 4000);
-    } catch (err) {
-      console.warn('Failed to clear local storage:', err);
+    } catch {
+      // Ignore storage access errors in private browsing
     }
   };
 

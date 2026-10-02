@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { AppMetadata } from '../types';
+import { sanitizeText, sanitizeErrorMessage } from '../utils/sanitize';
 import { AppIcon } from './AppIcon';
 import { 
   ShieldCheck, 
@@ -10,37 +11,80 @@ import {
   Copy, 
   Check, 
   RotateCcw,
-  Sparkles,
   Terminal,
-  HelpCircle
+  HelpCircle,
+  AlertCircle
 } from 'lucide-react';
+
+export const MAX_VERIFIER_FILE_SIZE_BYTES = 512 * 1024 * 1024; // 512 MB browser Web Crypto safe threshold
+const NON_LINUX_EXTENSION_REGEX = /\.(?:exe|msi|bat|cmd|scr|vbs|ps1|com|dll|html|htm|svg|js)$/i;
 
 interface IntegrityVerifierViewProps {
   catalog: AppMetadata[];
   onSelectApp: (app: AppMetadata) => void;
+  initialExpectedHash?: string;
 }
 
 export const IntegrityVerifierView: React.FC<IntegrityVerifierViewProps> = ({
   catalog,
   onSelectApp,
+  initialExpectedHash = '',
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [calculatedHash, setCalculatedHash] = useState<string>('');
   const [isCalculating, setIsCalculating] = useState(false);
   const [matchedApp, setMatchedApp] = useState<AppMetadata | null>(null);
-  const [expectedHash, setExpectedHash] = useState<string>('');
+  const [expectedHash, setExpectedHash] = useState<string>(initialExpectedHash);
   const [copiedHash, setCopiedHash] = useState(false);
   const [manualHashA, setManualHashA] = useState('');
   const [manualHashB, setManualHashB] = useState('');
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [fileWarning, setFileWarning] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Compute SHA-256 of uploaded file using browser Web Crypto API
+  useEffect(() => {
+    if (initialExpectedHash && initialExpectedHash.trim()) {
+      setExpectedHash(initialExpectedHash.trim());
+    }
+  }, [initialExpectedHash]);
+
+  // Compute SHA-256 of uploaded file using browser Web Crypto API with size & type validation
   const calculateSha256 = async (selectedFile: File) => {
-    setFile(selectedFile);
-    setIsCalculating(true);
+    setFileError(null);
+    setFileWarning(null);
     setCalculatedHash('');
     setMatchedApp(null);
+
+    if (!selectedFile || typeof selectedFile.size !== 'number') {
+      setFile(null);
+      setFileError('Invalid file selected. Please choose a local .AppImage binary.');
+      return;
+    }
+
+    if (selectedFile.size === 0) {
+      setFile(null);
+      setFileError('The selected file is empty (0 bytes). Please choose a valid .AppImage binary.');
+      return;
+    }
+
+    if (selectedFile.size > MAX_VERIFIER_FILE_SIZE_BYTES) {
+      setFile(null);
+      setFileError(
+        `File exceeds the 512 MB browser memory limit (${(selectedFile.size / (1024 * 1024)).toFixed(1)} MB). For large images, verify via terminal: sha256sum "${sanitizeText(selectedFile.name, 80)}"`
+      );
+      return;
+    }
+
+    const safeFileName = sanitizeText(selectedFile.name, 160);
+    if (NON_LINUX_EXTENSION_REGEX.test(safeFileName)) {
+      setFileWarning(
+        `Notice: "${safeFileName}" does not appear to be a Linux .AppImage package. Always verify the publisher source before executing binaries.`
+      );
+    }
+
+    setFile(selectedFile);
+    setIsCalculating(true);
 
     try {
       const arrayBuffer = await selectedFile.arrayBuffer();
@@ -51,12 +95,19 @@ export const IntegrityVerifierView: React.FC<IntegrityVerifierViewProps> = ({
       setCalculatedHash(hashHex);
 
       // Search catalog for matching SHA-256
-      const found = catalog.find((app) => app.sha256.toLowerCase() === hashHex.toLowerCase());
+      const found = catalog.find(
+        (app) => app.sha256 && app.sha256.toLowerCase() === hashHex.toLowerCase()
+      );
       if (found) {
         setMatchedApp(found);
       }
     } catch (err) {
-      console.error('Failed to compute SHA-256 hash', err);
+      setFileError(
+        sanitizeErrorMessage(
+          err,
+          'Unable to read or hash the selected file. Please verify file permissions and try again.'
+        )
+      );
     } finally {
       setIsCalculating(false);
     }
@@ -91,6 +142,8 @@ export const IntegrityVerifierView: React.FC<IntegrityVerifierViewProps> = ({
     setCalculatedHash('');
     setMatchedApp(null);
     setExpectedHash('');
+    setFileError(null);
+    setFileWarning(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -109,7 +162,7 @@ export const IntegrityVerifierView: React.FC<IntegrityVerifierViewProps> = ({
     manualHashA.trim().toLowerCase() === manualHashB.trim().toLowerCase();
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-200">
+    <div className="w-full min-w-0 space-y-8">
       {/* Title & Introduction */}
       <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 md:p-8">
         <div className="max-w-3xl">
@@ -125,6 +178,35 @@ export const IntegrityVerifierView: React.FC<IntegrityVerifierViewProps> = ({
           </p>
         </div>
       </div>
+
+      {fileError && (
+        <div
+          role="alert"
+          className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-200 flex items-center justify-between gap-3"
+        >
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" aria-hidden="true" />
+            <span>{fileError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={resetFile}
+            className="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-white font-medium cursor-pointer shrink-0"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {fileWarning && (
+        <div
+          role="status"
+          className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 flex items-center gap-2"
+        >
+          <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" aria-hidden="true" />
+          <span>{fileWarning}</span>
+        </div>
+      )}
 
       {/* Main File Inspection Tool */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

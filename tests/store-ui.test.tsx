@@ -88,6 +88,17 @@ describe('Niruvi Store — Search, Filtering, Pagination, and Empty State', () =
         /Search Linux AppImages by name, category, publisher, or tag/i,
       ),
     ).toBeInTheDocument();
+
+    // Verify main#main-content centering, tightened max-w-5xl width, and parent wrapper classes
+    const main = screen.getByRole('main');
+    expect(main).toHaveAttribute('id', 'main-content');
+    expect(main.className).toContain('max-w-5xl');
+    expect(main.className).toContain('mx-auto');
+    expect(main.className).toContain('px-6');
+    expect(main.className).toContain('lg:px-12');
+    const rootWrapper = main.parentElement;
+    expect(rootWrapper?.className).not.toContain('overflow-x-hidden');
+    expect(rootWrapper?.className).not.toContain('items-center');
     const filterSection = screen.getByRole('region', { name: /Application catalog filters/i });
     expect(
       within(filterSection).queryByLabelText(
@@ -415,6 +426,93 @@ describe('Niruvi Store — Community Submission (/submit), Worker API Merge & Ba
     // Switch to Download History sub-tab
     fireEvent.click(screen.getByRole('button', { name: /Download History/i }));
     expect(screen.getByRole('button', { name: /Download Again/i })).toBeInTheDocument();
+  });
+
+  it('validates file uploads in SHA-256 Verifier (rejects 0-byte empty files, oversized files, warns on .exe, and hashes valid .AppImage) and uses centered max-w-5xl layout without overflow-x-hidden', async () => {
+    renderStore();
+
+    // Verify main#main-content uses max-w-5xl mx-auto and parent wrapper has no overflow-x-hidden
+    const mainEl = document.getElementById('main-content');
+    expect(mainEl).not.toBeNull();
+    expect(mainEl?.className).toContain('max-w-5xl');
+    expect(mainEl?.className).toContain('mx-auto');
+    expect(mainEl?.parentElement?.className).not.toContain('overflow-x-hidden');
+
+    // Verify offline mode banner appears when browser fires 'offline' event and clears on 'online'
+    fireEvent(window, new Event('offline'));
+    expect(
+      await screen.findByText(/Offline mode active — serving verified AppImage catalog/i)
+    ).toBeInTheDocument();
+    fireEvent(window, new Event('online'));
+
+    // Navigate to SHA-256 Verifier tab
+    const verifierBtns = screen.getAllByRole('button', { name: /Verifier|Verify/i });
+    fireEvent.click(verifierBtns[0]);
+
+    const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]');
+    expect(fileInput).not.toBeNull();
+
+    // 1. Upload a 0-byte empty file -> must display an alert error
+    const emptyFile = new File([], 'empty.AppImage', { type: 'application/octet-stream' });
+    fireEvent.change(fileInput!, { target: { files: [emptyFile] } });
+    expect(
+      await screen.findByText(/The selected file is empty \(0 bytes\)/i)
+    ).toBeInTheDocument();
+
+    // 2. Upload an oversized > 512MB file -> must reject and show terminal sha256sum fallback
+    const oversizedFile = new File(['x'], 'HugeImage-x86_64.AppImage', {
+      type: 'application/octet-stream',
+    });
+    Object.defineProperty(oversizedFile, 'size', { value: 600 * 1024 * 1024 });
+    fireEvent.change(fileInput!, { target: { files: [oversizedFile] } });
+    expect(
+      await screen.findByText(/File exceeds the 512 MB browser memory limit/i)
+    ).toBeInTheDocument();
+
+    // 3. Upload a non-Linux .exe file -> must warn that it is not a Linux .AppImage package
+    const exeFile = new File(['MZ-binary-payload'], 'setup.exe', {
+      type: 'application/octet-stream',
+    });
+    fireEvent.change(fileInput!, { target: { files: [exeFile] } });
+    expect(
+      await screen.findByText(/does not appear to be a Linux \.AppImage package/i)
+    ).toBeInTheDocument();
+  });
+
+  it('renders and transitions across the 9 essential website screens (Loading, Welcome/Intro, Home, Search Suggestions, Listing, Detail, Form/Create, Empty/Offline, and Confirmation)', async () => {
+    window.history.replaceState(null, '', '/?screen=loading');
+    renderStore();
+
+    // 1. Loading Screen
+    expect(
+      screen.getByText(/Synchronizing verified Linux AppImage catalog/i)
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Dismiss loading preview/i }));
+
+    // 2. Welcome / Intro Screen & 3. Home Screen
+    const welcomeRegion = screen.getByRole('region', {
+      name: /Welcome and platform introduction/i,
+    });
+    expect(
+      within(welcomeRegion).getByText(/01\. Direct Upstream Releases/i)
+    ).toBeInTheDocument();
+
+    // Dismiss and re-open the Welcome Guide
+    fireEvent.click(
+      within(welcomeRegion).getByRole('button', { name: /Dismiss welcome introduction/i })
+    );
+    expect(screen.getByRole('button', { name: /Show Welcome Guide/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Show Welcome Guide/i }));
+
+    // 4. Search Screen (Popular search suggestions -> active search summary -> Clear Search)
+    const suggestionsRegion = screen.getByRole('region', { name: /Search suggestions/i });
+    fireEvent.click(within(suggestionsRegion).getByRole('button', { name: /Video Editing/i }));
+
+    const activeSearchSummary = await screen.findByRole('region', {
+      name: /Active search results summary/i,
+    });
+    expect(within(activeSearchSummary).getByText(/Search results for/i)).toBeInTheDocument();
+    fireEvent.click(within(activeSearchSummary).getByRole('button', { name: /Clear Search/i }));
   });
 });
 

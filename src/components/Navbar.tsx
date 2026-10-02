@@ -85,7 +85,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-neutral-950/95 border-b border-neutral-800">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-12 py-2.5 sm:py-3">
         {/* Responsive Primary Header Grid:
             - Mobile & Tablet (< 1024px): Row 1 has Brand (left) + Nav/Actions (right); Row 2 has full-width Search Bar
             - Desktop (>= 1024px): Single balanced 3-column row [Brand | Search | Nav + Actions] with zero overflow */}

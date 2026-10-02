@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { sanitizeErrorMessage } from '../utils/sanitize';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -16,13 +17,15 @@ export class ErrorBoundary extends React.Component<
   }
 
   static getDerivedStateFromError(error: unknown): ErrorBoundaryState {
-    const message =
-      error instanceof Error ? error.message : 'An unexpected application error occurred.';
+    const message = sanitizeErrorMessage(
+      error,
+      'An unexpected application error occurred.'
+    );
     return { hasError: true, errorMessage: message };
   }
 
-  componentDidCatch(error: unknown, errorInfo: React.ErrorInfo): void {
-    console.error('Niruvi Store ErrorBoundary caught an error:', error, errorInfo);
+  componentDidCatch(_error: unknown, _errorInfo: React.ErrorInfo): void {
+    // Error details intentionally masked from browser console and DOM in production
   }
 
   handleReload = (): void => {

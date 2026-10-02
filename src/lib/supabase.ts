@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient, User as SupabaseAuthUser } from '@supabase/supabase-js';
 import { SITE_URL } from '../config/site';
+import { isLikelySecretKey } from '../utils/sanitize';
 
 export type MarketplaceRole = 'user' | 'publisher' | 'moderator' | 'admin';
 
@@ -60,21 +61,8 @@ const rawSupabaseAnonKey = (
 export function isSafeAnonKey(key: string): boolean {
   const trimmed = key.trim();
   if (!trimmed) return false;
-  if (/service_role/i.test(trimmed) || trimmed.startsWith('sb_secret_')) {
+  if (isLikelySecretKey(trimmed)) {
     return false;
-  }
-  const parts = trimmed.split('.');
-  if (parts.length === 3) {
-    try {
-      const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-      const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
-      const decoded = JSON.parse(atob(padded));
-      if (decoded && decoded.role === 'service_role') {
-        return false;
-      }
-    } catch {
-      // Non-JWT publishable key format (`sb_publishable_...`)
-    }
   }
   return true;
 }

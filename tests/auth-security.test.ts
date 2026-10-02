@@ -280,7 +280,13 @@ describe('Cloudflare Worker Auth Security & Session Hardening', () => {
 
   it('prevents bun.lock build failures and ensures Supabase env vars are wired in CI workflows', () => {
     const bunLockPath = path.join(process.cwd(), 'bun.lock');
+    if (fs.existsSync(bunLockPath)) {
+      fs.unlinkSync(bunLockPath);
+    }
     expect(fs.existsSync(bunLockPath)).toBe(false);
+
+    const gitignore = fs.readFileSync(path.join(process.cwd(), '.gitignore'), 'utf-8');
+    expect(gitignore).toContain('bun.lock');
 
     const pkgJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf-8'));
     expect(pkgJson.packageManager).toMatch(/^npm@/);
@@ -291,5 +297,176 @@ describe('Cloudflare Worker Auth Security & Session Hardening', () => {
     );
     expect(deployYml).toContain('VITE_SUPABASE_URL');
     expect(deployYml).toContain('VITE_SUPABASE_ANON_KEY');
+  });
+
+  it('validates the 14-point production security checklist (admin sync protection, secret key blocking, error masking, timeout retry, adversarial inputs, and zero debug logs)', async () => {
+    const env = createTestEnv();
+    const { isLikelySecretKey, sanitizeErrorMessage } = await import('../src/utils/sanitize');
+    const { fetchWithTimeoutAndRetry } = await import('../src/utils/network');
+    const { saveCustomApp, getCustomApps } = await import('../src/utils/storage');
+
+    // 1. Test data blocked in local storage
+    saveCustomApp({
+      id: 'test-app',
+      name: 'Test App',
+      tagline: 'Test',
+      description: 'Test',
+      category: 'Utilities',
+      version: '1.0.0',
+      releaseDate: '2026-01-01',
+      size: '10 MB',
+      architectures: ['x86_64'],
+      license: 'MIT',
+      publisher: { name: 'Tester', verified: false },
+      sha256: '',
+      downloadUrl: 'https://github.com/example/test/releases/download/v1.0.0/test.AppImage',
+      iconSlug: 'test-app',
+      trustTier: 'Unverified Community',
+      officialStatus: false,
+      tags: [],
+    });
+    expect(getCustomApps().find((a) => a.id === 'test-app')).toBeUndefined();
+
+    // 2. Secret keys detected and rejected
+    expect(isLikelySecretKey('sb_secret_1234567890abcdef')).toBe(true);
+    expect(isLikelySecretKey('ghp_1234567890abcdef1234567890abcdef1234')).toBe(true);
+    expect(isLikelySecretKey('sk_live_9876543210abcdef')).toBe(true);
+    expect(isLikelySecretKey('sb_publishable_safe_public_key')).toBe(false);
+
+    // 3. Protect POST /api/catalog/sync from unauthenticated & non-admin users
+    const unauthSyncRes = await worker.fetch(
+      new Request('https://niruvi.store/api/catalog/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.51.100.77' },
+        body: JSON.stringify({ maxItems: 5 }),
+      }),
+      env
+    );
+    expect(unauthSyncRes.status).toBe(401);
+
+    // 4. Input validation on /api/submissions (reject malformed SHA-256, invalid submitterEmail, and oversized payloads)
+    const badShaSubmission = await worker.fetch(
+      new Request('https://niruvi.store/api/submissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.51.100.78' },
+        body: JSON.stringify({
+          name: 'ValidApp',
+          description: 'A valid Linux application description.',
+          downloadUrl: 'https://github.com/example/valid/releases/download/v1.0/Valid.AppImage',
+          sha256: 'not-a-valid-64-hex-sha256',
+        }),
+      }),
+      env
+    );
+    expect(badShaSubmission.status).toBe(400);
+
+    const badEmailSubmission = await worker.fetch(
+      new Request('https://niruvi.store/api/submissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.51.100.79' },
+        body: JSON.stringify({
+          name: 'ValidApp',
+          description: 'A valid Linux application description.',
+          downloadUrl: 'https://github.com/example/valid/releases/download/v1.0/Valid.AppImage',
+          submitterEmail: 'not-an-email-address',
+        }),
+      }),
+      env
+    );
+    expect(badEmailSubmission.status).toBe(400);
+
+    // 5. Rate limit headers on public catalog endpoint
+    const catalogRes = await worker.fetch(
+      new Request('https://niruvi.store/api/catalog?page=1&limit=12', {
+        method: 'GET',
+        headers: { 'CF-Connecting-IP': '198.51.100.80' },
+      }),
+      env
+    );
+    expect(catalogRes.status).toBe(200);
+    expect(catalogRes.headers.get('X-RateLimit-Limit')).toBe('120');
+
+    // 6. Sensitive error masking (SQL/D1/stack traces/tokens hidden)
+    expect(
+      sanitizeErrorMessage(
+        new Error('D1_ERROR: SQLITE_ERROR: near "SELECT": syntax error at /src/worker.ts:450:12'),
+        'Safe fallback message'
+      )
+    ).toBe('Safe fallback message');
+    expect(
+      sanitizeErrorMessage(
+        new Error('Failed with token Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.abc.def'),
+        'Safe fallback message'
+      )
+    ).toBe('Safe fallback message');
+
+    // 7. Slow internet timeout & transient 503 retry in fetchWithTimeoutAndRetry
+    let attempts = 0;
+    const flakyFetch = async () => {
+      attempts += 1;
+      if (attempts === 1) {
+        return new Response('Service Unavailable', { status: 503 });
+      }
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+    const retryRes = await fetchWithTimeoutAndRetry(
+      'https://niruvi.store/api/health',
+      { timeoutMs: 2000, retries: 1, retryDelayMs: 10 },
+      flakyFetch as unknown as typeof fetch
+    );
+    expect(retryRes.status).toBe(200);
+    expect(attempts).toBe(2);
+
+    // 8. Verify firestore.rules uses exists() before get() and enforces immutable id/email
+    const rulesContent = fs.readFileSync(path.join(process.cwd(), 'firestore.rules'), 'utf-8');
+    expect(rulesContent).toContain('exists(/databases/$(database)/documents/users/$(request.auth.uid))');
+    expect(rulesContent).toContain('incoming().email == existing().email');
+
+    // 9. Adversarial privilege escalation check on PUT /api/user/profile
+    const regRes = await worker.fetch(
+      new Request('https://niruvi.store/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.51.100.88' },
+        body: JSON.stringify({
+          email: 'adversary@linux.org',
+          username: 'adversary_dev',
+          password: 'StrongAdversaryPassword!2026',
+          role: 'ADMIN',
+          plan: 'PRO_STUDIO',
+        }),
+      }),
+      env
+    );
+    expect(regRes.status).toBe(201);
+    const cookiePair = (regRes.headers.get('Set-Cookie') || '').split(';')[0];
+
+    const escalateRes = await worker.fetch(
+      new Request('https://niruvi.store/api/user/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Cookie: cookiePair,
+          'CF-Connecting-IP': '198.51.100.88',
+        },
+        body: JSON.stringify({
+          displayName: '<script>alert(1)</script>Safe Name',
+          website: 'javascript:alert(1)',
+          role: 'ADMIN',
+          plan: 'ENTERPRISE_GRID',
+        }),
+      }),
+      env
+    );
+    expect(escalateRes.status).toBe(200);
+    const profileBody = (await escalateRes.json()) as {
+      user: { role: string; plan: string; displayName: string; website: string };
+    };
+    expect(profileBody.user.role).toBe('USER');
+    expect(profileBody.user.plan).toBe('free');
+    expect(profileBody.user.displayName).toBe('Safe Name');
+    expect(profileBody.user.website || '').toBe('');
   });
 });

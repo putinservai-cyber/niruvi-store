@@ -264,6 +264,14 @@ export default {
       return jsonResponse({ error: 'Origin not allowed by CORS policy.' }, 403, null);
     }
 
+    const contentLengthHeader = request.headers.get('Content-Length');
+    if (contentLengthHeader) {
+      const contentLength = parseInt(contentLengthHeader, 10);
+      if (Number.isFinite(contentLength) && contentLength > 65536) {
+        return jsonResponse({ error: 'Payload too large (maximum 64 KB).' }, 413, origin);
+      }
+    }
+
     try {
       // 2. GET /api/apps — Return published community submissions
       if (method === 'GET' && pathname === '/api/apps') {
@@ -792,8 +800,7 @@ export default {
       }
 
       return jsonResponse({ error: 'Not found.' }, 404, origin);
-    } catch (err) {
-      console.error('Worker internal error:', err);
+    } catch {
       return jsonResponse({ error: 'Internal server error.' }, 500, origin);
     }
   },
