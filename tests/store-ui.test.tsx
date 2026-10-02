@@ -89,15 +89,28 @@ describe('Niruvi Store — Search, Filtering, Pagination, and Empty State', () =
       ),
     ).toBeInTheDocument();
 
-    // Verify main#main-content centering, tightened max-w-5xl width, and parent wrapper classes
+    // Verify main#main-content centering, flex-1 footer pinning, tightened max-w-5xl width, and parent wrapper classes
+    const skipLink = screen.getByRole('link', { name: /Skip to main content/i });
+    expect(skipLink).toHaveAttribute('href', '#main-content');
+    expect(skipLink.className).toContain('sr-only');
+
+    expect(header.className).toContain('sticky');
+    expect(header.className).toContain('top-0');
+
     const main = screen.getByRole('main');
     expect(main).toHaveAttribute('id', 'main-content');
+    expect(main.className).toContain('flex-1');
     expect(main.className).toContain('max-w-5xl');
     expect(main.className).toContain('mx-auto');
     expect(main.className).toContain('px-6');
     expect(main.className).toContain('lg:px-12');
     const rootWrapper = main.parentElement;
+    expect(rootWrapper?.className).toContain('min-h-screen');
+    expect(rootWrapper?.className).toContain('flex');
+    expect(rootWrapper?.className).toContain('flex-col');
     expect(rootWrapper?.className).not.toContain('overflow-x-hidden');
+    expect(rootWrapper?.className).not.toContain('overflow-hidden');
+    expect(rootWrapper?.className).not.toContain('overflow-auto');
     expect(rootWrapper?.className).not.toContain('items-center');
     const filterSection = screen.getByRole('region', { name: /Application catalog filters/i });
     expect(

@@ -138,7 +138,7 @@ const SENSITIVE_ERROR_PATTERNS = [
   /\b(?:at\s+[A-Za-z0-9_$.]+\s*\([^)]*:\d+:\d+\))/i,
   /(?:\/home\/|\/Users\/|\/var\/|\/app\/|\/src\/|node_modules\/|[A-Z]:\\)/i,
   /\b(?:Bearer\s+[A-Za-z0-9\-._~+/]+=*|eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{5,})\b/,
-  /\b(?:sb_secret_[A-Za-z0-9_]+|ghp_[A-Za-z0-9]+|sk_live_[A-Za-z0-9]+|ADMIN_TOKEN|JWT_SECRET|TURNSTILE_SECRET_KEY)\b/i,
+  /\b(?:sb_secret_[A-Za-z0-9_]+|ghp_[A-Za-z0-9]+|sk_live_[A-Za-z0-9]+|ADMIN_TOKEN|JWT_SECRET|TURNSTILE_SECRET_KEY|OAUTH_CLIENT_SECRET)\b/i,
   /\b(?:postgres:\/\/|postgresql:\/\/|mongodb(?:\+srv)?:\/\/|mysql:\/\/|redis:\/\/)/i,
 ];
 

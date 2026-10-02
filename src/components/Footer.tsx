@@ -30,7 +30,7 @@ export const Footer: React.FC<FooterProps> = ({
     <footer
       role="contentinfo"
       aria-label="Site footer"
-      className="w-full border-t border-neutral-800 bg-neutral-950 mt-16 py-10 text-xs text-neutral-400"
+      className="w-full shrink-0 border-t border-neutral-800 bg-neutral-950 mt-16 py-10 text-xs text-neutral-400"
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-12 space-y-6">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">

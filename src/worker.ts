@@ -62,8 +62,10 @@ async function getFullStaticCatalog(env?: Env): Promise<AppMetadata[]> {
       const fs = await import(/* @vite-ignore */ fsMod);
       const path = await import(/* @vite-ignore */ pathMod);
       const p = path.join(process.cwd(), 'public', 'catalog.json');
-      if (fs.existsSync(p)) {
-        const parsed = JSON.parse(fs.readFileSync(p, 'utf-8'));
+      const backupP = path.join(process.cwd(), 'src', 'data', 'generated-catalog.json');
+      const targetPath = fs.existsSync(p) ? p : fs.existsSync(backupP) ? backupP : null;
+      if (targetPath) {
+        const parsed = JSON.parse(fs.readFileSync(targetPath, 'utf-8'));
         if (Array.isArray(parsed) && parsed.length > 0) {
           cachedFullStaticCatalog = parsed as AppMetadata[];
           return cachedFullStaticCatalog;
@@ -100,6 +102,9 @@ export interface Env {
   ADMIN_TOKEN?: string;
   GITHUB_TOKEN?: string;
   FIREBASE_PROJECT_ID?: string;
+  OAUTH_CLIENT_ID?: string;
+  OAUTH_CLIENT_SECRET?: string;
+  OAUTH_PROVIDER_URL?: string;
   NIRUVI_AUTH_KV?: KVNamespace;
   DB?: D1Database;
   ASSETS?: {
@@ -1665,6 +1670,25 @@ export default {
           );
         }
         return jsonResponse({ status: 'authorized', role: dbUser.role, plan: dbUser.plan }, 200, origin);
+      }
+
+      if (path === '/api/auth/oauth/url' && method === 'GET') {
+        const clientId = (env?.OAUTH_CLIENT_ID || '').trim();
+        if (!clientId) {
+          return jsonResponse({ error: 'OAuth client is not configured' }, 503, origin);
+        }
+        const redirectUri =
+          url.searchParams.get('redirect_uri') || `${url.origin}/auth/callback`;
+        const scope = url.searchParams.get('scope') || 'openid email profile';
+        const providerAuthUrl =
+          (env?.OAUTH_PROVIDER_URL || 'https://github.com/login/oauth/authorize').trim();
+        const params = new URLSearchParams({
+          client_id: clientId,
+          redirect_uri: redirectUri,
+          response_type: 'code',
+          scope,
+        });
+        return jsonResponse({ url: `${providerAuthUrl}?${params.toString()}` }, 200, origin);
       }
 
       return jsonResponse({ error: 'Endpoint not found' }, 404, origin);

@@ -973,36 +973,29 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
         showSearch={legalRoute === 'store' && activeTab === 'browse'}
       />
 
-      {/* Main Content */}
-      <ErrorBoundary>
-        {legalRoute === 'privacy' ? (
-          <main id="main-content" className="flex-1 w-full max-w-5xl min-w-0 mx-auto px-4 sm:px-6 lg:px-12 py-6">
+      {/* Main Content — Direct flex-1 child of .min-h-screen.flex-col for footer pinning */}
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex-1 grow w-full max-w-5xl min-w-0 mx-auto px-4 sm:px-6 lg:px-12 py-6 focus:outline-none"
+      >
+        <ErrorBoundary>
+          {legalRoute === 'privacy' ? (
             <Privacy
               onBackToStore={() => navigateLegal('store')}
               onOpenCookieSettings={() => setCookieSettingsOpen(true)}
             />
-          </main>
-        ) : legalRoute === 'terms' ? (
-          <main id="main-content" className="flex-1 w-full max-w-5xl min-w-0 mx-auto px-4 sm:px-6 lg:px-12 py-6">
+          ) : legalRoute === 'terms' ? (
             <Terms onBackToStore={() => navigateLegal('store')} />
-          </main>
-        ) : legalRoute === 'cookies' ? (
-          <main id="main-content" className="flex-1 w-full max-w-5xl min-w-0 mx-auto px-4 sm:px-6 lg:px-12 py-6">
+          ) : legalRoute === 'cookies' ? (
             <Cookies
               onBackToStore={() => navigateLegal('store')}
               onOpenCookieSettings={() => setCookieSettingsOpen(true)}
             />
-          </main>
-        ) : legalRoute === 'refunds' ? (
-          <main id="main-content" className="flex-1 w-full max-w-5xl min-w-0 mx-auto px-4 sm:px-6 lg:px-12 py-6">
+          ) : legalRoute === 'refunds' ? (
             <Refunds onBackToStore={() => navigateLegal('store')} />
-          </main>
-        ) : (
-          <main
-            id="main-content"
-            tabIndex={-1}
-            className="flex-1 w-full max-w-5xl min-w-0 mx-auto px-4 sm:px-6 lg:px-12 py-6 focus:outline-none"
-          >
+          ) : (
+            <>
             {isOffline && (
               <EmptyErrorOfflineScreen
                 mode="offline"
@@ -1392,9 +1385,10 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
                 )}
               </>
             )}
-          </main>
-        )}
-      </ErrorBoundary>
+            </>
+          )}
+        </ErrorBoundary>
+      </main>
 
       <Footer
         currentRoute={legalRoute}

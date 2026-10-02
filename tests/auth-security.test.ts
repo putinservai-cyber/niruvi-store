@@ -297,6 +297,12 @@ describe('Cloudflare Worker Auth Security & Session Hardening', () => {
     expect(pkgLock.packages[''].devDependencies.wrangler).toBe(pkgJson.devDependencies.wrangler);
     expect(pkgLock.packages['node_modules/wrangler'].version).toMatch(/^4\./);
 
+    const envExample = fs.readFileSync(path.join(process.cwd(), '.env.example'), 'utf-8');
+    expect(envExample).toContain('OAUTH_CLIENT_ID=00000000-0000-0000-0000-000000000000');
+    expect(envExample).toContain(
+      'OAUTH_CLIENT_SECRET=example_dummy_oauth_client_secret_never_expose'
+    );
+
     const deployYml = fs.readFileSync(
       path.join(process.cwd(), '.github', 'workflows', 'deploy.yml'),
       'utf-8'

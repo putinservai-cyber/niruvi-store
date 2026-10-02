@@ -206,30 +206,44 @@ function runPrerender() {
     .join('\n');
 
   const homeInnerHtml = `
-    <header class="border-b border-neutral-800 bg-[#0a0a0c] py-4">
-      <div class="max-w-5xl mx-auto px-6 lg:px-12 flex items-center justify-between">
-        <a href="${BASE_PATH}" class="font-bold text-lg text-white">Niruvi Store</a>
-        <nav aria-label="Primary store navigation" class="flex items-center gap-4 text-xs text-neutral-300">
-          <a href="${BASE_PATH}">Store Browse</a>
-          <a href="${BASE_PATH}verifier">SHA-256 Verifier</a>
-          <a href="${BASE_PATH}submit">Submit AppImage</a>
-          <a href="${BASE_PATH}donate">Donate</a>
-          <a href="${BASE_PATH}privacy">Privacy Policy</a>
-          <a href="${BASE_PATH}terms">Terms</a>
-        </nav>
-      </div>
-    </header>
-    <main id="main-content" class="max-w-5xl mx-auto px-6 lg:px-12 py-8 space-y-6">
-      <div>
-        <h1 class="text-2xl sm:text-3xl font-bold text-white">Linux AppImage Software Directory</h1>
-        <p class="text-sm text-neutral-300 mt-1">
-          Portable Linux desktop packages with SHA-256 checksums and one-click niruvi:// desktop installation.
-        </p>
-      </div>
-      <section aria-label="Application catalog" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        ${cardsHtml}
-      </section>
-    </main>`;
+    <div class="min-h-screen w-full bg-[#0a0a0c] text-neutral-100 flex flex-col">
+      <a
+        href="#main-content"
+        class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2.5 focus:rounded-lg focus:bg-sky-500 focus:text-black focus:font-semibold focus:text-xs"
+      >
+        Skip to main content
+      </a>
+      <header class="sticky top-0 z-40 border-b border-neutral-800 bg-[#0a0a0c]/95 backdrop-blur-md py-4">
+        <div class="max-w-5xl mx-auto px-6 lg:px-12 flex items-center justify-between">
+          <a href="${BASE_PATH}" class="font-bold text-lg text-white">Niruvi Store</a>
+          <nav aria-label="Primary store navigation" class="flex items-center gap-4 text-xs text-neutral-300">
+            <a href="${BASE_PATH}">Store Browse</a>
+            <a href="${BASE_PATH}verifier">SHA-256 Verifier</a>
+            <a href="${BASE_PATH}submit">Submit AppImage</a>
+            <a href="${BASE_PATH}donate">Donate</a>
+            <a href="${BASE_PATH}privacy">Privacy Policy</a>
+            <a href="${BASE_PATH}terms">Terms</a>
+          </nav>
+        </div>
+      </header>
+      <main id="main-content" tabindex="-1" class="flex-1 w-full max-w-5xl min-w-0 mx-auto px-6 lg:px-12 py-8 space-y-6">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-white">Linux AppImage Software Directory</h1>
+          <p class="text-sm text-neutral-300 mt-1">
+            Portable Linux desktop packages with SHA-256 checksums and one-click niruvi:// desktop installation.
+          </p>
+        </div>
+        <section aria-label="Application catalog" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full min-w-0">
+          ${cardsHtml}
+        </section>
+      </main>
+      <footer class="w-full shrink-0 border-t border-neutral-800 bg-neutral-950 mt-16 py-10 text-xs text-neutral-400">
+        <div class="max-w-5xl mx-auto px-6 lg:px-12 flex flex-wrap items-center justify-between gap-4">
+          <span>© 2026 Niruvi Store by PutinServai. All packages distributed under upstream open-source licenses.</span>
+          <a href="${BASE_PATH}privacy" class="underline text-neutral-300">Privacy Policy</a>
+        </div>
+      </footer>
+    </div>`;
 
   const homeHtml = injectRootContent(
     replaceHeadMetadata(baseTemplate, {
@@ -278,56 +292,70 @@ function runPrerender() {
     };
 
     const appInnerHtml = `
-      <header class="border-b border-neutral-800 bg-[#0a0a0c] px-6 py-4">
-        <div class="max-w-5xl mx-auto flex items-center justify-between">
-          <a href="${BASE_PATH}" class="font-bold text-lg text-white">← Back to Niruvi Store</a>
-          <span class="text-xs font-mono text-neutral-300">${escapeHtml(app.category)}</span>
-        </div>
-      </header>
-      <main id="main-content" class="max-w-5xl mx-auto px-6 py-8 space-y-6">
-        <article class="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h1 class="text-2xl font-bold text-white">${escapeHtml(app.name)} <span class="text-sm font-mono text-neutral-300">${escapeHtml(formattedVer)}</span></h1>
-              <p class="text-sm text-neutral-300 mt-1">${escapeHtml(app.tagline)}</p>
-            </div>
-            <div class="flex items-center gap-2">
-              ${
-                app.source === 'community' || app.sourceType === 'Community'
-                  ? '<span class="text-xs font-mono text-amber-300">Community submitted</span>'
-                  : ''
-              }
-              ${
-                app.publisher?.verified
-                  ? '<span class="text-xs font-mono text-emerald-400">SHA-256 Verified</span>'
-                  : app.checksumStatus === 'provided' && app.sha256
-                    ? '<span class="text-xs font-mono text-sky-300">Checksum: Provided</span>'
-                    : '<span class="text-xs font-mono text-amber-400">Checksum: Unverified</span>'
-              }
-            </div>
+      <div class="min-h-screen w-full bg-[#0a0a0c] text-neutral-100 flex flex-col">
+        <a
+          href="#main-content"
+          class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2.5 focus:rounded-lg focus:bg-sky-500 focus:text-black focus:font-semibold focus:text-xs"
+        >
+          Skip to main content
+        </a>
+        <header class="sticky top-0 z-40 border-b border-neutral-800 bg-[#0a0a0c]/95 backdrop-blur-md px-6 py-4">
+          <div class="max-w-5xl mx-auto flex items-center justify-between">
+            <a href="${BASE_PATH}" class="font-bold text-lg text-white">← Back to Niruvi Store</a>
+            <span class="text-xs font-mono text-neutral-300">${escapeHtml(app.category)}</span>
           </div>
-          <p class="text-sm text-neutral-200 leading-relaxed">${escapeHtml(app.description)}</p>
-          <dl class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 rounded-xl bg-neutral-950 border border-neutral-800 text-xs">
-            <div><dt class="text-neutral-400">Developer</dt><dd class="text-white font-semibold">${escapeHtml(app.publisher?.name || '')}</dd></div>
-            <div><dt class="text-neutral-400">Version</dt><dd class="text-white font-mono">${escapeHtml(formattedVer)}</dd></div>
-            <div><dt class="text-neutral-400">Size</dt><dd class="text-white font-mono">${escapeHtml(app.size)}</dd></div>
-            <div><dt class="text-neutral-400">Architecture</dt><dd class="text-white font-mono">${escapeHtml((app.architectures || []).join(', '))}</dd></div>
-            <div><dt class="text-neutral-400">License</dt><dd class="text-white">${escapeHtml(app.license)}</dd></div>
-            <div><dt class="text-neutral-400">Source URL</dt><dd><a href="${escapeHtml(app.sourceUrl || app.homepageUrl || '')}" rel="noopener noreferrer" class="text-sky-400 underline">${escapeHtml(app.sourceUrl || app.homepageUrl || 'Upstream')}</a></dd></div>
-          </dl>
-          <section class="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-2 text-xs">
-            <h2 class="font-bold text-white text-sm">Install or Download Standalone AppImage</h2>
-            <div class="flex flex-wrap gap-3 pt-1">
-              <a href="${escapeHtml(niruviUri)}" class="px-4 py-2 rounded-xl bg-white text-black font-semibold">Install with Niruvi (niruvi://)</a>
-              <a href="${escapeHtml(app.downloadUrl)}" rel="noopener noreferrer" class="px-4 py-2 rounded-xl bg-neutral-800 text-white border border-neutral-700 font-semibold">Direct HTTPS Download (${escapeHtml(app.size)})</a>
+        </header>
+        <main id="main-content" tabindex="-1" class="flex-1 w-full max-w-5xl min-w-0 mx-auto px-6 py-8 space-y-6">
+          <article class="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h1 class="text-2xl font-bold text-white">${escapeHtml(app.name)} <span class="text-sm font-mono text-neutral-300">${escapeHtml(formattedVer)}</span></h1>
+                <p class="text-sm text-neutral-300 mt-1">${escapeHtml(app.tagline)}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                ${
+                  app.source === 'community' || app.sourceType === 'Community'
+                    ? '<span class="text-xs font-mono text-amber-300">Community submitted</span>'
+                    : ''
+                }
+                ${
+                  app.publisher?.verified
+                    ? '<span class="text-xs font-mono text-emerald-400">SHA-256 Verified</span>'
+                    : app.checksumStatus === 'provided' && app.sha256
+                      ? '<span class="text-xs font-mono text-sky-300">Checksum: Provided</span>'
+                      : '<span class="text-xs font-mono text-amber-400">Checksum: Unverified</span>'
+                }
+              </div>
             </div>
-            <p class="text-neutral-300 pt-2">Manual Linux installation &amp; SHA-256 verification fallback (if Niruvi desktop client is not installed):</p>
-            <pre class="p-3 bg-black rounded border border-neutral-800 font-mono text-emerald-400 overflow-x-auto">echo "${escapeHtml(app.sha256)}  ${escapeHtml(fileName)}" | sha256sum --check
+            <p class="text-sm text-neutral-200 leading-relaxed">${escapeHtml(app.description)}</p>
+            <dl class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 rounded-xl bg-neutral-950 border border-neutral-800 text-xs">
+              <div><dt class="text-neutral-400">Developer</dt><dd class="text-white font-semibold">${escapeHtml(app.publisher?.name || '')}</dd></div>
+              <div><dt class="text-neutral-400">Version</dt><dd class="text-white font-mono">${escapeHtml(formattedVer)}</dd></div>
+              <div><dt class="text-neutral-400">Size</dt><dd class="text-white font-mono">${escapeHtml(app.size)}</dd></div>
+              <div><dt class="text-neutral-400">Architecture</dt><dd class="text-white font-mono">${escapeHtml((app.architectures || []).join(', '))}</dd></div>
+              <div><dt class="text-neutral-400">License</dt><dd class="text-white">${escapeHtml(app.license)}</dd></div>
+              <div><dt class="text-neutral-400">Source URL</dt><dd><a href="${escapeHtml(app.sourceUrl || app.homepageUrl || '')}" rel="noopener noreferrer" class="text-sky-400 underline">${escapeHtml(app.sourceUrl || app.homepageUrl || 'Upstream')}</a></dd></div>
+            </dl>
+            <section class="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-2 text-xs">
+              <h2 class="font-bold text-white text-sm">Install or Download Standalone AppImage</h2>
+              <div class="flex flex-wrap gap-3 pt-1">
+                <a href="${escapeHtml(niruviUri)}" class="px-4 py-2 rounded-xl bg-white text-black font-semibold">Install with Niruvi (niruvi://)</a>
+                <a href="${escapeHtml(app.downloadUrl)}" rel="noopener noreferrer" class="px-4 py-2 rounded-xl bg-neutral-800 text-white border border-neutral-700 font-semibold">Direct HTTPS Download (${escapeHtml(app.size)})</a>
+              </div>
+              <p class="text-neutral-300 pt-2">Manual Linux installation &amp; SHA-256 verification fallback (if Niruvi desktop client is not installed):</p>
+              <pre class="p-3 bg-black rounded border border-neutral-800 font-mono text-emerald-400 overflow-x-auto">echo "${escapeHtml(app.sha256)}  ${escapeHtml(fileName)}" | sha256sum --check
 chmod +x ./${escapeHtml(fileName)}
 ./${escapeHtml(fileName)}</pre>
-          </section>
-        </article>
-      </main>`;
+            </section>
+          </article>
+        </main>
+        <footer class="w-full shrink-0 border-t border-neutral-800 bg-neutral-950 mt-16 py-10 text-xs text-neutral-400">
+          <div class="max-w-5xl mx-auto px-6 flex flex-wrap items-center justify-between gap-4">
+            <span>© 2026 Niruvi Store by PutinServai.</span>
+            <a href="${BASE_PATH}privacy" class="underline text-neutral-300">Privacy Policy</a>
+          </div>
+        </footer>
+      </div>`;
 
     const appPageHtml = injectRootContent(
       replaceHeadMetadata(baseTemplate, {
@@ -415,11 +443,31 @@ chmod +x ./${escapeHtml(fileName)}
     const routeDir = path.join(distDir, sp.slug);
     fs.mkdirSync(routeDir, { recursive: true });
     const inner = `
-      <main id="main-content" class="max-w-4xl mx-auto px-6 py-10 space-y-4">
-        <a href="${BASE_PATH}" class="text-xs text-sky-400 underline">← Return to Niruvi Store</a>
-        <h1 class="text-2xl font-bold text-white">${escapeHtml(sp.heading)}</h1>
-        <p class="text-sm text-neutral-300">${escapeHtml(sp.description)}</p>
-      </main>`;
+      <div class="min-h-screen w-full bg-[#0a0a0c] text-neutral-100 flex flex-col">
+        <a
+          href="#main-content"
+          class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2.5 focus:rounded-lg focus:bg-sky-500 focus:text-black focus:font-semibold focus:text-xs"
+        >
+          Skip to main content
+        </a>
+        <header class="sticky top-0 z-40 border-b border-neutral-800 bg-[#0a0a0c]/95 backdrop-blur-md px-6 py-4">
+          <div class="max-w-5xl mx-auto flex items-center justify-between">
+            <a href="${BASE_PATH}" class="font-bold text-lg text-white">Niruvi Store</a>
+            <a href="${BASE_PATH}" class="text-xs text-sky-400 underline">← Return to Store</a>
+          </div>
+        </header>
+        <main id="main-content" tabindex="-1" class="flex-1 w-full max-w-4xl min-w-0 mx-auto px-6 py-10 space-y-4">
+          <a href="${BASE_PATH}" class="text-xs text-sky-400 underline">← Return to Niruvi Store</a>
+          <h1 class="text-2xl font-bold text-white">${escapeHtml(sp.heading)}</h1>
+          <p class="text-sm text-neutral-300">${escapeHtml(sp.description)}</p>
+        </main>
+        <footer class="w-full shrink-0 border-t border-neutral-800 bg-neutral-950 mt-16 py-10 text-xs text-neutral-400">
+          <div class="max-w-5xl mx-auto px-6 flex flex-wrap items-center justify-between gap-4">
+            <span>© 2026 Niruvi Store by PutinServai.</span>
+            <a href="${BASE_PATH}privacy" class="underline text-neutral-300">Privacy Policy</a>
+          </div>
+        </footer>
+      </div>`;
     const pageHtml = injectRootContent(
       replaceHeadMetadata(baseTemplate, {
         title: sp.title,
