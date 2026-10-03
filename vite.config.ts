@@ -54,6 +54,7 @@ export default defineConfig(({ command }) => ({
     },
   ],
   build: {
+    sourcemap: true,
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       onwarn(warning, warn) {
