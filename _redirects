@@ -1,0 +1,4 @@
+# Cloudflare Workers Static Assets & GitHub Pages routing note:
+# Do NOT add `/* /index.html 200` here — Cloudflare Workers Static Assets
+# strips `/index.html` to `/`, causing error 100324 (Infinite loop detected).
+# SPA fallback is handled by `src/worker.ts`, `wrangler.json`, and `public/404.html`.

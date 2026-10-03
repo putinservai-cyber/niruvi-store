@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0a0a0c" />
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+    <link rel="canonical" href="https://niruvi-store.runs-on.dev/404" />
+    <title>404 Page Not Found — Niruvi Store</title>
+    <meta
+      name="description"
+      content="The requested Linux AppImage page could not be found on Niruvi Store."
+    />
+    <script>
+      // SPA deep-link fallback for root /* and /niruvi-store/* routes
+      (function () {
+        var path = window.location.pathname || '/';
+        var base = path.indexOf('/niruvi-store/') === 0 || path === '/niruvi-store' ? '/niruvi-store/' : '/';
+        var rel = base === '/niruvi-store/' ? path.slice('/niruvi-store'.length) || '/' : path;
+        if (/^\/(verifier|library|submit|donate|admin|profile|auth\/callback|privacy|terms|cookies|refunds|app\/[^/]+)\/?$/i.test(rel)) {
+          var target =
+            base +
+            '?p=' +
+            encodeURIComponent(rel) +
+            (window.location.search ? '&' + window.location.search.slice(1) : '') +
+            (window.location.hash || '');
+          window.location.replace(target);
+        }
+      })();
+    </script>
+  </head>
+  <body style="background:#0a0a0c;color:#f5f5f5;font-family:system-ui,-apple-system,sans-serif;margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;">
+    <main style="max-width:32rem;width:100%;background:#171717;border:1px solid #262626;border-radius:1rem;padding:2rem;text-align:center;">
+      <p style="font-family:monospace;font-size:0.75rem;color:#38bdf8;margin:0 0 0.5rem 0;">HTTP 404 • NOT FOUND</p>
+      <h1 style="font-size:1.5rem;font-weight:700;margin:0 0 0.75rem 0;color:#ffffff;">Page or AppImage Not Found</h1>
+      <p style="font-size:0.875rem;color:#d4d4d4;line-height:1.6;margin:0 0 1.5rem 0;">
+        The Linux AppImage package or route you requested does not exist in the Niruvi Store catalog.
+      </p>
+      <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;">
+        <a
+          href="./"
+          style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 1.25rem;background:#ffffff;color:#000000;font-weight:600;font-size:0.875rem;border-radius:0.75rem;text-decoration:none;"
+        >
+          Browse AppImage Directory
+        </a>
+        <a
+          href="./verifier"
+          style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 1.25rem;background:#262626;color:#f5f5f5;font-weight:600;font-size:0.875rem;border-radius:0.75rem;text-decoration:none;border:1px solid #404040;"
+        >
+          SHA-256 Checksum Verifier
+        </a>
+      </div>
+    </main>
+  </body>
+</html>
