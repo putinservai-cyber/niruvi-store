@@ -5,6 +5,71 @@ import { isLikelySecretKey, sanitizeText, sanitizeUrl, sanitizeUsername } from '
 export type MarketplaceRole = 'user' | 'publisher' | 'moderator' | 'admin';
 export type OAuthProviderType = 'google' | 'github' | 'gitlab';
 
+export type ApplicationStatus =
+  | 'draft'
+  | 'pending_review'
+  | 'approved'
+  | 'published'
+  | 'rejected'
+  | 'suspended'
+  | 'archived';
+
+export interface MarketplaceAppAsset {
+  id: string;
+  version_id: string;
+  architecture: 'x86_64' | 'aarch64' | 'armhf';
+  download_url: string;
+  sha256: string;
+  file_size: number | null;
+  filename: string;
+  asset_type: 'appimage' | 'checksum' | 'signature' | 'archive';
+  created_at: string;
+}
+
+export interface MarketplaceAppVersion {
+  id: string;
+  app_id: string;
+  version: string;
+  release_notes: string;
+  release_date: string;
+  status: 'draft' | 'pending_review' | 'approved' | 'published' | 'rejected' | 'archived';
+  created_at: string;
+  updated_at: string;
+  assets?: MarketplaceAppAsset[];
+}
+
+export interface MarketplaceApp {
+  id: string;
+  publisher_id: string;
+  name: string;
+  slug: string;
+  short_description: string;
+  description: string;
+  category: string;
+  license: string;
+  website_url: string | null;
+  source_url: string | null;
+  icon_url: string | null;
+  status: ApplicationStatus;
+  verified: boolean;
+  rejection_reason?: string | null;
+  created_at: string;
+  updated_at: string;
+  publisher?: {
+    org_name: string;
+    slug: string;
+    verified: boolean;
+  } | null;
+  versions?: MarketplaceAppVersion[];
+}
+
+export interface ConnectedIdentity {
+  id: string;
+  provider: string;
+  email?: string;
+  created_at: string;
+}
+
 export interface SupabaseProfileRow {
   id: string;
   email: string | null;
@@ -171,6 +236,110 @@ export function getOAuthRedirectUrl(): string {
   return `${SITE_URL.replace(/\/+$/, '')}/auth/callback`;
 }
 
+export interface OAuthDiagnosticsReport {
+  timestamp: string;
+  isConfigured: boolean;
+  hasUrl: boolean;
+  hasAnonKey: boolean;
+  supabaseHost: string;
+  clientOrigin: string;
+  clientCallbackUrl: string;
+  expectedGoogleCloudAuthorizedRedirectUri: string;
+  expectedSupabaseRedirectUrls: string[];
+  googleCloudDirectClientMismatchWarning: string;
+  scopesRequested: Record<OAuthProviderType, string>;
+  common403Causes: { issue: string; resolution: string }[];
+}
+
+/**
+ * Returns safe diagnostic information for OAuth redirect verification without exposing sensitive keys.
+ */
+export function getOAuthDiagnosticsInfo(): OAuthDiagnosticsReport {
+  const clientCallbackUrl = getOAuthRedirectUrl();
+  const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : SITE_URL;
+  let supabaseHost = 'Not configured';
+  let expectedGoogleCloudRedirect = 'https://<YOUR_SUPABASE_PROJECT_REF>.supabase.co/auth/v1/callback';
+
+  if (SUPABASE_URL) {
+    try {
+      const parsed = new URL(SUPABASE_URL);
+      supabaseHost = parsed.host;
+      expectedGoogleCloudRedirect = `https://${parsed.host}/auth/v1/callback`;
+    } catch {
+      supabaseHost = SUPABASE_URL.replace(/^https?:\/\//, '').split('/')[0];
+      expectedGoogleCloudRedirect = `https://${supabaseHost}/auth/v1/callback`;
+    }
+  }
+
+  return {
+    timestamp: new Date().toISOString(),
+    isConfigured: isSupabaseConfigured(),
+    hasUrl: Boolean(SUPABASE_URL),
+    hasAnonKey: Boolean(SUPABASE_ANON_KEY),
+    supabaseHost,
+    clientOrigin: origin,
+    clientCallbackUrl,
+    expectedGoogleCloudAuthorizedRedirectUri: expectedGoogleCloudRedirect,
+    expectedSupabaseRedirectUrls: [
+      'https://niruvi-store.runs-on.dev/auth/callback',
+      'http://localhost:3000/auth/callback',
+      clientCallbackUrl,
+    ],
+    googleCloudDirectClientMismatchWarning:
+      "CRITICAL: In Google Cloud Console (APIs & Services > Credentials > OAuth 2.0 Client), 'Authorized redirect URIs' MUST be set to the Supabase backend URL (" +
+      expectedGoogleCloudRedirect +
+      "), NOT the client app URL ('https://niruvi-store.runs-on.dev/auth/callback'). The client app callback URL belongs in Supabase Dashboard > Authentication > URL Configuration.",
+    scopesRequested: {
+      google: 'openid email profile',
+      github: 'read:user user:email',
+      gitlab: 'read_user email',
+    },
+    common403Causes: [
+      {
+        issue: "OAuth Consent Screen in 'Testing' Status",
+        resolution:
+          "In Google Cloud Console > OAuth consent screen, either click 'Publish App' (to allow all users) or add your email address under 'Test users'.",
+      },
+      {
+        issue: "OAuth Consent Screen User Type is 'Internal'",
+        resolution:
+          "Set User Type to 'External' in Google Cloud Console if users with standard @gmail.com accounts need access.",
+      },
+      {
+        issue: 'Redirect URI Mismatch in Google Cloud Console',
+        resolution: `Ensure Authorized redirect URIs in Google Cloud Console exactly matches '${expectedGoogleCloudRedirect}'.`,
+      },
+    ],
+  };
+}
+
+/**
+ * Safely prints the OAuth diagnostic report to the browser console.
+ */
+export function logOAuthDiagnostics(): OAuthDiagnosticsReport {
+  const diagnostics = getOAuthDiagnosticsInfo();
+  console.group('%c[Niruvi Store — OAuth Diagnostics]', 'color: #38bdf8; font-weight: bold;');
+  console.info('Timestamp:', diagnostics.timestamp);
+  console.info('Supabase Configured:', diagnostics.isConfigured);
+  console.info('Supabase Host:', diagnostics.supabaseHost);
+  console.info('Client Origin:', diagnostics.clientOrigin);
+  console.info('Client App Callback URL:', diagnostics.clientCallbackUrl);
+  console.info(
+    '%cGoogle Cloud Console Authorized Redirect URI (MUST BE):',
+    'color: #22c55e; font-weight: bold;',
+    diagnostics.expectedGoogleCloudAuthorizedRedirectUri
+  );
+  console.warn(
+    '%cConfiguration Verification Notice:',
+    'color: #f59e0b; font-weight: bold;',
+    diagnostics.googleCloudDirectClientMismatchWarning
+  );
+  console.info('Supabase Required Redirect URLs:', diagnostics.expectedSupabaseRedirectUrls);
+  console.table(diagnostics.common403Causes);
+  console.groupEnd();
+  return diagnostics;
+}
+
 /**
  * Converts raw Supabase Auth / OAuth / PostgREST errors into clear, human-friendly messages
  * without exposing internal stack traces, SQL syntax, or raw error objects.
@@ -232,7 +401,33 @@ export function formatSupabaseAuthError(
   if (lower.includes('popup') && lower.includes('blocked')) {
     return 'Sign-in popup was blocked by your browser.';
   }
-  if (lower.includes('cancel') || lower.includes('access_denied') || lower.includes('closed')) {
+  if (
+    lower.includes('user cancelled') ||
+    lower.includes('cancelled by user') ||
+    lower.includes('access_denied by user') ||
+    lower.includes('closed by user')
+  ) {
+    return providerLabel
+      ? `${providerLabel} sign-in was cancelled.`
+      : 'Sign-in was cancelled.';
+  }
+  if (
+    lower.includes('403') ||
+    lower.includes('access_denied') ||
+    lower.includes('org_internal') ||
+    lower.includes('restricted_client') ||
+    lower.includes('not have access') ||
+    lower.includes('test user') ||
+    lower.includes('blocked by google')
+  ) {
+    if (providerOrContext === 'google' || providerLabel === 'Google') {
+      return 'Google sign-in was blocked by Google (403). Check your Google Cloud OAuth Consent Screen audience, test-user access list, and Supabase redirect configuration.';
+    }
+    return providerLabel
+      ? `${providerLabel} sign-in was cancelled or access was denied.`
+      : 'Sign-in was cancelled or access was denied.';
+  }
+  if (lower.includes('cancel') || lower.includes('closed')) {
     return providerLabel
       ? `${providerLabel} sign-in was cancelled.`
       : 'Sign-in was cancelled.';
@@ -274,6 +469,12 @@ export async function signInWithSupabaseOAuth(provider: OAuthProviderType): Prom
     gitlab: 'read_user email',
   };
 
+  if (typeof import.meta !== 'undefined' && (import.meta as any)?.env?.DEV) {
+    console.info(
+      `[Niruvi Auth] Initiating OAuth sign-in -> Provider: ${provider}, Redirect URI: ${redirectTo}`
+    );
+  }
+
   const { error } = await client.auth.signInWithOAuth({
     provider,
     options: {
@@ -283,6 +484,9 @@ export async function signInWithSupabaseOAuth(provider: OAuthProviderType): Prom
   });
 
   if (error) {
+    if (typeof import.meta !== 'undefined' && (import.meta as any)?.env?.DEV) {
+      console.warn(`[Niruvi Auth] OAuth initiation error (${provider}):`, error.message);
+    }
     throw new Error(formatSupabaseAuthError(error, provider));
   }
 }
@@ -1023,3 +1227,885 @@ export async function deleteAppReview(params: {
   );
   writeLocalReviews(filtered);
 }
+
+// ============================================================================
+// PUBLISHER, APPLICATION, AND RELEASE MANAGEMENT
+// ============================================================================
+
+export function validateReleaseMetadata(params: {
+  version: string;
+  architecture: string;
+  downloadUrl: string;
+  sha256: string;
+}): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  const cleanVer = (params.version || '').trim();
+  if (!cleanVer || ['latest', 'vlatest', 'unknown'].includes(cleanVer.toLowerCase())) {
+    errors.push('Specific version number is required (e.g. 1.0.0, 4.3.2). "latest" is disallowed.');
+  }
+
+  const cleanArch = (params.architecture || '').trim();
+  if (!['x86_64', 'aarch64', 'armhf'].includes(cleanArch)) {
+    errors.push('Architecture must be x86_64, aarch64, or armhf.');
+  }
+
+  const cleanUrl = (params.downloadUrl || '').trim();
+  if (!cleanUrl.startsWith('https://')) {
+    errors.push('Download URL must be a valid secure https:// URL.');
+  }
+  if (!cleanUrl.toLowerCase().endsWith('.appimage')) {
+    errors.push('Download URL must point directly to a standalone .AppImage package.');
+  }
+
+  const cleanSha = (params.sha256 || '').trim().toLowerCase();
+  if (!/^[a-f0-9]{64}$/.test(cleanSha)) {
+    errors.push('SHA-256 must be an exact 64-character hexadecimal digest.');
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
+export interface ExternalReleaseImportResult {
+  version: string;
+  releaseNotes: string;
+  assets: Array<{
+    architecture: 'x86_64' | 'aarch64' | 'armhf';
+    downloadUrl: string;
+    filename: string;
+    fileSize: number | null;
+  }>;
+}
+
+/**
+ * Fetches latest release from GitHub API, detecting AppImage assets and architecture.
+ */
+export async function importReleaseFromGitHub(repoUrl: string): Promise<ExternalReleaseImportResult> {
+  const match = repoUrl.trim().match(/github\.com\/([^/]+)\/([^/]+)/i);
+  if (!match) {
+    throw new Error('Please enter a valid GitHub repository URL (e.g. https://github.com/owner/repo).');
+  }
+  const owner = match[1];
+  const repo = match[2].replace(/\.git$/i, '').split('#')[0].split('?')[0];
+
+  const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/latest`, {
+    headers: { Accept: 'application/vnd.github.v3+json' },
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error(`No published releases found for GitHub repository ${owner}/${repo}.`);
+    }
+    throw new Error(`GitHub API returned HTTP ${response.status}.`);
+  }
+
+  const data = await response.json();
+  const rawAssets = Array.isArray(data.assets) ? data.assets : [];
+  const appimageAssets = rawAssets.filter((a: any) =>
+    String(a.name || '').toLowerCase().endsWith('.appimage')
+  );
+
+  if (appimageAssets.length === 0) {
+    throw new Error('The latest GitHub release does not contain any asset ending with ".AppImage".');
+  }
+
+  const rawTag = String(data.tag_name || data.name || '').replace(/^v/i, '').trim();
+  const version = rawTag || '1.0.0';
+
+  const assets = appimageAssets.map((a: any) => {
+    const filename = String(a.name || '');
+    const lowerName = filename.toLowerCase();
+    let arch: 'x86_64' | 'aarch64' | 'armhf' = 'x86_64';
+    if (lowerName.includes('aarch64') || lowerName.includes('arm64')) {
+      arch = 'aarch64';
+    } else if (lowerName.includes('armhf') || lowerName.includes('armv7')) {
+      arch = 'armhf';
+    }
+    return {
+      architecture: arch,
+      downloadUrl: String(a.browser_download_url || ''),
+      filename,
+      fileSize: typeof a.size === 'number' ? a.size : null,
+    };
+  });
+
+  return {
+    version,
+    releaseNotes: sanitizeText(String(data.body || ''), 4000),
+    assets,
+  };
+}
+
+/**
+ * Fetches latest release from GitLab API, detecting AppImage assets and architecture.
+ */
+export async function importReleaseFromGitLab(repoUrl: string): Promise<ExternalReleaseImportResult> {
+  const match = repoUrl.trim().match(/gitlab\.com\/([^/]+(?:\/[^/]+)*)/i);
+  if (!match) {
+    throw new Error('Please enter a valid GitLab project URL (e.g. https://gitlab.com/group/project).');
+  }
+  const projectPath = encodeURIComponent(match[1].replace(/\.git$/i, '').split('#')[0].split('?')[0]);
+
+  const response = await fetch(`https://gitlab.com/api/v4/projects/${projectPath}/releases`, {
+    headers: { Accept: 'application/json' },
+  });
+
+  if (!response.ok) {
+    throw new Error(`GitLab API returned HTTP ${response.status}.`);
+  }
+
+  const releases = await response.json();
+  if (!Array.isArray(releases) || releases.length === 0) {
+    throw new Error('No published releases found for this GitLab project.');
+  }
+
+  const latest = releases[0];
+  const rawTag = String(latest.tag_name || latest.name || '').replace(/^v/i, '').trim();
+  const version = rawTag || '1.0.0';
+
+  const sources = latest.assets?.links || [];
+  const appimageAssets = sources.filter((s: any) =>
+    String(s.name || s.url || '').toLowerCase().endsWith('.appimage')
+  );
+
+  if (appimageAssets.length === 0) {
+    throw new Error('The latest GitLab release does not contain any link ending with ".AppImage".');
+  }
+
+  const assets = appimageAssets.map((a: any) => {
+    const filename = String(a.name || 'package.AppImage');
+    const lowerName = filename.toLowerCase();
+    let arch: 'x86_64' | 'aarch64' | 'armhf' = 'x86_64';
+    if (lowerName.includes('aarch64') || lowerName.includes('arm64')) {
+      arch = 'aarch64';
+    } else if (lowerName.includes('armhf') || lowerName.includes('armv7')) {
+      arch = 'armhf';
+    }
+    return {
+      architecture: arch,
+      downloadUrl: String(a.url || ''),
+      filename,
+      fileSize: null,
+    };
+  });
+
+  return {
+    version,
+    releaseNotes: sanitizeText(String(latest.description || ''), 4000),
+    assets,
+  };
+}
+
+/**
+ * Fetches applications owned by a publisher (or all apps if moderator/admin).
+ */
+export async function fetchPublisherApplications(userId: string): Promise<MarketplaceApp[]> {
+  const client = getActiveSupabaseClient();
+  if (!client || !userId) return [];
+
+  const { data, error } = await client
+    .from('apps')
+    .select(
+      'id, publisher_id, name, slug, short_description, description, category, license, website_url, source_url, icon_url, status, verified, rejection_reason, created_at, updated_at'
+    )
+    .eq('publisher_id', userId)
+    .order('updated_at', { ascending: false });
+
+  if (error || !Array.isArray(data)) return [];
+
+  return data.map((r: any) => ({
+    id: String(r.id),
+    publisher_id: String(r.publisher_id),
+    name: String(r.name),
+    slug: String(r.slug),
+    short_description: String(r.short_description || ''),
+    description: String(r.description || ''),
+    category: String(r.category || 'Utilities'),
+    license: String(r.license || 'Open Source'),
+    website_url: r.website_url ? String(r.website_url) : null,
+    source_url: r.source_url ? String(r.source_url) : null,
+    icon_url: r.icon_url ? String(r.icon_url) : null,
+    status: (r.status as ApplicationStatus) || 'draft',
+    verified: Boolean(r.verified),
+    rejection_reason: r.rejection_reason ? String(r.rejection_reason) : null,
+    created_at: String(r.created_at || new Date().toISOString()),
+    updated_at: String(r.updated_at || new Date().toISOString()),
+  }));
+}
+
+/**
+ * Creates a new draft application for a publisher in Supabase PostgreSQL.
+ */
+export async function createPublisherApplication(params: {
+  publisherId: string;
+  name: string;
+  slug: string;
+  shortDescription: string;
+  description: string;
+  category: string;
+  license: string;
+  websiteUrl?: string | null;
+  sourceUrl?: string | null;
+  iconUrl?: string | null;
+}): Promise<MarketplaceApp> {
+  const client = getActiveSupabaseClient();
+  if (!client) {
+    throw new Error('Database connection is required to create an application.');
+  }
+
+  const cleanName = sanitizeText(params.name, 100);
+  if (!cleanName || cleanName.length < 2) {
+    throw new Error('Application name must be at least 2 characters.');
+  }
+
+  const cleanSlug = params.slug
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
+  if (!cleanSlug || cleanSlug.length < 2) {
+    throw new Error('Application slug must be at least 2 alphanumeric characters.');
+  }
+
+  const cleanShortDesc = sanitizeText(params.shortDescription || params.description.slice(0, 200), 240);
+  const cleanDesc = sanitizeText(params.description, 4000);
+  const cleanCategory = sanitizeText(params.category, 60) || 'Utilities';
+  const cleanLicense = sanitizeText(params.license, 80) || 'GPL-3.0';
+  const cleanWebsite = params.websiteUrl?.trim() ? sanitizeUrl(params.websiteUrl.trim()) : null;
+  const cleanSource = params.sourceUrl?.trim() ? sanitizeUrl(params.sourceUrl.trim()) : null;
+  const cleanIcon = params.iconUrl?.trim() ? sanitizeUrl(params.iconUrl.trim()) : null;
+
+  const { data, error } = await client
+    .from('apps')
+    .insert({
+      publisher_id: params.publisherId,
+      name: cleanName,
+      slug: cleanSlug,
+      short_description: cleanShortDesc,
+      description: cleanDesc,
+      category: cleanCategory,
+      license: cleanLicense,
+      website_url: cleanWebsite,
+      source_url: cleanSource,
+      icon_url: cleanIcon,
+      status: 'draft',
+      verified: false,
+    })
+    .select(
+      'id, publisher_id, name, slug, short_description, description, category, license, website_url, source_url, icon_url, status, verified, created_at, updated_at'
+    )
+    .single();
+
+  if (error || !data) {
+    if (error?.message?.toLowerCase().includes('unique') || error?.message?.toLowerCase().includes('slug')) {
+      throw new Error(`Application slug "${cleanSlug}" is already taken. Please choose another.`);
+    }
+    throw new Error('Application could not be created in the marketplace.');
+  }
+
+  return {
+    id: String(data.id),
+    publisher_id: String(data.publisher_id),
+    name: String(data.name),
+    slug: String(data.slug),
+    short_description: String(data.short_description || ''),
+    description: String(data.description || ''),
+    category: String(data.category),
+    license: String(data.license),
+    website_url: data.website_url ? String(data.website_url) : null,
+    source_url: data.source_url ? String(data.source_url) : null,
+    icon_url: data.icon_url ? String(data.icon_url) : null,
+    status: (data.status as ApplicationStatus) || 'draft',
+    verified: Boolean(data.verified),
+    created_at: String(data.created_at || new Date().toISOString()),
+    updated_at: String(data.updated_at || new Date().toISOString()),
+  };
+}
+
+/**
+ * Updates application metadata for a publisher.
+ */
+export async function updatePublisherApplication(
+  appId: string,
+  params: {
+    name?: string;
+    shortDescription?: string;
+    description?: string;
+    category?: string;
+    license?: string;
+    websiteUrl?: string | null;
+    sourceUrl?: string | null;
+    iconUrl?: string | null;
+  }
+): Promise<MarketplaceApp> {
+  const client = getActiveSupabaseClient();
+  if (!client) {
+    throw new Error('Database connection is required to update application.');
+  }
+
+  const updates: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (params.name !== undefined) updates.name = sanitizeText(params.name, 100);
+  if (params.shortDescription !== undefined) updates.short_description = sanitizeText(params.shortDescription, 240);
+  if (params.description !== undefined) updates.description = sanitizeText(params.description, 4000);
+  if (params.category !== undefined) updates.category = sanitizeText(params.category, 60);
+  if (params.license !== undefined) updates.license = sanitizeText(params.license, 80);
+  if (params.websiteUrl !== undefined) updates.website_url = params.websiteUrl ? sanitizeUrl(params.websiteUrl) : null;
+  if (params.sourceUrl !== undefined) updates.source_url = params.sourceUrl ? sanitizeUrl(params.sourceUrl) : null;
+  if (params.iconUrl !== undefined) updates.icon_url = params.iconUrl ? sanitizeUrl(params.iconUrl) : null;
+
+  const { data, error } = await client
+    .from('apps')
+    .update(updates)
+    .eq('id', appId)
+    .select(
+      'id, publisher_id, name, slug, short_description, description, category, license, website_url, source_url, icon_url, status, verified, rejection_reason, created_at, updated_at'
+    )
+    .single();
+
+  if (error || !data) {
+    throw new Error('Failed to update application details.');
+  }
+
+  return {
+    id: String(data.id),
+    publisher_id: String(data.publisher_id),
+    name: String(data.name),
+    slug: String(data.slug),
+    short_description: String(data.short_description || ''),
+    description: String(data.description || ''),
+    category: String(data.category),
+    license: String(data.license),
+    website_url: data.website_url ? String(data.website_url) : null,
+    source_url: data.source_url ? String(data.source_url) : null,
+    icon_url: data.icon_url ? String(data.icon_url) : null,
+    status: (data.status as ApplicationStatus) || 'draft',
+    verified: Boolean(data.verified),
+    rejection_reason: data.rejection_reason ? String(data.rejection_reason) : null,
+    created_at: String(data.created_at || new Date().toISOString()),
+    updated_at: String(data.updated_at || new Date().toISOString()),
+  };
+}
+
+/**
+ * Submits an application for moderator review (status becomes 'pending_review').
+ */
+export async function submitApplicationForReview(appId: string): Promise<MarketplaceApp> {
+  const client = getActiveSupabaseClient();
+  if (!client) {
+    throw new Error('Database connection required.');
+  }
+
+  const { data, error } = await client
+    .from('apps')
+    .update({
+      status: 'pending_review',
+      rejection_reason: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', appId)
+    .select(
+      'id, publisher_id, name, slug, short_description, description, category, license, website_url, source_url, icon_url, status, verified, rejection_reason, created_at, updated_at'
+    )
+    .single();
+
+  if (error || !data) {
+    throw new Error('Application could not be submitted for review.');
+  }
+
+  return {
+    id: String(data.id),
+    publisher_id: String(data.publisher_id),
+    name: String(data.name),
+    slug: String(data.slug),
+    short_description: String(data.short_description || ''),
+    description: String(data.description || ''),
+    category: String(data.category),
+    license: String(data.license),
+    website_url: data.website_url ? String(data.website_url) : null,
+    source_url: data.source_url ? String(data.source_url) : null,
+    icon_url: data.icon_url ? String(data.icon_url) : null,
+    status: (data.status as ApplicationStatus) || 'pending_review',
+    verified: Boolean(data.verified),
+    rejection_reason: data.rejection_reason ? String(data.rejection_reason) : null,
+    created_at: String(data.created_at || new Date().toISOString()),
+    updated_at: String(data.updated_at || new Date().toISOString()),
+  };
+}
+
+/**
+ * Fetches versions and binary assets for an application.
+ */
+export async function fetchAppVersionsWithAssets(appId: string): Promise<MarketplaceAppVersion[]> {
+  const client = getActiveSupabaseClient();
+  if (!client || !appId) return [];
+
+  const { data: verRows, error: verErr } = await client
+    .from('app_versions')
+    .select('id, app_id, version, release_notes, release_date, status, created_at, updated_at')
+    .eq('app_id', appId)
+    .order('release_date', { ascending: false });
+
+  if (verErr || !Array.isArray(verRows)) return [];
+
+  const versionIds = verRows.map((v) => v.id);
+  let assetsByVersion: Record<string, MarketplaceAppAsset[]> = {};
+
+  if (versionIds.length > 0) {
+    const { data: assetRows } = await client
+      .from('app_assets')
+      .select('id, version_id, architecture, download_url, sha256, file_size, filename, asset_type, created_at')
+      .in('version_id', versionIds);
+
+    if (Array.isArray(assetRows)) {
+      assetsByVersion = assetRows.reduce((acc: Record<string, MarketplaceAppAsset[]>, r: any) => {
+        const vId = String(r.version_id);
+        if (!acc[vId]) acc[vId] = [];
+        acc[vId].push({
+          id: String(r.id),
+          version_id: vId,
+          architecture: r.architecture,
+          download_url: String(r.download_url),
+          sha256: String(r.sha256),
+          file_size: typeof r.file_size === 'number' ? r.file_size : null,
+          filename: String(r.filename || ''),
+          asset_type: r.asset_type || 'appimage',
+          created_at: String(r.created_at || new Date().toISOString()),
+        });
+        return acc;
+      }, {});
+    }
+  }
+
+  return verRows.map((v: any) => ({
+    id: String(v.id),
+    app_id: String(v.app_id),
+    version: String(v.version),
+    release_notes: String(v.release_notes || ''),
+    release_date: String(v.release_date || v.created_at || new Date().toISOString()),
+    status: v.status || 'published',
+    created_at: String(v.created_at || new Date().toISOString()),
+    updated_at: String(v.updated_at || new Date().toISOString()),
+    assets: assetsByVersion[String(v.id)] || [],
+  }));
+}
+
+/**
+ * Creates a new release version and attaches multi-architecture AppImage assets.
+ */
+export async function createAppVersionWithAssets(params: {
+  appId: string;
+  version: string;
+  releaseNotes: string;
+  releaseDate?: string;
+  architecture: 'x86_64' | 'aarch64' | 'armhf';
+  downloadUrl: string;
+  sha256: string;
+  fileSize?: number | null;
+  filename?: string;
+}): Promise<MarketplaceAppVersion> {
+  const client = getActiveSupabaseClient();
+  if (!client) {
+    throw new Error('Database connection is required to create a release.');
+  }
+
+  const validation = validateReleaseMetadata({
+    version: params.version,
+    architecture: params.architecture,
+    downloadUrl: params.downloadUrl,
+    sha256: params.sha256,
+  });
+  if (!validation.valid) {
+    throw new Error(validation.errors.join(' '));
+  }
+
+  const cleanVersion = params.version.trim();
+  const cleanNotes = sanitizeText(params.releaseNotes || '', 4000);
+  const releaseDate = params.releaseDate || new Date().toISOString();
+
+  // 1. Insert app_version
+  const { data: verData, error: verError } = await client
+    .from('app_versions')
+    .insert({
+      app_id: params.appId,
+      version: cleanVersion,
+      release_notes: cleanNotes,
+      release_date: releaseDate,
+      status: 'published',
+    })
+    .select('id, app_id, version, release_notes, release_date, status, created_at, updated_at')
+    .single();
+
+  if (verError || !verData) {
+    if (verError?.message?.toLowerCase().includes('unique') || verError?.message?.toLowerCase().includes('version')) {
+      throw new Error(`Version ${cleanVersion} already exists for this application.`);
+    }
+    throw new Error('Failed to create application release version.');
+  }
+
+  // 2. Insert app_asset
+  const filename =
+    params.filename?.trim() ||
+    params.downloadUrl.split('/').pop()?.split('?')[0] ||
+    `${cleanVersion}.AppImage`;
+
+  const { data: assetData, error: assetError } = await client
+    .from('app_assets')
+    .insert({
+      version_id: verData.id,
+      architecture: params.architecture,
+      download_url: params.downloadUrl.trim(),
+      sha256: params.sha256.trim().toLowerCase(),
+      file_size: typeof params.fileSize === 'number' ? params.fileSize : null,
+      filename,
+      asset_type: 'appimage',
+    })
+    .select('id, version_id, architecture, download_url, sha256, file_size, filename, asset_type, created_at')
+    .single();
+
+  if (assetError || !assetData) {
+    throw new Error('Version created, but failed to attach binary asset.');
+  }
+
+  return {
+    id: String(verData.id),
+    app_id: String(verData.app_id),
+    version: String(verData.version),
+    release_notes: String(verData.release_notes || ''),
+    release_date: String(verData.release_date),
+    status: verData.status,
+    created_at: String(verData.created_at),
+    updated_at: String(verData.updated_at),
+    assets: [
+      {
+        id: String(assetData.id),
+        version_id: String(assetData.version_id),
+        architecture: assetData.architecture,
+        download_url: String(assetData.download_url),
+        sha256: String(assetData.sha256),
+        file_size: assetData.file_size,
+        filename: String(assetData.filename),
+        asset_type: assetData.asset_type,
+        created_at: String(assetData.created_at),
+      },
+    ],
+  };
+}
+
+/**
+ * Fetches a single public application by slug with its versions and assets.
+ */
+export async function fetchPublicMarketplaceApp(slug: string): Promise<MarketplaceApp | null> {
+  const cleanSlug = slug.trim().toLowerCase();
+  const client = getActiveSupabaseClient();
+  if (!client || !cleanSlug) return null;
+
+  try {
+    const { data: appRow, error } = await client
+      .from('apps')
+      .select(
+        'id, publisher_id, name, slug, short_description, description, category, license, website_url, source_url, icon_url, status, verified, rejection_reason, created_at, updated_at, publisher_profiles(org_name, slug, verified)'
+      )
+      .eq('slug', cleanSlug)
+      .maybeSingle();
+
+    if (error || !appRow) return null;
+
+    const versions = await fetchAppVersionsWithAssets(appRow.id);
+
+    return {
+      id: String(appRow.id),
+      publisher_id: String(appRow.publisher_id),
+      name: String(appRow.name),
+      slug: String(appRow.slug),
+      short_description: String(appRow.short_description || ''),
+      description: String(appRow.description || ''),
+      category: String(appRow.category || 'Utilities'),
+      license: String(appRow.license || 'Open Source'),
+      website_url: appRow.website_url ? String(appRow.website_url) : null,
+      source_url: appRow.source_url ? String(appRow.source_url) : null,
+      icon_url: appRow.icon_url ? String(appRow.icon_url) : null,
+      status: (appRow.status as ApplicationStatus) || 'published',
+      verified: Boolean(appRow.verified),
+      rejection_reason: appRow.rejection_reason ? String(appRow.rejection_reason) : null,
+      created_at: String(appRow.created_at || new Date().toISOString()),
+      updated_at: String(appRow.updated_at || new Date().toISOString()),
+      publisher: (() => {
+        const rawPub = appRow.publisher_profiles as unknown;
+        const pub = Array.isArray(rawPub) ? (rawPub[0] as Record<string, unknown> | undefined) : (rawPub as Record<string, unknown> | null | undefined);
+        if (!pub) return null;
+        return {
+          org_name: String(pub.org_name || ''),
+          slug: String(pub.slug || ''),
+          verified: Boolean(pub.verified),
+        };
+      })(),
+      versions,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ============================================================================
+// CONNECTED IDENTITY & SECURITY MANAGEMENT
+// ============================================================================
+
+/**
+ * Returns connected OAuth identities for the active authenticated user.
+ */
+export async function fetchUserIdentities(): Promise<ConnectedIdentity[]> {
+  const client = getActiveSupabaseClient();
+  if (!client) return [];
+
+  try {
+    const { data } = await client.auth.getUser();
+    if (!data?.user) return [];
+
+    const rawIdentities = data.user.identities || [];
+    return rawIdentities.map((i: any) => ({
+      id: String(i.id || i.identity_id || ''),
+      provider: String(i.provider || 'email'),
+      email: typeof i.identity_data?.email === 'string' ? i.identity_data.email : undefined,
+      created_at: String(i.created_at || new Date().toISOString()),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Connects an additional OAuth identity (Google, GitHub, or GitLab) to the signed-in account.
+ */
+export async function linkOAuthProvider(provider: OAuthProviderType): Promise<void> {
+  const client = getActiveSupabaseClient();
+  if (!client) {
+    throw new Error('Supabase client is not configured.');
+  }
+
+  const redirectTo = getOAuthRedirectUrl();
+  const { error } = await client.auth.linkIdentity({
+    provider,
+    options: {
+      redirectTo,
+    },
+  });
+
+  if (error) {
+    throw new Error(formatSupabaseAuthError(error, provider));
+  }
+}
+
+/**
+ * Unlinks an identity from the user's account if more than one authentication method exists.
+ */
+export async function unlinkIdentity(identityId: string): Promise<void> {
+  const client = getActiveSupabaseClient();
+  if (!client) {
+    throw new Error('Supabase client is not configured.');
+  }
+
+  const { data } = await client.auth.getUser();
+  const identities = data?.user?.identities || [];
+
+  if (identities.length <= 1) {
+    throw new Error('Cannot disconnect your only authentication method.');
+  }
+
+  const targetIdentity = identities.find((i: any) => (i.id || i.identity_id) === identityId);
+  if (!targetIdentity) {
+    throw new Error('Identity not found on this account.');
+  }
+
+  const { error } = await client.auth.unlinkIdentity(targetIdentity);
+  if (error) {
+    throw new Error(formatSupabaseAuthError(error));
+  }
+}
+
+/**
+ * Changes password for the currently signed-in user.
+ */
+export async function changeUserPassword(newPassword: string): Promise<void> {
+  const cleanPass = newPassword.trim();
+  if (!cleanPass || cleanPass.length < 10) {
+    throw new Error('New password must be at least 10 characters long.');
+  }
+
+  const client = getActiveSupabaseClient();
+  if (!client) {
+    throw new Error('Supabase client is not configured.');
+  }
+
+  const { error } = await client.auth.updateUser({
+    password: cleanPass,
+  });
+
+  if (error) {
+    throw new Error(formatSupabaseAuthError(error));
+  }
+}
+
+// ============================================================================
+// MODERATION & AUDIT
+// ============================================================================
+
+export async function fetchModerationQueue(): Promise<{
+  pendingApps: MarketplaceApp[];
+  pendingPublishers: PublicDeveloperProfile[];
+}> {
+  const client = getActiveSupabaseClient();
+  if (!client) return { pendingApps: [], pendingPublishers: [] };
+
+  const [appsRes, pubRes] = await Promise.all([
+    client
+      .from('apps')
+      .select(
+        'id, publisher_id, name, slug, short_description, description, category, license, website_url, source_url, icon_url, status, verified, rejection_reason, created_at, updated_at'
+      )
+      .in('status', ['pending_review', 'pending'])
+      .order('created_at', { ascending: false }),
+    client
+      .from('publisher_profiles')
+      .select(
+        'user_id, slug, org_name, org_description, org_website, source_url, avatar_url, verified, status, rejection_reason, created_at, updated_at'
+      )
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false }),
+  ]);
+
+  const pendingApps: MarketplaceApp[] = Array.isArray(appsRes.data)
+    ? appsRes.data.map((r: any) => ({
+        id: String(r.id),
+        publisher_id: String(r.publisher_id),
+        name: String(r.name),
+        slug: String(r.slug),
+        short_description: String(r.short_description || ''),
+        description: String(r.description || ''),
+        category: String(r.category || 'Utilities'),
+        license: String(r.license || 'Open Source'),
+        website_url: r.website_url ? String(r.website_url) : null,
+        source_url: r.source_url ? String(r.source_url) : null,
+        icon_url: r.icon_url ? String(r.icon_url) : null,
+        status: (r.status as ApplicationStatus) || 'pending_review',
+        verified: Boolean(r.verified),
+        rejection_reason: r.rejection_reason ? String(r.rejection_reason) : null,
+        created_at: String(r.created_at || new Date().toISOString()),
+        updated_at: String(r.updated_at || new Date().toISOString()),
+      }))
+    : [];
+
+  const pendingPublishers: PublicDeveloperProfile[] = Array.isArray(pubRes.data)
+    ? pubRes.data.map((r: any) => ({
+        userId: String(r.user_id),
+        slug: String(r.slug),
+        orgName: String(r.org_name),
+        orgDescription: String(r.org_description || ''),
+        orgWebsite: r.org_website ? String(r.org_website) : null,
+        sourceUrl: r.source_url ? String(r.source_url) : null,
+        avatarUrl: r.avatar_url ? String(r.avatar_url) : null,
+        verified: Boolean(r.verified),
+        status: r.status,
+        rejectionReason: r.rejection_reason ? String(r.rejection_reason) : null,
+        createdAt: String(r.created_at || new Date().toISOString()),
+        updatedAt: String(r.updated_at || new Date().toISOString()),
+      }))
+    : [];
+
+  return { pendingApps, pendingPublishers };
+}
+
+export async function moderateApplication(
+  appId: string,
+  action: 'approve' | 'reject' | 'request_changes' | 'suspend' | 'restore',
+  reason?: string
+): Promise<void> {
+  const client = getActiveSupabaseClient();
+  if (!client) {
+    throw new Error('Database connection required.');
+  }
+
+  let newStatus: ApplicationStatus = 'published';
+  if (action === 'approve') newStatus = 'published';
+  else if (action === 'reject') newStatus = 'rejected';
+  else if (action === 'request_changes') newStatus = 'draft';
+  else if (action === 'suspend') newStatus = 'suspended';
+  else if (action === 'restore') newStatus = 'published';
+
+  const { error } = await client
+    .from('apps')
+    .update({
+      status: newStatus,
+      rejection_reason: reason ? sanitizeText(reason, 500) : null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', appId);
+
+  if (error) {
+    throw new Error('Failed to update application status.');
+  }
+
+  // Audit log record
+  const { data: authData } = await client.auth.getUser();
+  if (authData?.user) {
+    await client.from('audit_log').insert({
+      actor_id: authData.user.id,
+      action: `application_${action}`,
+      target_type: 'app',
+      target_id: appId,
+      metadata: { reason: reason || null, newStatus },
+    }).then(() => {});
+  }
+}
+
+export async function moderatePublisher(
+  userId: string,
+  action: 'approve' | 'reject' | 'unverify',
+  reason?: string
+): Promise<void> {
+  const client = getActiveSupabaseClient();
+  if (!client) {
+    throw new Error('Database connection required.');
+  }
+
+  const isApproved = action === 'approve';
+  const newStatus = isApproved ? 'approved' : action === 'reject' ? 'rejected' : 'approved';
+  const isVerified = action === 'approve';
+
+  const { error } = await client
+    .from('publisher_profiles')
+    .update({
+      status: newStatus,
+      verified: isVerified,
+      rejection_reason: reason ? sanitizeText(reason, 500) : null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('user_id', userId);
+
+  if (error) {
+    throw new Error('Failed to update publisher status.');
+  }
+
+  // Also update role in profiles if approved
+  if (isApproved) {
+    await client
+      .from('profiles')
+      .update({ role: 'publisher' })
+      .eq('id', userId)
+      .then(() => {});
+  }
+
+  // Audit log record
+  const { data: authData } = await client.auth.getUser();
+  if (authData?.user) {
+    await client.from('audit_log').insert({
+      actor_id: authData.user.id,
+      action: `publisher_${action}`,
+      target_type: 'publisher',
+      target_id: userId,
+      metadata: { reason: reason || null, newStatus, isVerified },
+    }).then(() => {});
+  }
+}
+

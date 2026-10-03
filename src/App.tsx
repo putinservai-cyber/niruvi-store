@@ -27,6 +27,10 @@ import { SubmitAppView } from './components/SubmitAppView';
 import { AdminModerationView } from './components/AdminModerationView';
 import { AuthModal } from './components/AuthModal';
 import { AccountManagementModal } from './components/AccountManagementModal';
+import { AccountDashboard } from './pages/AccountDashboard';
+import { PublisherDashboard } from './pages/PublisherDashboard';
+import { ModerationDashboard } from './pages/ModerationDashboard';
+import { AppDetailPage } from './pages/AppDetailPage';
 import { Footer, LegalRoute } from './components/Footer';
 import { CookieConsent } from './components/CookieConsent';
 import { Privacy } from './pages/Privacy';
@@ -77,10 +81,17 @@ function parseCurrentLocation(): RouteState {
   if (lowerHash === 'cookies') return { legalRoute: 'cookies', activeTab: 'browse', appId: null };
   if (lowerHash === 'refunds') return { legalRoute: 'refunds', activeTab: 'browse', appId: null };
   if (lowerHash === 'donate') return { legalRoute: 'store', activeTab: 'donate', appId: null };
+  if (lowerHash === 'account') return { legalRoute: 'store', activeTab: 'account', appId: null };
+  if (lowerHash === 'publisher') return { legalRoute: 'store', activeTab: 'publisher', appId: null };
+  if (lowerHash === 'moderation') return { legalRoute: 'store', activeTab: 'admin', appId: null };
   if (lowerHash === 'verifier') return { legalRoute: 'store', activeTab: 'verifier', appId: null };
   if (lowerHash === 'library') return { legalRoute: 'store', activeTab: 'library', appId: null };
   if (lowerHash === 'submit') return { legalRoute: 'store', activeTab: 'submit', appId: null };
   if (lowerHash === 'admin') return { legalRoute: 'store', activeTab: 'admin', appId: null };
+  if (lowerHash.startsWith('apps/')) {
+    const hashSlug = decodeURIComponent(hash.slice(5)).trim();
+    if (hashSlug) return { legalRoute: 'store', activeTab: 'browse', appId: hashSlug };
+  }
   if (lowerHash.startsWith('app/')) {
     const hashSlug = decodeURIComponent(hash.slice(4)).trim();
     if (hashSlug) return { legalRoute: 'store', activeTab: 'browse', appId: hashSlug };
@@ -98,10 +109,20 @@ function parseCurrentLocation(): RouteState {
   if (lowerPath === '/refunds') return { legalRoute: 'refunds', activeTab: 'browse', appId: null };
   if (lowerPath === '/donate') return { legalRoute: 'store', activeTab: 'donate', appId: null };
 
+  if (lowerPath === '/account') return { legalRoute: 'store', activeTab: 'account', appId: null };
+  if (lowerPath === '/publisher') return { legalRoute: 'store', activeTab: 'publisher', appId: null };
+  if (lowerPath === '/moderation' || lowerPath === '/admin') return { legalRoute: 'store', activeTab: 'admin', appId: null };
   if (lowerPath === '/verifier') return { legalRoute: 'store', activeTab: 'verifier', appId: null };
   if (lowerPath === '/library') return { legalRoute: 'store', activeTab: 'library', appId: null };
   if (lowerPath === '/submit') return { legalRoute: 'store', activeTab: 'submit', appId: null };
-  if (lowerPath === '/admin') return { legalRoute: 'store', activeTab: 'admin', appId: null };
+  if (lowerPath.startsWith('/auth/callback')) return { legalRoute: 'store', activeTab: 'account', appId: null };
+
+  if (lowerPath.startsWith('/apps/')) {
+    const slug = decodeURIComponent(pathname.slice(6)).trim();
+    if (slug) {
+      return { legalRoute: 'store', activeTab: 'browse', appId: slug };
+    }
+  }
 
   if (lowerPath.startsWith('/app/')) {
     const slug = decodeURIComponent(pathname.slice(5)).trim();
@@ -1052,6 +1073,31 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
               />
             )}
 
+            {activeTab === 'account' && (
+              <AccountDashboard
+                onNavigateToPublisher={() => handleTabChange('publisher')}
+                onNavigateToStore={() => handleTabChange('browse')}
+                onOpenAppDetail={(appSlug) => {
+                  const match = (fullCatalogCacheRef.current || APPS_CATALOG).find(
+                    (a) => a.id.toLowerCase() === appSlug.toLowerCase()
+                  );
+                  if (match) handleSelectApp(match);
+                }}
+              />
+            )}
+
+            {activeTab === 'publisher' && (
+              <PublisherDashboard
+                onNavigateToStore={() => handleTabChange('browse')}
+                onOpenAppDetail={(appSlug) => {
+                  const match = (fullCatalogCacheRef.current || APPS_CATALOG).find(
+                    (a) => a.id.toLowerCase() === appSlug.toLowerCase()
+                  );
+                  if (match) handleSelectApp(match);
+                }}
+              />
+            )}
+
             {activeTab === 'submit' && (
               <SubmitAppView
                 onAppAdded={(newApp) => {
@@ -1063,7 +1109,20 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
             )}
 
             {activeTab === 'admin' && (
-              <AdminModerationView onBackToStore={() => handleTabChange('browse')} />
+              <div className="space-y-8">
+                <ModerationDashboard
+                  onNavigateToStore={() => handleTabChange('browse')}
+                  onOpenAppDetail={(slug) => {
+                    const match = (fullCatalogCacheRef.current || APPS_CATALOG).find(
+                      (a) => a.id.toLowerCase() === slug.toLowerCase()
+                    );
+                    if (match) handleSelectApp(match);
+                  }}
+                />
+                <div className="pt-8 border-t border-neutral-800">
+                  <AdminModerationView onBackToStore={() => handleTabChange('browse')} />
+                </div>
+              </div>
             )}
 
             {activeTab === 'donate' && (
@@ -1437,7 +1496,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
       />
 
       <AuthModal />
-      <AccountManagementModal />
+      <AccountManagementModal onNavigateToAccount={() => handleTabChange('account')} />
     </div>
   );
 }

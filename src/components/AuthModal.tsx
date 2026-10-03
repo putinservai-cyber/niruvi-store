@@ -17,8 +17,10 @@ import {
   AlertCircle,
   CheckCircle2,
   Check,
+  Terminal,
 } from 'lucide-react';
 import { NiruviLogo } from './NiruviLogo';
+import { OAuthDiagnosticsModal } from './OAuthDiagnosticsModal';
 
 type AuthTabMode = 'signin' | 'register' | 'reset';
 
@@ -85,6 +87,8 @@ export const AuthModal: React.FC = () => {
     registerWithCredentials,
     resetPassword,
     checkUsernameAvailability,
+    authCallbackError,
+    clearAuthCallbackError,
   } = useAuth();
 
   const [mode, setMode] = useState<AuthTabMode>('signin');
@@ -93,6 +97,14 @@ export const AuthModal: React.FC = () => {
   >(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [resetSuccessMessage, setResetSuccessMessage] = useState<string | null>(null);
+  const [registrationConfirmation, setRegistrationConfirmation] = useState<string | null>(null);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
+
+  useEffect(() => {
+    if (authCallbackError) {
+      setFormError(authCallbackError);
+    }
+  }, [authCallbackError]);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -310,13 +322,16 @@ export const AuthModal: React.FC = () => {
     setLoadingAction('credentials');
     try {
       if (mode === 'register') {
-        await registerWithCredentials(
+        const regRes = await registerWithCredentials(
           email.trim(),
           password,
           username.trim(),
           displayName.trim(),
           turnstileToken
         );
+        if (regRes?.requiresConfirmation) {
+          setRegistrationConfirmation(email.trim());
+        }
       } else {
         await loginWithCredentials(email.trim(), password, turnstileToken);
       }
@@ -442,10 +457,25 @@ export const AuthModal: React.FC = () => {
         {formError && (
           <div
             role="alert"
-            className="p-3 rounded-lg bg-red-950/60 border border-red-800/70 text-red-200 text-xs flex items-start gap-2"
+            className="p-3 rounded-lg bg-red-950/60 border border-red-800/70 text-red-200 text-xs space-y-2"
           >
-            <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-            <span>{formError}</span>
+            <div className="flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+              <span>{formError}</span>
+            </div>
+            {(formError.includes('403') ||
+              formError.includes('redirect') ||
+              formError.includes('configured') ||
+              formError.includes('Google')) && (
+              <button
+                type="button"
+                onClick={() => setShowDiagnostics(true)}
+                className="text-[11px] text-red-300 hover:text-white underline flex items-center gap-1 cursor-pointer font-medium"
+              >
+                <Terminal className="w-3.5 h-3.5" />
+                <span>View OAuth &amp; Redirect Diagnostics</span>
+              </button>
+            )}
           </div>
         )}
 
@@ -459,7 +489,33 @@ export const AuthModal: React.FC = () => {
           </div>
         )}
 
-        {mode === 'reset' ? (
+        {registrationConfirmation ? (
+          <div className="text-center py-6 space-y-4">
+            <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+            <div className="space-y-1.5">
+              <h3 className="text-base font-semibold text-white">
+                Check your email to confirm your account
+              </h3>
+              <p className="text-xs text-neutral-300 max-w-sm mx-auto leading-relaxed">
+                We sent a verification link to{' '}
+                <span className="font-semibold text-white">{registrationConfirmation}</span>.
+                Please click the link in the email to activate your Niruvi account before signing in.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setRegistrationConfirmation(null);
+                switchMode('signin');
+              }}
+              className="w-full py-2.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl text-xs font-semibold transition cursor-pointer"
+            >
+              Proceed to Sign In
+            </button>
+          </div>
+        ) : mode === 'reset' ? (
           <form onSubmit={handleResetSubmit} noValidate className="space-y-4">
             <p className="text-xs text-neutral-400 leading-relaxed">
               Enter your account email address to receive a password reset link.
@@ -875,8 +931,24 @@ export const AuthModal: React.FC = () => {
                 )}
               </button>
             </div>
+
+            <div className="pt-2 text-center">
+              <button
+                type="button"
+                onClick={() => setShowDiagnostics(true)}
+                className="text-[11px] text-neutral-500 hover:text-neutral-300 flex items-center justify-center gap-1.5 mx-auto transition cursor-pointer"
+              >
+                <Terminal className="w-3 h-3 text-neutral-400" />
+                <span>OAuth &amp; Redirect Diagnostics</span>
+              </button>
+            </div>
           </>
         )}
+
+        <OAuthDiagnosticsModal
+          isOpen={showDiagnostics}
+          onClose={() => setShowDiagnostics(false)}
+        />
       </div>
     </ModalShell>
   );

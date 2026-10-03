@@ -19,6 +19,7 @@ import {
   FileText,
   Clock,
   Send,
+  ExternalLink,
 } from 'lucide-react';
 
 export interface DeveloperDraftApplication {
@@ -71,7 +72,13 @@ export function saveDeveloperApplications(
   }
 }
 
-export const AccountManagementModal: React.FC = () => {
+interface AccountManagementModalProps {
+  onNavigateToAccount?: () => void;
+}
+
+export const AccountManagementModal: React.FC<AccountManagementModalProps> = ({
+  onNavigateToAccount,
+}) => {
   const {
     user,
     developerProfile,
@@ -337,6 +344,21 @@ export const AccountManagementModal: React.FC = () => {
           className="text-neutral-400 hover:text-white p-1.5 rounded-lg hover:bg-neutral-900 transition cursor-pointer"
         >
           <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="px-5 py-2.5 bg-cyan-950/40 border-b border-cyan-800/40 flex items-center justify-between text-xs shrink-0">
+        <span className="text-cyan-300 font-medium">Looking for full account dashboard & release tools?</span>
+        <button
+          type="button"
+          onClick={() => {
+            closeAccountModal();
+            if (onNavigateToAccount) onNavigateToAccount();
+          }}
+          className="text-cyan-400 hover:text-cyan-300 underline font-semibold flex items-center gap-1 cursor-pointer"
+        >
+          Open Account Dashboard
+          <ExternalLink className="w-3 h-3" />
         </button>
       </div>
 

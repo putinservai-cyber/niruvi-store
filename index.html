@@ -14,6 +14,32 @@
       content="default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://apis.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https:; frame-src 'self' https://www.youtube-nocookie.com https://challenges.cloudflare.com https://*.firebaseapp.com https://accounts.google.com; object-src 'none'; base-uri 'self';"
     />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <script>
+      // Graceful WebGPU safeguard: ensures requestAdapter() resolves to null without uncaught exceptions on unaccelerated/VM environments
+      (function() {
+        try {
+          if (typeof window !== 'undefined' && 'navigator' in window && navigator.gpu) {
+            var origReq = navigator.gpu.requestAdapter;
+            if (typeof origReq === 'function') {
+              navigator.gpu.requestAdapter = function(options) {
+                try {
+                  var p = origReq.call(navigator.gpu, options);
+                  if (p && typeof p.then === 'function') {
+                    return p.catch(function(err) {
+                      console.warn('[WebGPU] Hardware adapter unavailable, falling back gracefully:', err && err.message ? err.message : err);
+                      return null;
+                    });
+                  }
+                  return Promise.resolve(null);
+                } catch (e) {
+                  return Promise.resolve(null);
+                }
+              };
+            }
+          }
+        } catch (_) {}
+      })();
+    </script>
     <title>Niruvi Store — Verified Linux AppImage Marketplace</title>
     <meta
       name="description"

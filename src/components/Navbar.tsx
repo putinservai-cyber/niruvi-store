@@ -11,12 +11,23 @@ import {
   Sun,
   Moon,
   Heart,
+  Package,
+  Building2,
 } from 'lucide-react';
 import { NiruviLogo } from './NiruviLogo';
 import { useAuth } from '../context/AuthContext';
 import { DEVELOPER_NAME } from '../config/site';
 
-export type NavTab = 'browse' | 'verifier' | 'library' | 'submit' | 'donate' | 'admin';
+export type NavTab =
+  | 'browse'
+  | 'verifier'
+  | 'library'
+  | 'submit'
+  | 'donate'
+  | 'admin'
+  | 'account'
+  | 'publisher'
+  | 'moderation';
 
 interface NavbarProps {
   searchQuery: string;
@@ -297,18 +308,47 @@ export const Navbar: React.FC<NavbarProps> = ({
                         @{user.username}
                       </p>
                     </div>
-                    <div className="p-1">
+                    <div className="p-1 space-y-0.5">
                       <button
                         type="button"
                         onClick={() => {
                           setUserMenuOpen(false);
-                          openAccountModal();
+                          onTabChange('account');
                         }}
                         className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-neutral-300 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer"
                       >
-                        <User className="w-3.5 h-3.5" />
-                        <span>Account Settings</span>
+                        <User className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Account Dashboard</span>
                       </button>
+
+                      {(user.role === 'DEVELOPER' || user.role === 'ADMIN' || user.role === 'MODERATOR') && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setUserMenuOpen(false);
+                            onTabChange('publisher');
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-neutral-300 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer"
+                        >
+                          <Package className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>Publisher Dashboard</span>
+                        </button>
+                      )}
+
+                      {(user.role === 'ADMIN' || user.role === 'MODERATOR') && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setUserMenuOpen(false);
+                            onTabChange('admin');
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-neutral-300 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+                          <span>Moderation Console</span>
+                        </button>
+                      )}
+
                       <button
                         type="button"
                         onClick={() => {
