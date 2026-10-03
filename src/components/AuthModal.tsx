@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { NiruviLogo } from './NiruviLogo';
 import { OAuthDiagnosticsModal } from './OAuthDiagnosticsModal';
+import { AuthDiagnostics } from './AuthDiagnostics';
 
 type AuthTabMode = 'signin' | 'register' | 'reset';
 
@@ -836,6 +837,9 @@ export const AuthModal: React.FC = () => {
               </span>
               <div className="border-t border-neutral-800 w-full" />
             </div>
+
+            {/* In-Flow Auth & OAuth Diagnostics for verifying callback & redirect URLs */}
+            <AuthDiagnostics className="my-1.5" />
 
             {/* OAuth Providers: Google, GitHub, GitLab */}
             <div className="space-y-2">

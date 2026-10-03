@@ -9,6 +9,7 @@ import {
   deleteAppReview,
   setLibraryUpdateNotification,
   getLibraryNotificationPrefs,
+  setSupabaseClientForTesting,
 } from '../src/lib/supabase';
 import {
   sanitizeText,
@@ -224,6 +225,7 @@ describe('Cloudflare Worker Auth Security & Session Hardening', () => {
   });
 
   it('enforces Phase 3 1-review-per-user-per-app upsert, own/staff deletion, and library update notifications', async () => {
+    setSupabaseClientForTesting(null);
     // 1. User creates a review for Audacity
     const created = await upsertAppReview({
       appSlug: 'audacity',

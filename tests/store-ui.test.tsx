@@ -371,6 +371,9 @@ describe('Niruvi Store — Community Submission (/submit), Worker API Merge & Ba
     fireEvent.click(signInNavButtons[0]);
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByTestId('auth-diagnostics-component')).toBeInTheDocument();
+    expect(screen.getByText(/Auth & OAuth Diagnostics/i)).toBeInTheDocument();
+    expect(screen.getByText(/\/auth\/callback/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Continue with GitHub/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Continue with Google/i })).toBeInTheDocument();
     expect(screen.getByText(/Cloudflare Turnstile Bot Protection/i)).toBeInTheDocument();
