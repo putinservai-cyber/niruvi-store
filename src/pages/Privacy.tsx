@@ -258,10 +258,10 @@ export const Privacy: React.FC<PrivacyPageProps> = ({
         )}
       </section>
 
-      {/* Contact */}
-      <section aria-labelledby="privacy-contact" className="space-y-2 border-t border-neutral-800 pt-6">
+      {/* Contact & Grievance Redressal */}
+      <section aria-labelledby="privacy-contact" className="space-y-3 border-t border-neutral-800 pt-6">
         <h2 id="privacy-contact" className="text-xl font-bold text-white">
-          4. Contact &amp; Data Protection Inquiries
+          4. Contact, Data Protection Inquiries &amp; Grievance Officer
         </h2>
         <p className="text-sm text-neutral-300 leading-relaxed">
           For any privacy questions, data subject requests, or security disclosures, please contact
@@ -280,6 +280,9 @@ export const Privacy: React.FC<PrivacyPageProps> = ({
             {SUPPORT_EMAIL}
           </a>
           .
+        </p>
+        <p className="text-sm text-neutral-300 leading-relaxed">
+          <strong>Resident Grievance Officer (India Compliance):</strong> In accordance with the Indian Information Technology Act, 2000 and applicable intermediary rules, inquiries and privacy grievances directed to the Grievance Officer ({DEVELOPER_NAME}) may be submitted to <a href={`mailto:${SUPPORT_EMAIL}`} className="underline text-emerald-400 hover:text-emerald-300 font-mono">{SUPPORT_EMAIL}</a>. Grievances are acknowledged within 24 hours and addressed within statutory timelines.
         </p>
       </section>
     </article>

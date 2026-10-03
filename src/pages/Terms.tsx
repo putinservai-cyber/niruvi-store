@@ -103,12 +103,85 @@ export const Terms: React.FC<TermsPageProps> = ({ onBackToStore }) => {
         </p>
       </section>
 
-      <section aria-labelledby="terms-law" className="space-y-2 border-t border-neutral-800 pt-6">
-        <h2 id="terms-law" className="text-xl font-bold text-white">
-          5. Contact &amp; Support
+      <section aria-labelledby="terms-it-rules" className="space-y-4 border-t border-neutral-800 pt-6">
+        <h2 id="terms-it-rules" className="text-xl font-bold text-white flex items-center gap-2">
+          <ShieldAlert className="w-5 h-5 text-sky-400" aria-hidden="true" />
+          <span>5. Acceptable Use, Prohibited Content &amp; Indian Information Technology Rules</span>
         </h2>
         <p className="text-sm text-neutral-300 leading-relaxed">
-          Questions, catalog corrections, or takedown requests may be sent to{' '}
+          In compliance with applicable laws, including the <strong>Indian Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules</strong> and platform Terms of Service, users are strictly prohibited from hosting, uploading, modifying, publishing, transmitting, storing, updating, or sharing any content, software metadata, reviews, screenshots, or media that:
+        </p>
+        <ul className="list-disc pl-5 space-y-2 text-sm text-neutral-300 leading-relaxed">
+          <li>
+            <strong>Deceptive Synthetic Media &amp; Deepfakes:</strong> Includes non-consensual altered images, fake videos, or synthetic audio intended to mislead, deceive regarding its origin, or impersonate any person.
+          </li>
+          <li>
+            <strong>Unlawful, Defamatory, or Obscene Content:</strong> Is defamatory, obscene, pornographic, pedophilic, invasive of another&apos;s bodily privacy, insulting or harassing on the basis of gender, racially or ethnically objectionable, or encouraging money laundering or gambling.
+          </li>
+          <li>
+            <strong>Harm to Minors:</strong> Is harmful to child safety or exploitative of minors in any manner.
+          </li>
+          <li>
+            <strong>Malicious Software &amp; Exploits:</strong> Contains software viruses, unauthorized credential-scraping utilities, botnets, keyloggers, or any computer code designed to interrupt, destroy, or limit the functionality of computer resources.
+          </li>
+          <li>
+            <strong>Intellectual Property Infringement:</strong> Infringes any patent, trademark, copyright, trade secret, or other proprietary rights without authorization.
+          </li>
+          <li>
+            <strong>Threats to Sovereignty &amp; Public Order:</strong> Threatens the unity, integrity, defense, security, or sovereignty of India, friendly relations with foreign states, or public order.
+          </li>
+        </ul>
+        <p className="text-sm text-neutral-300 leading-relaxed">
+          <strong>Enforcement &amp; Account Actions:</strong> If you violate these rules, we may issue an official warning, remove or disable the offending content, suspend or permanently terminate your account, and take appropriate legal or regulatory reporting action.
+        </p>
+      </section>
+
+      <section aria-labelledby="terms-parents-children" className="space-y-3 border-t border-neutral-800 pt-6">
+        <h2 id="terms-parents-children" className="text-xl font-bold text-white">
+          6. Information for Parents, Guardians, and Children
+        </h2>
+        <p className="text-sm text-neutral-300 leading-relaxed">
+          Niruvi Store is dedicated to providing a secure software discovery experience. If you are a child or minor accessing this directory under an account managed by a parent or legal guardian, please review these terms with your parent or guardian before downloading packages or participating in community reviews.
+        </p>
+        <p className="text-sm text-neutral-300 leading-relaxed">
+          Parents and guardians who manage or supervise a child&apos;s account are encouraged to discuss safe software verification practices (such as verifying SHA-256 digests and running software from verified publishers only) and reach out to our support team if they have any questions or concern regarding content safety.
+        </p>
+      </section>
+
+      <section aria-labelledby="terms-grievance" className="space-y-3 border-t border-neutral-800 pt-6">
+        <h2 id="terms-grievance" className="text-xl font-bold text-white">
+          7. Grievance Redressal &amp; Designated Grievance Officer (India Compliance)
+        </h2>
+        <p className="text-sm text-neutral-300 leading-relaxed">
+          In accordance with the Information Technology Act, 2000 and Rule 3(2) of the Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, the contact details of the designated <strong>Grievance Officer</strong> for Niruvi Store are provided below:
+        </p>
+        <div className="p-4 rounded-xl bg-neutral-900 border border-neutral-800 space-y-1.5 text-xs text-neutral-300">
+          <div><strong className="text-white">Designation:</strong> Resident Grievance Officer</div>
+          <div><strong className="text-white">Officer Name:</strong> {DEVELOPER_NAME}</div>
+          <div>
+            <strong className="text-white">Email:</strong>{' '}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="underline text-emerald-400 hover:text-emerald-300 font-mono">
+              {SUPPORT_EMAIL}
+            </a>
+          </div>
+          <div>
+            <strong className="text-white">Alternate Contact:</strong>{' '}
+            <a href={`mailto:${CONTACT_EMAIL}`} className="underline text-sky-400 hover:text-sky-300 font-mono">
+              {CONTACT_EMAIL}
+            </a>
+          </div>
+          <div className="pt-1 text-neutral-400">
+            Complaints or takedown requests are acknowledged within 24 hours and addressed within 15 days (or within 24–72 hours for urgent privacy or unauthorized impersonation notices).
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="terms-law" className="space-y-2 border-t border-neutral-800 pt-6">
+        <h2 id="terms-law" className="text-xl font-bold text-white">
+          8. Contact &amp; General Inquiries
+        </h2>
+        <p className="text-sm text-neutral-300 leading-relaxed">
+          Questions, catalog corrections, or general feedback may be sent to{' '}
           <strong>{DEVELOPER_NAME}</strong> at{' '}
           <a
             href={`mailto:${CONTACT_EMAIL}`}
