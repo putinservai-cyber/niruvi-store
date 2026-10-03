@@ -307,7 +307,7 @@
       "aarch64": "https://github.com/VSCodium/vscodium/releases/download/1.96.2.25015/VSCodium-1.96.2.25015.glibc2.28-arm64.AppImage"
     },
     "iconSlug": "vscodium",
-    "icon": "/icons/vscodium.png",
+    "icon": "/icons/vscodium.svg",
     "brandColor": "#2F80ED",
     "features": [
       "Zero telemetry, tracking, or background analytics",
@@ -2530,6 +2530,63 @@
     ]
   },
   {
+    "id": "agentglass",
+    "name": "agentglass",
+    "tagline": "Every AI coding agent on your machine, on one screen — live cost, tokens and tool calls across every provid...",
+    "description": "Every AI coding agent on your machine, on one screen — live cost, tokens and tool calls across every provider, and a hold on anything dangerous until you say go.",
+    "category": "Development",
+    "simplifiedCategory": "Development",
+    "version": "Version unknown",
+    "releaseDate": "",
+    "size": "",
+    "architectures": [
+      "x86_64"
+    ],
+    "formats": [
+      "AppImage"
+    ],
+    "license": "MIT",
+    "licenseCategory": "Permissive",
+    "publisher": {
+      "name": "SirAllap",
+      "website": "https://github.com/SirAllap/agentglass",
+      "verified": false,
+      "github": "https://github.com/SirAllap/agentglass"
+    },
+    "sha256": "",
+    "downloadUrl": "https://github.com/SirAllap/agentglass/releases",
+    "downloadMap": {
+      "x86_64": "https://github.com/SirAllap/agentglass/releases"
+    },
+    "iconSlug": "agentglass",
+    "icon": "https://appimage.github.io/database/agentglass/icons/512x512/agentglass.png",
+    "homepageUrl": "https://github.com/SirAllap/agentglass",
+    "sourceUrl": "https://github.com/SirAllap/agentglass",
+    "repositoryUrl": "https://github.com/SirAllap/agentglass",
+    "releasesUrl": "https://github.com/SirAllap/agentglass/releases",
+    "githubRepo": "SirAllap/agentglass",
+    "sourceType": "Official",
+    "trustTier": "Unverified Community",
+    "officialStatus": false,
+    "hasDirectAppImageUrl": false,
+    "hasVerifiedSha256": false,
+    "hiddenFromMainListing": true,
+    "moderationFlag": "unverified_upstream",
+    "tags": [
+      "development"
+    ],
+    "featured": false,
+    "downloadsCount": 0,
+    "rating": 0,
+    "versionHistory": [],
+    "screenshots": [
+      {
+        "url": "https://appimage.github.io/database/agentglass/screenshot.png",
+        "alt": "agentglass screenshot 1"
+      }
+    ]
+  },
+  {
     "id": "agentlauncher",
     "name": "AgentLauncher",
     "tagline": "Configure and run existing coding-agent CLIs from a desktop app.",
@@ -2865,63 +2922,6 @@
       {
         "url": "https://appimage.github.io/database/Agora/screenshot.png",
         "alt": "Agora screenshot 1"
-      }
-    ]
-  },
-  {
-    "id": "agro",
-    "name": "Agro",
-    "tagline": "",
-    "description": "",
-    "category": "System/Utilities",
-    "simplifiedCategory": "System/Utilities",
-    "version": "Version unknown",
-    "releaseDate": "",
-    "size": "",
-    "architectures": [
-      "x86_64"
-    ],
-    "formats": [
-      "AppImage"
-    ],
-    "license": "GPL-3.0",
-    "licenseCategory": "Open Source",
-    "publisher": {
-      "name": "Onion99",
-      "website": "https://github.com/Onion99/Agro",
-      "verified": false,
-      "github": "https://github.com/Onion99/Agro"
-    },
-    "sha256": "",
-    "downloadUrl": "https://github.com/Onion99/Agro/releases",
-    "downloadMap": {
-      "x86_64": "https://github.com/Onion99/Agro/releases"
-    },
-    "iconSlug": "agro",
-    "icon": "https://appimage.github.io/database/Agro/icons/512x512/Agro.png",
-    "homepageUrl": "https://github.com/Onion99/Agro",
-    "sourceUrl": "https://github.com/Onion99/Agro",
-    "repositoryUrl": "https://github.com/Onion99/Agro",
-    "releasesUrl": "https://github.com/Onion99/Agro/releases",
-    "githubRepo": "Onion99/Agro",
-    "sourceType": "Official",
-    "trustTier": "Unverified Community",
-    "officialStatus": false,
-    "hasDirectAppImageUrl": false,
-    "hasVerifiedSha256": false,
-    "hiddenFromMainListing": true,
-    "moderationFlag": "unverified_upstream",
-    "tags": [
-      "utility"
-    ],
-    "featured": false,
-    "downloadsCount": 0,
-    "rating": 0,
-    "versionHistory": [],
-    "screenshots": [
-      {
-        "url": "https://appimage.github.io/database/Agro/screenshot.png",
-        "alt": "Agro screenshot 1"
       }
     ]
   }

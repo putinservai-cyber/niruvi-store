@@ -70,10 +70,22 @@ function replaceHeadMetadata(
 
   let updated = html
     .replace(/<link\s+rel="stylesheet"\s+crossorigin\s+/gi, '<link rel="stylesheet" ')
-    .replace(/href="\.\/favicon\.ico"/g, `href="${BASE_PATH}favicon.ico"`)
-    .replace(/href="\.\/favicon\.png"/g, `href="${BASE_PATH}favicon.png"`)
-    .replace(/href="\.\/apple-touch-icon\.png"/g, `href="${BASE_PATH}apple-touch-icon.png"`)
-    .replace(/href="\.\/manifest\.json"/g, `href="${BASE_PATH}manifest.json"`)
+    .replace(
+      /<link\s+rel="icon"\s+type="image\/x-icon"\s+href="[^"]*"\s*\/?>/i,
+      `<link rel="icon" type="image/x-icon" href="${BASE_PATH}favicon.ico" />`
+    )
+    .replace(
+      /<link\s+rel="icon"\s+type="image\/png"\s+sizes="64x64"\s+href="[^"]*"\s*\/?>/i,
+      `<link rel="icon" type="image/png" sizes="64x64" href="${BASE_PATH}favicon.png" />`
+    )
+    .replace(
+      /<link\s+rel="apple-touch-icon"\s+sizes="180x180"\s+href="[^"]*"\s*\/?>/i,
+      `<link rel="apple-touch-icon" sizes="180x180" href="${BASE_PATH}apple-touch-icon.png" />`
+    )
+    .replace(
+      /<link\s+rel="manifest"\s+href="[^"]*"\s*\/?>/i,
+      `<link rel="manifest" href="${BASE_PATH}manifest.json" />`
+    )
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${safeTitle}</title>`)
     .replace(
       /<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i,

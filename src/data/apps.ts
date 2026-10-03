@@ -2,25 +2,25 @@ import { AppMetadata, Category } from '../types';
 import generatedApps from './generated-catalog.json';
 
 export const APPS_CATALOG: AppMetadata[] = generatedApps as unknown as AppMetadata[];
-export const TOTAL_CATALOG_COUNT = 2790;
-export const APPIMAGEHUB_FEED_COUNT = 2785;
+export const TOTAL_CATALOG_COUNT = 2911;
+export const APPIMAGEHUB_FEED_COUNT = 2906;
 export const VERIFIED_DIRECT_CATALOG_COUNT = 15;
-export const HIDDEN_UNVERIFIED_CATALOG_COUNT = 2775;
+export const HIDDEN_UNVERIFIED_CATALOG_COUNT = 2896;
 export const CATALOG_CLEANUP_REPORT = {
-  "generatedAt": "2026-10-02",
-  "totalCatalogEntries": 2790,
-  "appImageHubFeedEntries": 2785,
+  "generatedAt": "2026-10-03",
+  "totalCatalogEntries": 2911,
+  "appImageHubFeedEntries": 2906,
   "curatedAppJsonFiles": 15,
   "mainListingEligibleCount": 15,
-  "hiddenFromMainListingCount": 2775,
+  "hiddenFromMainListingCount": 2896,
   "affectedCounts": {
-    "lackingDirectAppImageUrl": 2774,
-    "lackingVerifiedSha256": 2775,
-    "lackingBothDirectUrlAndSha256": 2774,
-    "unknownVersion": 2775,
-    "emptyDescription": 309,
-    "emptyLicense": 1048,
-    "emptySize": 2775,
+    "lackingDirectAppImageUrl": 2895,
+    "lackingVerifiedSha256": 2896,
+    "lackingBothDirectUrlAndSha256": 2895,
+    "unknownVersion": 2896,
+    "emptyDescription": 319,
+    "emptyLicense": 1076,
+    "emptySize": 2896,
     "policyFlaggedCount": 1
   },
   "policyFlaggedEntries": [

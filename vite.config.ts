@@ -80,6 +80,14 @@ export default defineConfig(({ command }) => ({
           next();
         });
       },
+      configurePreviewServer(server) {
+        server.middlewares.use((req, _res, next) => {
+          if (req.url && (req.url === '/niruvi-store' || req.url.startsWith('/niruvi-store/'))) {
+            req.url = req.url.slice('/niruvi-store'.length) || '/';
+          }
+          next();
+        });
+      },
     },
   ],
   build: {

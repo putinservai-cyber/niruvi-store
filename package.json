@@ -10,6 +10,7 @@
   },
   "scripts": {
     "dev": "vite",
+    "start": "tsx server.ts",
     "validate:catalog": "tsx scripts/validate-catalog.ts && tsx scripts/validate-firestore-rules.ts",
     "validate:rules": "tsx scripts/validate-firestore-rules.ts",
     "generate:catalog": "tsx scripts/generate-catalog.ts",
