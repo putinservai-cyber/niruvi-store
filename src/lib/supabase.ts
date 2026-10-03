@@ -280,11 +280,14 @@ export function getOAuthDiagnosticsInfo(): OAuthDiagnosticsReport {
     clientOrigin: origin,
     clientCallbackUrl,
     expectedGoogleCloudAuthorizedRedirectUri: expectedGoogleCloudRedirect,
-    expectedSupabaseRedirectUrls: [
-      'https://niruvi-store.runs-on.dev/auth/callback',
-      'http://localhost:3000/auth/callback',
-      clientCallbackUrl,
-    ],
+    expectedSupabaseRedirectUrls: Array.from(
+      new Set([
+        'https://niruvi-store.runs-on.dev/auth/callback',
+        'http://localhost:3000/auth/callback',
+        'https://ais-dev-6sj7a5cnnuxlayn7qsnzns-213626740267.asia-southeast1.run.app/auth/callback',
+        clientCallbackUrl,
+      ])
+    ),
     googleCloudDirectClientMismatchWarning:
       "CRITICAL: In Google Cloud Console (APIs & Services > Credentials > OAuth 2.0 Client), 'Authorized redirect URIs' MUST be set to the Supabase backend URL (" +
       expectedGoogleCloudRedirect +
