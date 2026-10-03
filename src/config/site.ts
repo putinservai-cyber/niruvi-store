@@ -82,6 +82,8 @@ const rawApiBaseUrl = (
 
 export const API_BASE_URL = /\.supabase\.co(\/|$)/i.test(rawApiBaseUrl) ? '' : rawApiBaseUrl;
 
+export const HAS_API_BACKEND = Boolean(API_BASE_URL);
+
 export const TURNSTILE_SITE_KEY = (
   (metaEnv && metaEnv.VITE_TURNSTILE_SITE_KEY) ||
   (typeof process !== 'undefined' && process.env && process.env.VITE_TURNSTILE_SITE_KEY) ||

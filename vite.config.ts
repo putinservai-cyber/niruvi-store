@@ -44,9 +44,38 @@ export default defineConfig(({ command }) => ({
     {
       name: 'niruvi-dev-subpath-compat',
       configureServer(server) {
-        server.middlewares.use((req, _res, next) => {
+        server.middlewares.use((req, res, next) => {
           if (req.url && (req.url === '/niruvi-store' || req.url.startsWith('/niruvi-store/'))) {
             req.url = req.url.slice('/niruvi-store'.length) || '/';
+          }
+          if (req.url?.startsWith('/api/health')) {
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ status: 'ok', runtime: 'vite-dev' }));
+            return;
+          }
+          if (req.url?.startsWith('/api/apps')) {
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ apps: [] }));
+            return;
+          }
+          if (req.url?.startsWith('/api/catalog')) {
+            try {
+              const catalogFile = path.resolve(process.cwd(), 'src/data/generated-catalog.json');
+              if (fs.existsSync(catalogFile)) {
+                const items = JSON.parse(fs.readFileSync(catalogFile, 'utf-8'));
+                res.setHeader('Content-Type', 'application/json');
+                res.end(
+                  JSON.stringify({
+                    items: items.slice(0, 48),
+                    total: items.length,
+                    page: 1,
+                    limit: 48,
+                    totalPages: Math.ceil(items.length / 48),
+                  })
+                );
+                return;
+              }
+            } catch {}
           }
           next();
         });

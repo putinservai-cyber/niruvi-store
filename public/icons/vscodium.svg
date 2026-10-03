@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="vscodium-grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2F80ED" />
+      <stop offset="100%" stop-color="#1B51A4" />
+    </linearGradient>
+    <linearGradient id="vscodium-grad2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA" />
+      <stop offset="100%" stop-color="#2F80ED" />
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="#0F172A" />
+  <g transform="translate(16, 16)">
+    <!-- VSCodium ribbon logo path -->
+    <path d="M72 4 L38 28 L14 16 L4 24 L26 48 L4 72 L14 80 L38 68 L72 92 L92 80 L92 16 Z" fill="url(#vscodium-grad1)" />
+    <path d="M72 4 L38 28 L72 48 L92 40 Z" fill="#2D72D2" opacity="0.9" />
+    <path d="M72 92 L38 68 L72 48 L92 56 Z" fill="#1E5BB3" opacity="0.9" />
+    <path d="M72 26 L42 48 L72 70 Z" fill="url(#vscodium-grad2)" />
+    <path d="M72 4 L92 16 L92 80 L72 92 Z" fill="#60A5FA" />
+  </g>
+</svg>

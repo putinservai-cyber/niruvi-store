@@ -42,7 +42,7 @@ import {
   EmptyErrorOfflineScreen,
 } from './components/EssentialScreens';
 import { updatePageSeo } from './utils/seo';
-import { withBaseUrl, stripBaseUrl, buildApiUrl } from './config/site';
+import { withBaseUrl, stripBaseUrl, buildApiUrl, HAS_API_BACKEND } from './config/site';
 import { fetchWithTimeoutAndRetry, isSlowOrOfflineConnection } from './utils/network';
 import { useAuth } from './context/AuthContext';
 import {
@@ -237,6 +237,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
     let cancelled = false;
 
     async function fetchWorkerApps() {
+      if (!HAS_API_BACKEND) return;
       try {
         const res = await fetchWithTimeoutAndRetry(buildApiUrl('/api/apps'), {
           timeoutMs: 6000,
@@ -386,58 +387,63 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
 
     setCatalogLoading(true);
     try {
-      const res = await fetch(buildApiUrl(`/api/catalog?${params.toString()}`));
-      const contentType = res.headers?.get?.('content-type') || '';
-      if (res.ok && contentType.includes('application/json')) {
-        const data = await res.json();
-        if (Array.isArray(data?.items) && typeof data?.total === 'number') {
-          const filteredItems = filterAndSortCatalog(data.items, {
-            q: searchQuery,
-            category: selectedCategory,
-            arch: selectedArch,
-            onlyVerified,
-            includeUnverifiedImports,
-            sortBy,
-          });
-          setServerPage({
-            key: queryKey,
-            items: filteredItems,
-            total: includeUnverifiedImports ? data.total : filteredItems.length,
-          });
-          setCatalogLoading(false);
-          return;
+      if (HAS_API_BACKEND) {
+        const res = await fetch(buildApiUrl(`/api/catalog?${params.toString()}`));
+        const contentType = res.headers?.get?.('content-type') || '';
+        if (res.ok && contentType.includes('application/json')) {
+          const data = await res.json();
+          if (Array.isArray(data?.items) && typeof data?.total === 'number') {
+            const filteredItems = filterAndSortCatalog(data.items, {
+              q: searchQuery,
+              category: selectedCategory,
+              arch: selectedArch,
+              onlyVerified,
+              includeUnverifiedImports,
+              sortBy,
+            });
+            setServerPage({
+              key: queryKey,
+              items: filteredItems,
+              total: includeUnverifiedImports ? data.total : filteredItems.length,
+            });
+            setCatalogLoading(false);
+            return;
+          }
         }
       }
 
       // Static preview / GitHub Pages fallback: load catalog.json respecting BASE_URL
       if (!fullCatalogCacheRef.current) {
-        const staticRes = await fetch(withBaseUrl('catalog.json'));
-        const staticType = staticRes.headers?.get?.('content-type') || '';
-        if (staticRes.ok && staticType.includes('application/json')) {
-          const allItems = await staticRes.json();
-          if (Array.isArray(allItems) && allItems.length > 0) {
-            fullCatalogCacheRef.current = allItems;
+        try {
+          const staticRes = await fetch(withBaseUrl('catalog.json'));
+          const staticType = staticRes.headers?.get?.('content-type') || '';
+          if (staticRes.ok && staticType.includes('application/json')) {
+            const allItems = await staticRes.json();
+            if (Array.isArray(allItems) && allItems.length > 0) {
+              fullCatalogCacheRef.current = allItems;
+            }
           }
+        } catch {
+          // If offline, use synchronous APPS_CATALOG below
         }
       }
 
-      if (fullCatalogCacheRef.current) {
-        const mergedFull = mergeCatalogWithCommunity(fullCatalogCacheRef.current, communityApps);
-        const filtered = filterAndSortCatalog(mergedFull, {
-          q: searchQuery,
-          category: selectedCategory,
-          arch: selectedArch,
-          onlyVerified,
-          includeUnverifiedImports,
-          sortBy,
-        });
-        const start = (currentPage - 1) * PAGE_SIZE;
-        setServerPage({
-          key: queryKey,
-          items: filtered.slice(start, start + PAGE_SIZE),
-          total: filtered.length,
-        });
-      }
+      const sourceCatalog = fullCatalogCacheRef.current || APPS_CATALOG;
+      const mergedFull = mergeCatalogWithCommunity(sourceCatalog, communityApps);
+      const filtered = filterAndSortCatalog(mergedFull, {
+        q: searchQuery,
+        category: selectedCategory,
+        arch: selectedArch,
+        onlyVerified,
+        includeUnverifiedImports,
+        sortBy,
+      });
+      const start = (currentPage - 1) * PAGE_SIZE;
+      setServerPage({
+        key: queryKey,
+        items: filtered.slice(start, start + PAGE_SIZE),
+        total: filtered.length,
+      });
     } catch {
       // Offline or test environment without network mock: rely on synchronous seed filter
     } finally {
@@ -601,15 +607,23 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
       ? 0
       : Math.min(totalMatchingApps, (currentPage - 1) * PAGE_SIZE + activePageItems.length);
 
-  // If deep-linked to an app ID not in Page 1 seed, fetch it from /api/catalog/:id
+  // If deep-linked to an app ID, check local catalog first, then fetch from /api/catalog/:id if backend is available
   useEffect(() => {
     if (initialRoute.appId && !selectedApp) {
-      fetch(buildApiUrl(`/api/catalog/${encodeURIComponent(initialRoute.appId)}`))
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          if (data?.app) setSelectedApp(data.app);
-        })
-        .catch(() => {});
+      const targetId = initialRoute.appId.toLowerCase();
+      const localMatch = APPS_CATALOG.find((a) => a.id.toLowerCase() === targetId);
+      if (localMatch) {
+        setSelectedApp(localMatch);
+        return;
+      }
+      if (HAS_API_BACKEND) {
+        fetch(buildApiUrl(`/api/catalog/${encodeURIComponent(initialRoute.appId)}`))
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            if (data?.app) setSelectedApp(data.app);
+          })
+          .catch(() => {});
+      }
     }
   }, [initialRoute.appId, selectedApp]);
 

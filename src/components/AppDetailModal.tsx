@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AppMetadata } from '../types';
 import { generateNiruviProtocolUrl } from '../data/apps';
-import { buildApiUrl } from '../config/site';
+import { buildApiUrl, HAS_API_BACKEND } from '../config/site';
 import { useAuth } from '../context/AuthContext';
 import {
   AppReviewRecord,
@@ -129,7 +129,7 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
         })
         .catch(() => {});
 
-      if ((!app.versionHistory || app.versionHistory.length === 0) && app.githubRepo) {
+      if (HAS_API_BACKEND && (!app.versionHistory || app.versionHistory.length === 0) && app.githubRepo) {
         let cancelled = false;
         setLoadingHistory(true);
         fetch(buildApiUrl(`/api/catalog/${encodeURIComponent(app.id)}`))
