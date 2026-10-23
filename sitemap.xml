@@ -178,6 +178,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/8b</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/abcarus</loc>
     
     <changefreq>weekly</changefreq>
@@ -209,6 +215,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/account-scraper</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ace-step_studio</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -250,6 +262,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/adt_studio</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/advanced_rest_client</loc>
     
     <changefreq>weekly</changefreq>
@@ -257,6 +275,18 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/adventshow</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/aegis</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/aeroftp</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -274,7 +304,25 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ag-repatch</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/agent_campus</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/agent_companion</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/agent_desktop</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -329,6 +377,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/aglaia</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/agnt</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -394,6 +448,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/aidogui_designer</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/aillio-ts</loc>
     
     <changefreq>weekly</changefreq>
@@ -449,6 +509,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/alienresurrectionrecompilation</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/alpaka_desktop</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -556,7 +622,31 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ani-gui</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ani2xcursor</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/animashooter</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/anime_cursor</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/animo</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -568,7 +658,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ankiminer</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/annimate</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/another</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -616,7 +718,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/aobana</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/apache_netbeans</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/aperant</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -665,6 +779,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/app_outlet</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/app-finance</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -754,6 +874,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ar-recomp</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/aranym</loc>
     
     <changefreq>weekly</changefreq>
@@ -838,6 +964,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/arroxy</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/arterm</loc>
     
     <changefreq>weekly</changefreq>
@@ -868,7 +1000,25 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/arwing</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/arwing_2</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/arynwood_mcp</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/asaps_new</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -922,6 +1072,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/astera</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/astonischika</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/astra</loc>
     
     <changefreq>weekly</changefreq>
@@ -935,6 +1097,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/astro_dwarf</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/astroburst</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -958,13 +1126,31 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/asyar</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/atcore</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/athas</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/athena</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/atomic_agent</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1000,6 +1186,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/audiobooklet</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/audiola</loc>
     
     <changefreq>weekly</changefreq>
@@ -1019,6 +1211,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/aurora_launcher</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/aurora_music</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1192,6 +1390,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/basesmall</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/basic_chess_endgames</loc>
     
     <changefreq>weekly</changefreq>
@@ -1217,6 +1421,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/battleship</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/bawkterm</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1259,6 +1469,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/beamscope</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/beandesk</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1378,6 +1594,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/bettersource2viewer</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/betteryandexmusic</loc>
     
     <changefreq>weekly</changefreq>
@@ -1462,6 +1684,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/biomanager</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/biowatch</loc>
     
     <changefreq>weekly</changefreq>
@@ -1480,7 +1708,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/birdman64</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/birds_kitchen</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/biscuit</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1528,6 +1768,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/bk_study_desk</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/black_chocobo</loc>
     
     <changefreq>weekly</changefreq>
@@ -1547,6 +1793,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/blakecoin</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/blanc</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1642,6 +1894,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/boar</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/board_game_star</loc>
     
     <changefreq>weekly</changefreq>
@@ -1673,6 +1931,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/bookmark-dlp</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/booloo</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1780,6 +2044,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/browseros</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/browservice</loc>
     
     <changefreq>weekly</changefreq>
@@ -1835,6 +2105,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/bulkurlopener</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/bunnychen-dailycost</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1978,12 +2254,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.runs-on.dev/app/cantata</loc>
-    
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://niruvi-store.runs-on.dev/app/canvastty</loc>
     
     <changefreq>weekly</changefreq>
@@ -1997,6 +2267,18 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/caprine</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/caprock</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/capture_studio</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2038,6 +2320,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/carthage</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/carvera_controller</loc>
     
     <changefreq>weekly</changefreq>
@@ -2057,6 +2345,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/castersoundboard</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/cat_a_shooter</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2098,7 +2392,25 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/cc_logins</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ccg_gateway</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/ceasta</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/celer</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2206,6 +2518,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/cherrytree</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/chess_opening_tool</loc>
     
     <changefreq>weekly</changefreq>
@@ -2218,6 +2536,24 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/chimera-agent</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/chip_hippo</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/chismoso</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/chobby</loc>
     
     <changefreq>weekly</changefreq>
@@ -2225,6 +2561,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/chonkcraft</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/choochootracker</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2320,6 +2662,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/claude_code_studio</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/claude_desktop</loc>
     
     <changefreq>weekly</changefreq>
@@ -2393,6 +2741,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/claudelens</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/claudget</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2500,7 +2854,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/clipaste</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/clipgrab</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/clipit</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2518,6 +2884,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/clippy_vision</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/clipr</loc>
     
     <changefreq>weekly</changefreq>
@@ -2525,6 +2897,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/clipshare</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/clipy</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2561,6 +2939,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/clownmdemu</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/clutch</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2620,7 +3004,31 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/codex-context-switch</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/codex-mobile-bridge</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/codync</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/coffer</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/coginebot</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2633,6 +3041,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/collie</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/colmap-openmvs-app</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2674,6 +3088,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/coloryourmodel</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/comfer_wallpaper</loc>
     
     <changefreq>weekly</changefreq>
@@ -2681,6 +3101,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/comic-reader</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/comic-strip-browser</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2717,6 +3143,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/composa</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/concrete</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2789,6 +3221,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/converter432hz</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/convt</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -2926,12 +3364,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.runs-on.dev/app/corsair-xeneon-edge</loc>
-    
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://niruvi-store.runs-on.dev/app/corsixth</loc>
     
     <changefreq>weekly</changefreq>
@@ -2945,6 +3377,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/corv-gcs</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/coxswain</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3040,6 +3478,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/croccospectrum</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/crocson</loc>
     
     <changefreq>weekly</changefreq>
@@ -3124,6 +3568,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ctass</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/cuba_studio</loc>
     
     <changefreq>weekly</changefreq>
@@ -3131,6 +3581,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/cubeshelf-launcher</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/cubiclecrew</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3214,6 +3670,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/cycletron</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/cycloidgen</loc>
     
     <changefreq>weekly</changefreq>
@@ -3232,6 +3694,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/dabstar</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/daggerfall-js-source</loc>
     
     <changefreq>weekly</changefreq>
@@ -3245,6 +3713,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/dana</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/darkslide</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3298,6 +3772,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/dataweave_studio</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/datcord</loc>
     
     <changefreq>weekly</changefreq>
@@ -3317,6 +3797,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/dawnlightsearch</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/dayapp</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3359,6 +3845,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/dbgate</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/dbi_backend</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3508,7 +4000,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/deepseekgui</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/deeptags</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/deepvibe</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3527,6 +4031,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/demonizer</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/dendro</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3556,6 +4066,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/deskport</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/desktop-memocash</loc>
     
     <changefreq>weekly</changefreq>
@@ -3568,7 +4084,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/desktop_browserbase</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/desktop_django_starter</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/desktop_pet_launcher</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3586,6 +4114,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/devcleaner</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/devdocs-desktop</loc>
     
     <changefreq>weekly</changefreq>
@@ -3593,6 +4127,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/devhub</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/deviload</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3640,6 +4180,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/dh-to-do</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/dhewm3</loc>
     
     <changefreq>weekly</changefreq>
@@ -3677,6 +4223,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/digitales_klassenzimmer</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/digup</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3796,6 +4348,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/dodaios</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/doggy_player</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/doka-site</loc>
     
     <changefreq>weekly</changefreq>
@@ -3814,7 +4378,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/domolens</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/doom-ascii</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/dopeiptv</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3898,7 +4474,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/dpro-agent</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/dragoman</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/dragonscrownpropc</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3928,6 +4516,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/drawx</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/dream</loc>
     
     <changefreq>weekly</changefreq>
@@ -3952,7 +4546,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ds5_dongle_oled_edition</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/dsd-neo</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/dsh_java_desktop</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -3965,6 +4571,18 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/dsh-codex-desktop</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/dsh-desktop</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/dspi_console</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4037,6 +4655,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/eagle_mode</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/eaon_desktop</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4126,13 +4750,31 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/edentext</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/edex-ui</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/edgeline</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/editor</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/editora</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4258,6 +4900,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/eleven</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/elixiroffice</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/elphyre-walletshell</loc>
     
     <changefreq>weekly</changefreq>
@@ -4300,7 +4954,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/emberr</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/emerald</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/emeraldwallet</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4378,6 +5044,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ente</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/enui</loc>
     
     <changefreq>weekly</changefreq>
@@ -4439,6 +5111,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/erscaffold</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/escouade</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4582,6 +5260,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/exilecompass</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/exilence_ce</loc>
     
     <changefreq>weekly</changefreq>
@@ -4607,6 +5291,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/extrema</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/extreme.infinitv</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4672,6 +5362,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/farmisfun</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/fastdownloader</loc>
     
     <changefreq>weekly</changefreq>
@@ -4691,6 +5387,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/fastqt</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/fastssh</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4733,6 +5435,24 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/ferdi</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ferdium</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ferriteweazle</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ferrumkix</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4786,6 +5506,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/filen</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/fileshows</loc>
     
     <changefreq>weekly</changefreq>
@@ -4799,6 +5525,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/filex</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/filey</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4882,6 +5614,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/fjord</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/fjordlauncher</loc>
     
     <changefreq>weekly</changefreq>
@@ -4936,6 +5674,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/flclash</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/fleet</loc>
     
     <changefreq>weekly</changefreq>
@@ -4949,6 +5693,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/flightgear-airports</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/flipperui</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4972,7 +5722,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/flota</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/flowscale_aios</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/flucto</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -4985,6 +5747,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/fluxer-world</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/flybudget</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5039,6 +5807,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/focuswriter</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/fofa_leak_search</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5110,6 +5884,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/frag</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/fraidycat</loc>
     
     <changefreq>weekly</changefreq>
@@ -5129,6 +5909,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/frameextractor</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/framewright</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5248,6 +6034,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/freevideo</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/freightfate</loc>
     
     <changefreq>weekly</changefreq>
@@ -5266,7 +6058,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/frink</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/friture</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/frog_pond</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5291,6 +6095,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/ftm</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/g9browseragent</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5344,7 +6154,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/gba_emulator</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/gdevelop</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/gdlauncher</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5363,6 +6185,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/geekdown</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/geekez.browser</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5423,6 +6251,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/geometrize</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/geometry_wars_retro_evolved_2_recompiled</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5530,6 +6364,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/git-gamble</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/gitbackup</loc>
     
     <changefreq>weekly</changefreq>
@@ -5584,6 +6424,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/gitswitch</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/gitteraqt</loc>
     
     <changefreq>weekly</changefreq>
@@ -5591,6 +6437,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/gitty</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/gitwand</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5692,6 +6544,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/gmaps-scraper-studio</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/gmodcontentinstaller</loc>
     
     <changefreq>weekly</changefreq>
@@ -5710,7 +6568,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/go2tv</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/goblintown</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/godmode_bot</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5723,6 +6593,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/godot_hub</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/godterm</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5752,6 +6628,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/goldendict-wikimedia-fix</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/gong</loc>
     
     <changefreq>weekly</changefreq>
@@ -5771,6 +6653,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/google-map-scraper</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/gorilla_wallet</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5801,6 +6689,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/gpt_image_2_skill</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/gpt_image_studio</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -5932,6 +6826,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/guidedreel</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/guiscrcpy</loc>
     
     <changefreq>weekly</changefreq>
@@ -6010,6 +6910,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/happyvibe</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/hard_corps_uprising_recompiled</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/hariona_launcher</loc>
     
     <changefreq>weekly</changefreq>
@@ -6028,6 +6940,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/hash-gui</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/hashcat.reactor</loc>
     
     <changefreq>weekly</changefreq>
@@ -6040,13 +6958,31 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/hashverifier</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/hastyheroes</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/hats</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/haven_desktop</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/hd_fpv_video_tool</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -6142,6 +7078,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/heroic</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/heronite</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/herta</loc>
     
     <changefreq>weekly</changefreq>
@@ -6172,7 +7120,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/hexomanager</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/hey-mail-client</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/hibiki</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -6197,6 +7157,18 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/hive</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/hiveory</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/hoard</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -6310,6 +7282,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/hyperion_browser</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/hyperionide</loc>
     
     <changefreq>weekly</changefreq>
@@ -6371,6 +7349,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/iceworks</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/idea_note</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -6520,6 +7504,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/inflowave</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/infra</loc>
     
     <changefreq>weekly</changefreq>
@@ -6539,6 +7529,18 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/inktag</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/inky</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/inlark</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -6623,6 +7625,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/invoice-generator</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/invoiso</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -6820,6 +7828,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/jeikcode</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/jellytoast</loc>
     
     <changefreq>weekly</changefreq>
@@ -6838,6 +7852,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/jetty</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/jexiftoolgui</loc>
     
     <changefreq>weekly</changefreq>
@@ -6851,6 +7871,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/jitsi-meet</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/jiv-881-synth</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -6898,6 +7924,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/joystick_mapper</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/jpegview</loc>
     
     <changefreq>weekly</changefreq>
@@ -6916,7 +7948,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/jsbudbraincaverescue</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/jsbudbraincompressor</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/jsbudbrainequalizer</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/jsbudbrainfinddblsorrenameit</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/jsbudbrainlaufwerkstest</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/jsbudbrainlimiter</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -6928,7 +7990,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/jsbudbrainsfxstudio</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/jsbudbrainsmarbles</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/jsbudbrainsoundeditor</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -6953,6 +8027,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/jscpumonitor</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/jsdevcleaner</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -7000,6 +8080,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/jsonquery_gui</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/jspicpuzzler</loc>
     
     <changefreq>weekly</changefreq>
@@ -7013,6 +8099,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/jsshowhardwareinfos</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/jssodoku</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -7049,6 +8141,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/k-lens</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/k10s</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -7115,6 +8213,24 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/kant</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/kanvaz</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/karasu</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/karui</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -7210,6 +8326,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/kerminal</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/kettleclient</loc>
     
     <changefreq>weekly</changefreq>
@@ -7217,6 +8339,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/kevedit</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/keyboard_lock</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -7283,6 +8411,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/kiibohd_configurator</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/kimaitray</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -7396,6 +8530,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/kodeida</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/konjugate</loc>
     
     <changefreq>weekly</changefreq>
@@ -7474,7 +8614,25 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/krypolybot</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/krytrader</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/ksnip</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/kubepit</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -7498,13 +8656,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/kudu</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/kun</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/kute</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/kwesi</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/kyaraben</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/kye</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -7589,6 +8771,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/lantern-control</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/lanyard</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -7792,6 +8980,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/libre_calculator</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/libre_panel</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/librecad</loc>
     
     <changefreq>weekly</changefreq>
@@ -7799,6 +8999,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/libredb_studio</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/librefastbootfirmwareflasher</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -7876,6 +9082,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/light_studio</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/light-git-client</loc>
     
     <changefreq>weekly</changefreq>
@@ -7901,6 +9113,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/limboo</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/limo_cad</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -7954,6 +9172,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/lion_ssh</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/listen.moe</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/listen1</loc>
     
     <changefreq>weekly</changefreq>
@@ -7967,6 +9197,18 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/liteide</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/lithic_uk</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/little_planet</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -8009,6 +9251,18 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/lnxngfmsdm</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/loaderly</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/locademy</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -8068,6 +9322,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/logdeck</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/loginized</loc>
     
     <changefreq>weekly</changefreq>
@@ -8122,6 +9382,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/lotti</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/lotun</loc>
     
     <changefreq>weekly</changefreq>
@@ -8140,7 +9406,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/lovr</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/lpub3d</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ltools</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -8176,6 +9454,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/lumabrowser</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/lumen</loc>
     
     <changefreq>weekly</changefreq>
@@ -8195,6 +9479,24 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/luminance-hdr</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/luminous</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/lumisync</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/lumiverse</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -8242,7 +9544,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/lwe</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/lx-music-desktop</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/lyceum</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -8254,7 +9568,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/lyra_music</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/m</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/m3u8_quicker</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -8386,6 +9712,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/manga_reader</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/mangabox</loc>
     
     <changefreq>weekly</changefreq>
@@ -8405,6 +9737,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/manta</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/manul</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -8488,6 +9826,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/markdown_cornell_notes</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/markion</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/markman</loc>
     
     <changefreq>weekly</changefreq>
@@ -8531,6 +9881,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/marvin</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/masame</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -8645,6 +10001,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/mcpx</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/mdez</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -8800,6 +10162,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/mepmail</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/meridian</loc>
     
     <changefreq>weekly</changefreq>
@@ -8848,6 +10216,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/meshtalk</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/meshtastic-android</loc>
     
     <changefreq>weekly</changefreq>
@@ -8873,6 +10247,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/metacubexd</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/metrik</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -8915,6 +10295,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/micropad</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/micser</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -9082,6 +10468,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/mise_browser</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/mixdog</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/mixi</loc>
     
     <changefreq>weekly</changefreq>
@@ -9179,6 +10577,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/moji</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/mojo_voice</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -9298,6 +10702,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/morphto</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/mosaic</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/motrix</loc>
     
     <changefreq>weekly</changefreq>
@@ -9346,6 +10762,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/mqttprobe</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/mqttx</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/mr.dclutterer</loc>
     
     <changefreq>weekly</changefreq>
@@ -9388,13 +10816,31 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/mttl_control</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/mudlet</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/multi_codex</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/multiclaude</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/multistream</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -9419,6 +10865,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/muse</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/muse_desktop</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -9473,6 +10925,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/muwire</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/muxics</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -9574,7 +11032,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/nagome</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/nam-editor</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/nanomuse</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -9658,6 +11128,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/neptune</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/nereussdr</loc>
     
     <changefreq>weekly</changefreq>
@@ -9719,6 +11195,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/neurodb</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/neurolingsce-qt</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -9815,6 +11297,18 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/niffler</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/night_drop</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/nillm</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -9934,6 +11428,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/nosce</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/nosqlbooster</loc>
     
     <changefreq>weekly</changefreq>
@@ -9959,6 +11459,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/notebooklm_for_windows</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/noteconnection</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -9995,6 +11501,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/notion_electron</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/nova_browser</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -10084,6 +11596,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/obim</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/observerlauncher</loc>
     
     <changefreq>weekly</changefreq>
@@ -10096,6 +11614,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ocpq</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/ocrmypdf</loc>
     
     <changefreq>weekly</changefreq>
@@ -10103,6 +11627,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/ocsstore</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/octa</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -10150,13 +11680,31 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/odytty</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/offline_search_engine</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ofx_raw_host</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/ogad</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ohmyhf</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -10216,6 +11764,30 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/omnicam</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/omnicross</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/omnio</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/omnipacker</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/omnyssh</loc>
     
     <changefreq>weekly</changefreq>
@@ -10223,6 +11795,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/omp_desktop</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/omp_gui</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -10408,6 +11986,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/openapplyr</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/openaudible</loc>
     
     <changefreq>weekly</changefreq>
@@ -10474,6 +12058,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/opendoctrines</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/opendrop_vj</loc>
     
     <changefreq>weekly</changefreq>
@@ -10499,6 +12089,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/openfnb58</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/opengeni</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -10582,7 +12178,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.runs-on.dev/app/openramodsdk</loc>
+    <loc>https://niruvi-store.runs-on.dev/app/openresearch</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -10607,6 +12203,18 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/openscreenplus</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/opensgolf</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/opensharkx11</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -10678,6 +12286,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/openwar3</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/openxjv</loc>
     
     <changefreq>weekly</changefreq>
@@ -10690,7 +12304,25 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/opsdeck</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/opstrellis</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/optees</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/optiburn</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -10703,6 +12335,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/orbitps2manager</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/orca-imboss</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -10739,6 +12377,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/oscar</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/oshot</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -10781,6 +12425,18 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/otis</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/otto</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ourprompt</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -10846,6 +12502,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/pace</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/packetsender</loc>
     
     <changefreq>weekly</changefreq>
@@ -10894,6 +12556,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/paint.c</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/paint.software</loc>
     
     <changefreq>weekly</changefreq>
@@ -10913,6 +12581,18 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/paletti</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/palot</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/panda_reader</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -11002,6 +12682,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/parakeet.cpp</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/parallel-code</loc>
     
     <changefreq>weekly</changefreq>
@@ -11009,6 +12695,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/parallelcoin</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/parcad</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -11176,6 +12868,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/pearguard</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/peekausage</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/peercoin</loc>
     
     <changefreq>weekly</changefreq>
@@ -11212,7 +12916,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/perastage</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/perl-executing-browser</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/permark</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -11242,7 +12958,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/pg_orbit</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/pgmodeler</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/pgnimbus</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -11284,6 +13012,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/photon_studio</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/photoname</loc>
     
     <changefreq>weekly</changefreq>
@@ -11309,6 +13043,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/photosbackup_desktop</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/photosuite</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -11356,6 +13096,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/pi-paper</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/pia</loc>
     
     <changefreq>weekly</changefreq>
@@ -11369,6 +13115,18 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/piclist</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/pico_store_lab</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/picocrypt</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -11434,6 +13192,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/pink_parquet</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/pinslip</loc>
     
     <changefreq>weekly</changefreq>
@@ -11453,6 +13217,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/pixsrt</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/pkg_sender</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -11506,6 +13276,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/player432hz-3.0</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/playhead</loc>
     
     <changefreq>weekly</changefreq>
@@ -11519,6 +13295,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/playsignage</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/playweld</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -11549,6 +13331,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/plexamp</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/plexo</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -11596,6 +13384,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/pocket_browser</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/pocketbook</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/pocketcasts_electron</loc>
     
     <changefreq>weekly</changefreq>
@@ -11627,6 +13427,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/poe_ladder</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/pokemon_showdown_pro</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -11686,6 +13492,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/pomodorolm</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/pomotroid</loc>
     
     <changefreq>weekly</changefreq>
@@ -11728,6 +13540,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/port587</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/portal</loc>
     
     <changefreq>weekly</changefreq>
@@ -11735,6 +13553,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/portbridge</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/portkeeper</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -11764,6 +13588,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/postman-gpui</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/postured</loc>
     
     <changefreq>weekly</changefreq>
@@ -11783,6 +13613,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/powerliminalsplayer</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/powerliminalsplayer-3.0</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -11878,6 +13714,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/prixumlauncher</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/procdepmonitor</loc>
     
     <changefreq>weekly</changefreq>
@@ -11956,7 +13798,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/propel</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/proquaere</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/protasovvpn</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -11986,12 +13840,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.runs-on.dev/app/prusacontrol</loc>
-    
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://niruvi-store.runs-on.dev/app/ps2-iso-batch-renamer</loc>
     
     <changefreq>weekly</changefreq>
@@ -12004,6 +13852,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ps5pcem</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/psf.guard</loc>
     
     <changefreq>weekly</changefreq>
@@ -12011,6 +13865,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/psi</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/psymp3</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -12058,6 +13918,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/pulsern</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/puppetry</loc>
     
     <changefreq>weekly</changefreq>
@@ -12082,6 +13948,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/puzzle_moppet</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/puzzle-moppet</loc>
     
     <changefreq>weekly</changefreq>
@@ -12094,7 +13966,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/pybient</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/pylinuxwheel</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/pyquark</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -12460,6 +14344,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/quickoutline</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/quickredis</loc>
     
     <changefreq>weekly</changefreq>
@@ -12496,6 +14386,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/qunica</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/quokkagit</loc>
     
     <changefreq>weekly</changefreq>
@@ -12515,6 +14411,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/qvault</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/qview</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -12610,6 +14512,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/raml_kql</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/rapidcmi5</loc>
     
     <changefreq>weekly</changefreq>
@@ -12617,6 +14525,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/rapidhls</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/rasgo_modular</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -12688,6 +14602,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/raw2film</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/rawtherapee</loc>
     
     <changefreq>weekly</changefreq>
@@ -12701,6 +14621,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/rbdl-toolkit</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/rclone_explorer</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -12725,6 +14651,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/realm_studio</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/rebase-git</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -12755,6 +14687,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/red_eclipse-development</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/red_labeling</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -12839,6 +14777,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/reshade</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/reso_tools</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -13030,6 +14974,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ritmo_music_tracker</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/rivet</loc>
     
     <changefreq>weekly</changefreq>
@@ -13072,6 +15022,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/robota</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/roboticsstudio</loc>
     
     <changefreq>weekly</changefreq>
@@ -13102,7 +15058,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/rollport</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/roloviewer</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/rombo</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -13127,6 +15095,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/routegen</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/rox</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -13210,6 +15184,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/rust_dicom_station</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/rustdesk</loc>
     
     <changefreq>weekly</changefreq>
@@ -13259,6 +15239,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/sage_appimage</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/sai</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -13324,6 +15310,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/sayso</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/sbe</loc>
     
     <changefreq>weekly</changefreq>
@@ -13355,6 +15347,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/scavengers</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/sceneforge</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -13444,6 +15442,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/screenmagnet</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/scribus</loc>
     
     <changefreq>weekly</changefreq>
@@ -13487,6 +15491,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/seafari</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/securevault</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -13696,6 +15706,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/shroudly</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/shufflestudy</loc>
     
     <changefreq>weekly</changefreq>
@@ -13727,6 +15743,18 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/sideswapclient</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/sidetone</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/sidplaywx</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -13822,6 +15850,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/simple_notes_desktop</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/simple-code-gui</loc>
     
     <changefreq>weekly</changefreq>
@@ -13858,7 +15892,25 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/simplenote</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/simplenotes</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/simpleos</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/simplevoiceover</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -13895,6 +15947,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/simulide</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/simutil</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -13948,7 +16006,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/sketchover</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/skilldeck</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/skiller</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -14026,6 +16096,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/sleek</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/slip.sound</loc>
     
     <changefreq>weekly</changefreq>
@@ -14039,6 +16115,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/slipstream_gui</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/sliver_gui</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -14063,6 +16145,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/smallbasic</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/smaragd</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -14122,6 +16210,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/sms_launcher</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/smtk2ssrf</loc>
     
     <changefreq>weekly</changefreq>
@@ -14129,6 +16223,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/smz3randomizer</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/snag</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -14278,6 +16378,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/source2viewer_-_d2pfx</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/sourcegit-sourcegit-scm</loc>
     
     <changefreq>weekly</changefreq>
@@ -14332,7 +16438,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/spectra_pdf</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/spectral</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/spectralfilmlut</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -14351,6 +16469,18 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/speedyloader</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/speek</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/spindle</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -14566,6 +16696,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/steam_manifest_downloader</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/steam-rom-manager</loc>
     
     <changefreq>weekly</changefreq>
@@ -14656,6 +16792,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/stmng</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/stockstalk</loc>
     
     <changefreq>weekly</changefreq>
@@ -14728,6 +16870,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/streambert</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/streamcapture2</loc>
     
     <changefreq>weekly</changefreq>
@@ -14795,6 +16943,18 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/stunt_car_remake</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/stunts_hd</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/styx</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -14897,6 +17057,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/sup</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/super_md</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -15034,6 +17200,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/synccrate</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/syncmyl2p</loc>
     
     <changefreq>weekly</changefreq>
@@ -15053,6 +17225,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/synfigstudio</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/syntaxtutor</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -15100,13 +17278,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/syspeek</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/systemd_pilot</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/t.viewer</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/tabchat</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/tablo_tools</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/tabularis</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -15124,7 +17326,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://niruvi-store.runs-on.dev/app/tagspaces-2797</loc>
+    <loc>https://niruvi-store.runs-on.dev/app/tagspaces-3228</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -15196,7 +17398,25 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/tatap</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/tauridium</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/taurvia</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/tauthy</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -15232,6 +17452,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/team-x</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/teamsql</loc>
     
     <changefreq>weekly</changefreq>
@@ -15256,6 +17482,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/tennoscope</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/termalime</loc>
     
     <changefreq>weekly</changefreq>
@@ -15263,6 +17495,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/termic</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/termimus-ssh</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -15292,6 +17530,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/termos</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/tesla_coil_calculator</loc>
     
     <changefreq>weekly</changefreq>
@@ -15299,6 +17543,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/teslacam_browser</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/teslacam_viewer</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -15460,6 +17710,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/tideflow</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/tikkocampus</loc>
     
     <changefreq>weekly</changefreq>
@@ -15514,6 +17770,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/tio-gui</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/tipitaka_pali_reader</loc>
     
     <changefreq>weekly</changefreq>
@@ -15533,6 +17795,18 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/tmon</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/tmplayer</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/tmuxy</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -15581,6 +17855,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/todometer</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/token_dashboard</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -15688,6 +17968,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/tractedit</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/trader</loc>
     
     <changefreq>weekly</changefreq>
@@ -15724,6 +18010,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/transmission_electron_gui</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/traycer</loc>
     
     <changefreq>weekly</changefreq>
@@ -15754,6 +18046,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/tricoredownloader</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/trim</loc>
     
     <changefreq>weekly</changefreq>
@@ -15761,6 +18059,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/trinity_desktop</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/trinity_launcher</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -15868,6 +18172,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/tuxtalk</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/tvalb</loc>
     
     <changefreq>weekly</changefreq>
@@ -15898,7 +18208,25 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/twig</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/twindesk</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/twinverse</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/twitch_drops_miner</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -15940,6 +18268,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/udcalc</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/udcap_control</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/uhk.agent</loc>
     
     <changefreq>weekly</changefreq>
@@ -15947,6 +18287,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/ultima_vless</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ultima5</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -15965,6 +18311,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/ultrascreen</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/ultrastar_karaoke_maker</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -16007,6 +18359,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/unishellect</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/unissh</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -16090,6 +18448,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/v-swift</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/v2ray-desktop</loc>
     
     <changefreq>weekly</changefreq>
@@ -16103,6 +18467,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/vapourkit_nightly</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/vasya_go_to_home</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -16151,6 +18521,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/vechain</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/vector_studio</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -16240,6 +18616,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/vibe_wallet</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/vibe3d</loc>
     
     <changefreq>weekly</changefreq>
@@ -16252,7 +18634,31 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/vibeconf</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/vibehub</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/viber</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/vibeshot</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/vibesupertonic</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -16372,6 +18778,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/virtual_jaguar_libretro</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/virtualbox-kvm</loc>
     
     <changefreq>weekly</changefreq>
@@ -16397,6 +18809,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/visuallvmremote.yml</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/vitaeum_ac</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -16462,6 +18880,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/vlcmediaplayerv2</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/vleapp</loc>
     
     <changefreq>weekly</changefreq>
@@ -16492,7 +18916,25 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/voiceai</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/voicestudio</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/voiden</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/voidstrap</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -16505,6 +18947,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/vorn</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/vosk_dictation</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -16577,6 +19025,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/vuerd</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/vulgr</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -16672,6 +19126,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/waves</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/wavescope</loc>
     
     <changefreq>weekly</changefreq>
@@ -16738,7 +19198,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/webwallgl</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/wechat_claude_code</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/weektodo</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -16816,6 +19288,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/whatsapp-desktop</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/whatsie</loc>
     
     <changefreq>weekly</changefreq>
@@ -16829,6 +19307,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/wheredidmystoragego</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/whisper</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -16858,13 +19342,31 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/whodis</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/whu-library-seat</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/wi-fi_heatmapper</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/widelands</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/wii_party_recomp</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -16877,6 +19379,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/wikishield-app</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/wild9recomp</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -16954,6 +19462,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/wj-markdown-editor</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/wlib</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/wljs-notebook</loc>
     
     <changefreq>weekly</changefreq>
@@ -16961,6 +19481,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/wnr</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/wohnungsbot</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -17015,6 +19541,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/wow-classic-launcher</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/wowthing_sync</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -17116,7 +19648,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/xi_on_anything</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/xiangxuema</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/xknx_editor</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -17135,6 +19679,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/xmmusic</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/xmsgi_studio</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -17200,6 +19750,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/y_a_w_n</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/yachiyo</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/yai</loc>
     
     <changefreq>weekly</changefreq>
@@ -17242,7 +19804,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/yaqmc</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/yarc-launcher</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/yawf</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -17261,6 +19835,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/yesplaymusic</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/yetanotheropenfileconverter</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -17314,6 +19894,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/youtube-music-player</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/youtubego</loc>
     
     <changefreq>weekly</changefreq>
@@ -17321,6 +19907,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/youtubesearchfilter</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/yptun</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -17345,6 +19937,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/yubikey_manager</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/yue2_studio</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -17410,7 +20008,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/zeldawwhdrecomp</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/zeltrez</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/zender</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -17428,13 +20038,49 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/zeno</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/zenpod</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/zenroomstudio</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://niruvi-store.runs-on.dev/app/zeronet</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://niruvi-store.runs-on.dev/app/zettlr</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/zipax</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/zlack</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/zmd-charge-plus</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -17471,6 +20117,12 @@
   </url>
   <url>
     <loc>https://niruvi-store.runs-on.dev/app/zoom</loc>
+    
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niruvi-store.runs-on.dev/app/zplab</loc>
     
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
