@@ -120,3 +120,16 @@ CREATE TABLE IF NOT EXISTS app_submissions (
   status TEXT NOT NULL DEFAULT 'pending_review',
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS app_reviews (
+  id TEXT PRIMARY KEY,
+  app_slug TEXT NOT NULL,
+  author_name TEXT NOT NULL,
+  rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  title TEXT NOT NULL,
+  body TEXT NOT NULL,
+  distro TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_app_reviews_slug ON app_reviews(app_slug, created_at DESC);

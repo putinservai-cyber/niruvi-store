@@ -25,11 +25,6 @@ import { IntegrityVerifierView } from './components/IntegrityVerifierView';
 import { MyLibraryView } from './components/MyLibraryView';
 import { SubmitAppView } from './components/SubmitAppView';
 import { AdminModerationView } from './components/AdminModerationView';
-import { AuthModal } from './components/AuthModal';
-import { AccountManagementModal } from './components/AccountManagementModal';
-import { AccountDashboard } from './pages/AccountDashboard';
-import { PublisherDashboard } from './pages/PublisherDashboard';
-import { ModerationDashboard } from './pages/ModerationDashboard';
 import { AppDetailPage } from './pages/AppDetailPage';
 import { Footer, LegalRoute } from './components/Footer';
 import { CookieConsent } from './components/CookieConsent';
@@ -48,13 +43,7 @@ import {
 import { updatePageSeo } from './utils/seo';
 import { withBaseUrl, stripBaseUrl, buildApiUrl, HAS_API_BACKEND } from './config/site';
 import { fetchWithTimeoutAndRetry, isSlowOrOfflineConnection } from './utils/network';
-import { useAuth } from './context/AuthContext';
-import {
-  recordAppDownload,
-  syncLibraryBookmarkWithSupabase,
-  fetchUserLibraryFromSupabase,
-  fetchUserDownloadsFromSupabase,
-} from './lib/supabase';
+import { recordAppDownload } from './lib/cloudflare-db';
 import {
   CheckCircle2,
   ChevronLeft,
@@ -233,7 +222,6 @@ export interface AppProps {
 }
 
 export function App({ initialCatalogOverride }: AppProps = {}) {
-  const { user } = useAuth();
   const initialRoute = useMemo(() => parseCurrentLocation(), []);
 
   const overrideValidation = useMemo(() => {
@@ -319,6 +307,8 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    document.documentElement.classList.toggle('light', theme === 'light');
     try {
       localStorage.setItem('niruvi_theme', theme);
     } catch {}
@@ -673,46 +663,6 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
     return [];
   });
 
-  // Phase 3: Sync saved library & download history from Supabase when user signs in
-  useEffect(() => {
-    if (!user?.id) return;
-    let cancelled = false;
-
-    fetchUserLibraryFromSupabase(user.id).then((rows) => {
-      if (cancelled || rows.length === 0) return;
-      setStarredIds((prev) => {
-        const merged = Array.from(new Set([...prev, ...rows.map((r) => r.appSlug)]));
-        try {
-          localStorage.setItem('niruvi_starred_apps', JSON.stringify(merged));
-        } catch {}
-        return merged;
-      });
-    });
-
-    fetchUserDownloadsFromSupabase(user.id).then((rows) => {
-      if (cancelled || rows.length === 0) return;
-      setDownloadHistory((prev) => {
-        const seen = new Set(prev.map((d) => d.appId));
-        const merged = [...prev];
-        for (const r of rows) {
-          if (!seen.has(r.appId)) {
-            seen.add(r.appId);
-            merged.push(r);
-          }
-        }
-        const trimmed = merged.slice(0, 25);
-        try {
-          localStorage.setItem('niruvi_download_history', JSON.stringify(trimmed));
-        } catch {}
-        return trimmed;
-      });
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id]);
-
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
 
   const showToast = useCallback((message: string, type: 'success' | 'info' = 'success') => {
@@ -877,21 +827,11 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
         try {
           localStorage.setItem('niruvi_starred_apps', JSON.stringify(next));
         } catch {}
-        if (user?.id) {
-          const catalogMatch =
-            (fullCatalogCacheRef.current || APPS_CATALOG).find((a) => a.id === appId);
-          syncLibraryBookmarkWithSupabase({
-            userId: user.id,
-            appSlug: appId,
-            pinnedVersion: catalogMatch?.version,
-            bookmarked: !exists,
-          });
-        }
         showToast(exists ? 'Removed from Saved' : 'Saved to Library', 'info');
         return next;
       });
     },
-    [showToast, user?.id]
+    [showToast]
   );
 
   const recordDownload = useCallback(
@@ -908,13 +848,12 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
         return next;
       });
       recordAppDownload({
-        userId: user?.id || null,
         appSlug: appId,
         version,
         arch,
       });
     },
-    [user?.id]
+    []
   );
 
   const removeSingleInstalled = useCallback(
@@ -1073,30 +1012,6 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
               />
             )}
 
-            {activeTab === 'account' && (
-              <AccountDashboard
-                onNavigateToPublisher={() => handleTabChange('publisher')}
-                onNavigateToStore={() => handleTabChange('browse')}
-                onOpenAppDetail={(appSlug) => {
-                  const match = (fullCatalogCacheRef.current || APPS_CATALOG).find(
-                    (a) => a.id.toLowerCase() === appSlug.toLowerCase()
-                  );
-                  if (match) handleSelectApp(match);
-                }}
-              />
-            )}
-
-            {activeTab === 'publisher' && (
-              <PublisherDashboard
-                onNavigateToStore={() => handleTabChange('browse')}
-                onOpenAppDetail={(appSlug) => {
-                  const match = (fullCatalogCacheRef.current || APPS_CATALOG).find(
-                    (a) => a.id.toLowerCase() === appSlug.toLowerCase()
-                  );
-                  if (match) handleSelectApp(match);
-                }}
-              />
-            )}
 
             {activeTab === 'submit' && (
               <SubmitAppView
@@ -1109,20 +1024,7 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
             )}
 
             {activeTab === 'admin' && (
-              <div className="space-y-8">
-                <ModerationDashboard
-                  onNavigateToStore={() => handleTabChange('browse')}
-                  onOpenAppDetail={(slug) => {
-                    const match = (fullCatalogCacheRef.current || APPS_CATALOG).find(
-                      (a) => a.id.toLowerCase() === slug.toLowerCase()
-                    );
-                    if (match) handleSelectApp(match);
-                  }}
-                />
-                <div className="pt-8 border-t border-neutral-800">
-                  <AdminModerationView onBackToStore={() => handleTabChange('browse')} />
-                </div>
-              </div>
+              <AdminModerationView onBackToStore={() => handleTabChange('browse')} />
             )}
 
             {activeTab === 'donate' && (
@@ -1131,6 +1033,8 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
                 onViewRefundPolicy={() => navigateLegal('refunds')}
               />
             )}
+
+
 
             {overrideValidation && overrideValidation.errors.length > 0 && (
               <div
@@ -1495,8 +1399,6 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
         onClose={() => setInstallApp(null)}
       />
 
-      <AuthModal />
-      <AccountManagementModal onNavigateToAccount={() => handleTabChange('account')} />
     </div>
   );
 }

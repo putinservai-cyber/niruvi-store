@@ -34,3 +34,16 @@ CREATE TABLE IF NOT EXISTS submission_reports (
 
 CREATE INDEX IF NOT EXISTS idx_submission_reports_slug ON submission_reports(app_slug, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_submission_reports_ip_hash ON submission_reports(ip_hash, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS app_reviews (
+  id TEXT PRIMARY KEY,
+  app_slug TEXT NOT NULL,
+  author_name TEXT NOT NULL,
+  rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  title TEXT NOT NULL,
+  body TEXT NOT NULL,
+  distro TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_app_reviews_slug ON app_reviews(app_slug, created_at DESC);

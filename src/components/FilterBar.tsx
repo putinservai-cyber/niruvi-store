@@ -102,13 +102,13 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   return (
     <section
       aria-label="Application catalog filters"
-      className="w-full min-w-0 space-y-3 mb-6 bg-neutral-900/50 border border-neutral-800 rounded-2xl p-3.5 sm:p-4"
+      className="w-full min-w-0 space-y-3 mb-6 bg-neutral-900/60 backdrop-blur-sm border border-neutral-800 rounded-2xl p-3.5 sm:p-4 shadow-sm"
     >
       {/* Row 1: Category Filter Buttons (Scrollable on Mobile, Wrapped on Tablet/Desktop) */}
       <div
         role="group"
         aria-label="Filter by application category"
-        className="flex items-center gap-1.5 overflow-x-auto md:flex-wrap pb-1 md:pb-0 max-w-full"
+        className="flex items-center gap-1.5 overflow-x-auto md:flex-wrap pb-1 md:pb-0 max-w-full scrollbar-none"
       >
         {displayCategories.map((cat) => {
           const active = selectedCategory === cat;
@@ -118,10 +118,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               key={cat}
               onClick={() => onSelectCategory(cat)}
               aria-pressed={active}
-              className={`min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer border ${
+              className={`min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all duration-150 shrink-0 cursor-pointer border ${
                 active
-                  ? 'bg-sky-600 text-white border-sky-500'
-                  : 'bg-neutral-950 text-neutral-300 border-neutral-800 hover:bg-neutral-800 hover:text-white'
+                  ? 'bg-sky-600 text-white border-sky-500 shadow-sm shadow-sky-500/20'
+                  : 'bg-neutral-950 text-neutral-300 border-neutral-800/80 hover:bg-neutral-800/80 hover:text-white'
               }`}
             >
               {categoryIcons[cat] || (
@@ -140,7 +140,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           <div
             role="group"
             aria-label="Filter by CPU architecture"
-            className="flex flex-wrap items-center gap-1 bg-neutral-950 border border-neutral-800 rounded-xl p-1 min-w-0"
+            className="flex flex-wrap items-center gap-1 bg-neutral-950 border border-neutral-800/90 rounded-xl p-1 min-w-0"
           >
             <span className="flex items-center gap-1 px-2 py-1 text-xs text-neutral-400 font-mono">
               <Cpu className="w-3.5 h-3.5 text-sky-400 shrink-0" aria-hidden="true" />
@@ -170,8 +170,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             aria-pressed={onlyVerified}
             className={`min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-colors cursor-pointer ${
               onlyVerified
-                ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400'
-                : 'bg-neutral-950 border-neutral-800 text-neutral-300 hover:text-white'
+                ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400 font-semibold'
+                : 'bg-neutral-950 border-neutral-800/90 text-neutral-300 hover:text-white'
             }`}
           >
             <ShieldCheck
@@ -182,7 +182,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           </button>
 
           {/* Sort Selector */}
-          <div className="min-h-[36px] flex items-center gap-1.5 bg-neutral-950 border border-neutral-800 rounded-xl px-2.5 py-1.5">
+          <div className="min-h-[36px] flex items-center gap-1.5 bg-neutral-950 border border-neutral-800/90 rounded-xl px-2.5 py-1.5">
             <ArrowUpDown className="w-3.5 h-3.5 text-sky-400 shrink-0" aria-hidden="true" />
             <label htmlFor="catalog-sort-select" className="sr-only">
               Sort applications by
@@ -211,10 +211,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               type="button"
               onClick={onResetFilters}
               aria-label="Reset all catalog filters"
-              className="min-h-[36px] flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-xs font-medium text-neutral-300 hover:text-white transition-colors cursor-pointer"
+              className="min-h-[36px] flex items-center gap-1 px-3 py-1.5 rounded-xl bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-xs font-medium text-sky-400 hover:text-sky-300 transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3 h-3 shrink-0" aria-hidden="true" />
-              <span>Reset</span>
+              <span>Reset Filters</span>
             </button>
           )}
         </div>

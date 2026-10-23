@@ -16,6 +16,7 @@ const metaEnv =
     : undefined;
 
 const rawSiteOriginInput = (
+  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SITE_URL) ||
   (metaEnv && metaEnv.VITE_SITE_URL) ||
   (typeof process !== 'undefined' && process.env && process.env.VITE_SITE_URL) ||
   'https://niruvi-store.runs-on.dev'
@@ -31,6 +32,9 @@ const isCustomDomain = !httpsSiteOrigin.includes('github.io');
 const rawBaseInput = isCustomDomain
   ? '/'
   : (
+      (typeof import.meta !== 'undefined' &&
+        import.meta.env &&
+        (import.meta.env.VITE_BASE || import.meta.env.VITE_BASE_PATH || import.meta.env.BASE_URL)) ||
       (metaEnv && (metaEnv.VITE_BASE || metaEnv.VITE_BASE_PATH || metaEnv.BASE_URL)) ||
       (typeof process !== 'undefined' &&
         process.env &&
@@ -61,7 +65,6 @@ export const CONTACT_EMAIL = 'niruvi.linux@gmail.com';
 export const SUPPORT_EMAIL = 'support.niruvi@gmail.com';
 export const KOFI_URL = 'https://ko-fi.com/putinservai';
 export const RAZORPAY_URL = 'https://razorpay.me/@putin';
-export const UPI_ID = 'putinservai-1@okhdfcbank';
 export const DEFAULT_TITLE = 'Niruvi Store — Verified Linux AppImage Marketplace';
 export const DEFAULT_DESCRIPTION =
   'Discover standalone Linux AppImage packages with cryptographic SHA-256 verification, upstream source transparency, and one-click niruvi:// desktop installation.';
@@ -69,8 +72,6 @@ export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 /**
  * Cloudflare Worker API Base URL (configured via VITE_API_URL) and Turnstile Site Key (VITE_TURNSTILE_SITE_KEY).
- * Note: If VITE_API_URL is accidentally pointed at a `*.supabase.co` host, we ignore it here
- * so `/api/*` Worker fetches never hit Supabase's API gateway without an `apikey` header.
  */
 const rawApiBaseUrl = (
   (metaEnv && metaEnv.VITE_API_URL) ||
@@ -80,7 +81,7 @@ const rawApiBaseUrl = (
   .trim()
   .replace(/\/+$/, '');
 
-export const API_BASE_URL = /\.supabase\.co(\/|$)/i.test(rawApiBaseUrl) ? '' : rawApiBaseUrl;
+export const API_BASE_URL = rawApiBaseUrl;
 
 export const HAS_API_BACKEND = Boolean(API_BASE_URL);
 

@@ -690,6 +690,95 @@ export default {
         );
       }
 
+      // 4b. GET /api/reviews
+      if (method === 'GET' && pathname === '/api/reviews') {
+        const rawSlug = url.searchParams.get('appSlug') || url.searchParams.get('slug') || '';
+        const cleanSlug = normalizeSlug(rawSlug);
+        if (!cleanSlug) {
+          return jsonResponse({ reviews: [] }, 200, origin);
+        }
+
+        const { results } = await env.DB.prepare(
+          `SELECT id, app_slug AS appSlug, author_name AS authorName, rating, title, body, distro, created_at AS createdAt
+           FROM app_reviews
+           WHERE lower(app_slug) = ?1
+           ORDER BY created_at DESC
+           LIMIT 100`
+        )
+          .bind(cleanSlug)
+          .all<any>();
+
+        return jsonResponse({ reviews: results || [] }, 200, origin);
+      }
+
+      // 4c. POST /api/reviews
+      if (method === 'POST' && pathname === '/api/reviews') {
+        let payload: Record<string, unknown>;
+        try {
+          payload = (await request.json()) as Record<string, unknown>;
+        } catch {
+          return jsonResponse({ error: 'Invalid JSON request body.' }, 400, origin);
+        }
+
+        const rawSlug = typeof payload.appSlug === 'string' ? payload.appSlug.trim() : '';
+        const cleanSlug = normalizeSlug(rawSlug);
+        const authorName = escapeText(payload.authorName || 'Linux Community User', 60);
+        const rating = Math.max(1, Math.min(5, Math.round(Number(payload.rating) || 5)));
+        const title = escapeText(payload.title || '', 100);
+        const body = escapeText(payload.body || '', 2000);
+        const distro = escapeText(payload.distro || '', 60);
+
+        if (!cleanSlug || !body || body.length < 5) {
+          return jsonResponse(
+            { error: 'Application slug and a review body of at least 5 characters are required.' },
+            400,
+            origin
+          );
+        }
+
+        const reviewId =
+          typeof payload.id === 'string' && payload.id.trim()
+            ? payload.id.trim()
+            : crypto.randomUUID();
+        const createdAt = new Date().toISOString();
+
+        await env.DB.prepare(
+          `INSERT INTO app_reviews (id, app_slug, author_name, rating, title, body, distro, created_at)
+           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`
+        )
+          .bind(reviewId, cleanSlug, authorName, rating, title, body, distro, createdAt)
+          .run();
+
+        return jsonResponse(
+          {
+            success: true,
+            review: {
+              id: reviewId,
+              appSlug: cleanSlug,
+              authorName,
+              rating,
+              title,
+              body,
+              distro,
+              createdAt,
+            },
+          },
+          201,
+          origin
+        );
+      }
+
+      // 4d. DELETE /api/reviews/:id
+      if (method === 'DELETE' && pathname.startsWith('/api/reviews/')) {
+        const reviewId = decodeURIComponent(pathname.slice('/api/reviews/'.length)).trim();
+        if (!reviewId) {
+          return jsonResponse({ error: 'Review ID is required.' }, 400, origin);
+        }
+
+        await env.DB.prepare('DELETE FROM app_reviews WHERE id = ?1').bind(reviewId).run();
+        return jsonResponse({ success: true, deleted: reviewId }, 200, origin);
+      }
+
       // 5. Admin Endpoints (Protected by ADMIN_TOKEN Worker secret)
       if (pathname.startsWith('/api/admin/')) {
         const isAuthorized = await verifyAdminBearerToken(

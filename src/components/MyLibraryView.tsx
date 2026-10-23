@@ -7,8 +7,7 @@ import {
   getLibraryNotificationPrefs,
   setLibraryUpdateNotification,
   LibraryNotificationPrefs,
-} from '../lib/supabase';
-import { useAuth } from '../context/AuthContext';
+} from '../lib/cloudflare-db';
 import { 
   FolderCheck, 
   Trash2, 
@@ -44,7 +43,6 @@ export const MyLibraryView: React.FC<MyLibraryViewProps> = ({
   onToggleBookmark,
   onRemoveInstalled,
 }) => {
-  const { user } = useAuth();
   const [activeSubTab, setActiveSubTab] = useState<'installed' | 'saved' | 'downloads'>('installed');
   const [isCheckingUpdates, setIsCheckingUpdates] = useState(false);
   const [updateStatusMessage, setUpdateStatusMessage] = useState<string | null>(null);
@@ -97,7 +95,7 @@ export const MyLibraryView: React.FC<MyLibraryViewProps> = ({
     const current = notifyPrefs[appSlug] !== false;
     const next = !current;
     setNotifyPrefs((prev) => ({ ...prev, [appSlug]: next }));
-    await setLibraryUpdateNotification(user?.id, appSlug, next);
+    await setLibraryUpdateNotification(appSlug, next);
   };
 
   const handleUninstall = (appId: string) => {
@@ -480,7 +478,7 @@ export const MyLibraryView: React.FC<MyLibraryViewProps> = ({
             <>
               <div className="flex items-center justify-between">
                 <p className="text-xs text-neutral-400">
-                  Recent AppImage downloads recorded locally{user ? ' and synced to your account' : ''}.
+                  Recent AppImage downloads recorded locally on your device.
                 </p>
                 <button
                   type="button"

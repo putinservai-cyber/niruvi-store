@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { AppMetadata } from '../types';
 import { generateNiruviProtocolUrl } from '../data/apps';
 import { buildApiUrl, HAS_API_BACKEND } from '../config/site';
-import { useAuth } from '../context/AuthContext';
 import {
   AppReviewRecord,
   fetchAppReviews,
   upsertAppReview,
   deleteAppReview,
-} from '../lib/supabase';
+} from '../lib/cloudflare-db';
 import {
   getChecksumStatus,
   isCommunitySubmitted,
@@ -66,15 +65,15 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
   initialOpenReport = false,
 }) => {
   usePreventBodyScroll(Boolean(app));
-  const { user, openAuthModal } = useAuth();
   const [copiedSha, setCopiedSha] = useState(false);
   const [copiedCmd, setCopiedCmd] = useState(false);
   const [selectedArch, setSelectedArch] = useState<string>('x86_64');
   const [liveVersionHistory, setLiveVersionHistory] = useState(app?.versionHistory || []);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  // Phase 3: Community Ratings & Reviews state (1–5 stars, 1 per user per app)
+  // Community Ratings & Reviews state (1–5 stars via Cloudflare D1)
   const [reviews, setReviews] = useState<AppReviewRecord[]>([]);
+  const [reviewAuthor, setReviewAuthor] = useState<string>('');
   const [reviewRating, setReviewRating] = useState<number>(5);
   const [reviewTitle, setReviewTitle] = useState<string>('');
   const [reviewBody, setReviewBody] = useState<string>('');
@@ -114,18 +113,6 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
         .then((list) => {
           if (reviewCancelled) return;
           setReviews(list);
-          const mine = user ? list.find((r) => r.userId === user.id) : undefined;
-          if (mine) {
-            setReviewRating(mine.rating);
-            setReviewTitle(mine.title);
-            setReviewBody(mine.body);
-            setReviewDistro(mine.distro);
-          } else {
-            setReviewRating(5);
-            setReviewTitle('');
-            setReviewBody('');
-            setReviewDistro('');
-          }
         })
         .catch(() => {});
 
@@ -153,7 +140,7 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
         reviewCancelled = true;
       };
     }
-  }, [app, user]);
+  }, [app]);
 
   useEffect(() => {
     if (!app) return;
@@ -265,7 +252,6 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
     }
   };
 
-  const userExistingReview = user ? reviews.find((r) => r.userId === user.id) : undefined;
   const averageRating =
     reviews.length > 0
       ? Number((reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1))
@@ -273,10 +259,6 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      openAuthModal();
-      return;
-    }
     if (!reviewBody.trim() || reviewBody.trim().length < 5) {
       setReviewMessage({
         type: 'error',
@@ -289,33 +271,20 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
     try {
       const saved = await upsertAppReview({
         appSlug: app.id,
-        userId: user.id,
-        username: user.username,
-        displayName: user.displayName,
+        authorName: reviewAuthor.trim() || 'Linux Community User',
         rating: reviewRating,
         title: reviewTitle.trim(),
         body: reviewBody.trim(),
         distro: reviewDistro.trim(),
       });
-      setReviews((prev) => {
-        const idx = prev.findIndex((r) => r.userId === user.id);
-        if (idx >= 0) {
-          const copy = [...prev];
-          copy[idx] = saved;
-          return copy;
-        }
-        return [saved, ...prev];
-      });
+      setReviews((prev) => [saved, ...prev.filter((r) => r.id !== saved.id)]);
       setShowReviewForm(false);
       setReviewMessage({
         type: 'success',
-        text: userExistingReview ? 'Your review was updated.' : 'Your review was published.',
+        text: 'Your review was published.',
       });
       if (onShowToast) {
-        onShowToast(
-          userExistingReview ? 'Review updated.' : 'Review published.',
-          'success'
-        );
+        onShowToast('Review published.', 'success');
       }
     } catch (err: any) {
       setReviewMessage({
@@ -328,20 +297,8 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
   };
 
   const handleDeleteReview = async (reviewId: string) => {
-    if (!user) return;
-    const isStaff = user.role === 'ADMIN' || user.role === 'MODERATOR';
-    await deleteAppReview({
-      reviewId,
-      userId: user.id,
-      isModeratorOrAdmin: isStaff,
-    });
+    await deleteAppReview({ reviewId });
     setReviews((prev) => prev.filter((r) => r.id !== reviewId));
-    if (userExistingReview?.id === reviewId) {
-      setReviewRating(5);
-      setReviewTitle('');
-      setReviewBody('');
-      setReviewDistro('');
-    }
     if (onShowToast) {
       onShowToast('Review deleted.', 'info');
     }
@@ -821,29 +778,13 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
                 </div>
               </div>
 
-              {user ? (
-                <button
-                  type="button"
-                  onClick={() => setShowReviewForm((prev) => !prev)}
-                  className="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white border border-neutral-700 text-xs font-medium transition-colors cursor-pointer"
-                >
-                  {userExistingReview
-                    ? showReviewForm
-                      ? 'Cancel Edit'
-                      : 'Edit Your Review'
-                    : showReviewForm
-                      ? 'Cancel'
-                      : 'Write a Review'}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={openAuthModal}
-                  className="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-sky-400 border border-neutral-800 text-xs font-medium transition-colors cursor-pointer"
-                >
-                  Sign in to Write a Review
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => setShowReviewForm((prev) => !prev)}
+                className="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white border border-neutral-700 text-xs font-medium transition-colors cursor-pointer"
+              >
+                {showReviewForm ? 'Cancel' : 'Write a Review'}
+              </button>
             </div>
 
             {reviewMessage && (
@@ -856,7 +797,7 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
               </p>
             )}
 
-            {showReviewForm && user && (
+            {showReviewForm && (
               <form
                 onSubmit={handleSubmitReview}
                 className="p-3.5 rounded-xl bg-neutral-900 border border-neutral-800 space-y-3"
@@ -889,30 +830,46 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
 
                   <div className="flex-1 min-w-[180px]">
                     <label className="block text-xs text-neutral-400 mb-1">
+                      Your Name or Handle (optional)
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={50}
+                      value={reviewAuthor}
+                      onChange={(e) => setReviewAuthor(e.target.value)}
+                      placeholder="e.g. LinuxEnthusiast"
+                      className="w-full px-3 py-1.5 rounded-lg bg-neutral-950 border border-neutral-800 text-xs text-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-neutral-400 mb-1">
+                      Review Summary Title (optional)
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={120}
+                      value={reviewTitle}
+                      onChange={(e) => setReviewTitle(e.target.value)}
+                      placeholder="Fast startup and rock-solid AppImage integration"
+                      className="w-full px-3 py-1.5 rounded-lg bg-neutral-950 border border-neutral-800 text-xs text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-neutral-400 mb-1">
                       Linux Distro Tested (optional)
                     </label>
                     <input
                       type="text"
+                      maxLength={60}
                       value={reviewDistro}
                       onChange={(e) => setReviewDistro(e.target.value)}
                       placeholder="e.g. Ubuntu 24.04, Fedora 41, Arch"
                       className="w-full px-3 py-1.5 rounded-lg bg-neutral-950 border border-neutral-800 text-xs text-white"
                     />
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs text-neutral-400 mb-1">
-                    Review Summary Title (optional)
-                  </label>
-                  <input
-                    type="text"
-                    maxLength={120}
-                    value={reviewTitle}
-                    onChange={(e) => setReviewTitle(e.target.value)}
-                    placeholder="Fast startup and rock-solid AppImage integration"
-                    className="w-full px-3 py-1.5 rounded-lg bg-neutral-950 border border-neutral-800 text-xs text-white"
-                  />
                 </div>
 
                 <div>
@@ -941,11 +898,7 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
                     disabled={reviewSubmitting}
                     className="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs cursor-pointer disabled:opacity-50"
                   >
-                    {reviewSubmitting
-                      ? 'Saving…'
-                      : userExistingReview
-                        ? 'Update Review'
-                        : 'Publish Review'}
+                    {reviewSubmitting ? 'Saving…' : 'Publish Review'}
                   </button>
                 </div>
               </form>
@@ -954,11 +907,6 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
             {reviews.length > 0 && (
               <div className="space-y-2.5 max-h-64 overflow-y-auto">
                 {reviews.map((rev) => {
-                  const canDelete =
-                    Boolean(user) &&
-                    (user?.id === rev.userId ||
-                      user?.role === 'ADMIN' ||
-                      user?.role === 'MODERATOR');
                   return (
                     <div
                       key={rev.id}
@@ -991,17 +939,15 @@ export const AppDetailModal: React.FC<AppDetailModalProps> = ({
                           )}
                         </div>
 
-                        {canDelete && (
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteReview(rev.id)}
-                            aria-label={`Delete review by ${rev.username}`}
-                            title="Delete review"
-                            className="p-1 rounded text-neutral-500 hover:text-rose-400 transition-colors cursor-pointer"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteReview(rev.id)}
+                          aria-label={`Delete review by ${rev.username}`}
+                          title="Delete review"
+                          className="p-1 rounded text-neutral-500 hover:text-rose-400 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                       <p className="text-xs text-neutral-300 leading-relaxed">{rev.body}</p>
                     </div>

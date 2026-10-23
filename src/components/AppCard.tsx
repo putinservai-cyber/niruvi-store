@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AppMetadata } from '../types';
 import {
   getChecksumStatus,
@@ -15,6 +15,8 @@ import {
   ExternalLink,
   Users,
   Flag,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { AppIcon } from './AppIcon';
 
@@ -35,6 +37,7 @@ export const AppCard: React.FC<AppCardProps> = ({
   onToggleStar,
   onReport,
 }) => {
+  const [copiedSha, setCopiedSha] = useState(false);
   const communitySubmitted = isCommunitySubmitted(app);
   const checksumStatus = getChecksumStatus(app);
   const isTrulyVerified = checksumStatus === 'verified';
@@ -42,10 +45,18 @@ export const AppCard: React.FC<AppCardProps> = ({
   const summaryText = (app.tagline || app.description || '').trim();
   const displayVersion = formatAppVersion(app.version);
 
+  const handleCopyHash = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!app.sha256) return;
+    navigator.clipboard.writeText(app.sha256);
+    setCopiedSha(true);
+    setTimeout(() => setCopiedSha(false), 2000);
+  };
+
   return (
     <article
       aria-label={app.name}
-      className="group relative min-w-0 w-full overflow-hidden bg-neutral-900 border border-neutral-800 rounded-xl p-4 sm:p-5 hover:border-sky-500/60 hover:bg-neutral-900/90 transition-colors flex flex-col justify-between gap-4 h-full"
+      className="group relative min-w-0 w-full overflow-hidden bg-neutral-900 border border-neutral-800 rounded-2xl p-4 sm:p-5 hover:border-sky-500/50 hover:bg-neutral-900/95 transition-all duration-200 flex flex-col justify-between gap-4 h-full shadow-sm hover:shadow-lg hover:shadow-sky-500/5"
     >
       <div className="flex flex-col gap-3.5 min-w-0">
         <div className="flex items-start justify-between gap-2.5 min-w-0">
@@ -53,14 +64,14 @@ export const AppCard: React.FC<AppCardProps> = ({
             type="button"
             onClick={() => onSelect(app)}
             aria-label={`View details for ${app.name}`}
-            className="relative flex shrink-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 cursor-pointer"
+            className="relative flex shrink-0 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 cursor-pointer"
           >
             <AppIcon
               slug={app.iconSlug || app.id}
               name={app.name}
               iconUrl={app.icon}
               brandColor={app.brandColor}
-              className="w-12 h-12 rounded-xl group-hover:scale-[1.02] transition-transform duration-200"
+              className="w-12 h-12 rounded-2xl group-hover:scale-[1.03] transition-transform duration-200 shadow-sm"
             />
           </button>
 
@@ -103,7 +114,7 @@ export const AppCard: React.FC<AppCardProps> = ({
               {communitySubmitted && (
                 <span
                   title="Community submitted, unreviewed entry"
-                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-[11px] font-medium text-amber-300 shrink-0"
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-[11px] font-medium text-amber-300 shrink-0"
                 >
                   <Users className="w-3 h-3" aria-hidden="true" />
                   <span>Community, unreviewed</span>
@@ -112,7 +123,7 @@ export const AppCard: React.FC<AppCardProps> = ({
               {isTrulyVerified && (
                 <span
                   title="Verified SHA-256 checksum"
-                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-medium text-emerald-400 shrink-0"
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-medium text-emerald-400 shrink-0"
                 >
                   <ShieldCheck className="w-3 h-3" aria-hidden="true" />
                   <span>Verified SHA-256</span>
@@ -121,7 +132,7 @@ export const AppCard: React.FC<AppCardProps> = ({
               {hasProvidedChecksum && (
                 <span
                   title="SHA-256 checksum provided by submitter"
-                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-sky-500/10 border border-sky-500/30 text-[11px] font-medium text-sky-300 shrink-0"
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-sky-500/10 border border-sky-500/30 text-[11px] font-medium text-sky-300 shrink-0"
                 >
                   <ShieldCheck className="w-3 h-3" aria-hidden="true" />
                   <span>Checksum: Provided</span>
@@ -145,32 +156,56 @@ export const AppCard: React.FC<AppCardProps> = ({
 
       <div className="flex flex-col gap-3.5 min-w-0">
         <div className="flex flex-wrap items-center gap-1.5 text-xs text-neutral-300 font-mono min-w-0">
-          <span className="px-2 py-0.5 rounded bg-neutral-800/90 border border-neutral-700/70 truncate max-w-[110px]">
+          <span className="px-2 py-0.5 rounded-md bg-neutral-800/90 border border-neutral-700/70 truncate max-w-[110px]">
             {displayVersion}
           </span>
           {app.size && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-800/90 border border-neutral-700/70 shrink-0">
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-800/90 border border-neutral-700/70 shrink-0">
               <HardDrive className="w-3 h-3 text-neutral-400 shrink-0" aria-hidden="true" />
               <span>{app.size}</span>
             </span>
           )}
-          <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-800/90 border border-neutral-700/70 truncate max-w-[140px]">
+          <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-800/90 border border-neutral-700/70 truncate max-w-[140px]">
             <Cpu className="w-3 h-3 text-sky-400 shrink-0" aria-hidden="true" />
             <span className="truncate">{app.architectures.join(', ')}</span>
           </span>
           {app.license && (
-            <span className="px-2 py-0.5 rounded bg-neutral-800/90 border border-neutral-700/70 truncate max-w-[110px]">
+            <span className="px-2 py-0.5 rounded-md bg-neutral-800/90 border border-neutral-700/70 truncate max-w-[110px]">
               {app.license}
             </span>
           )}
         </div>
 
-        <div className="pt-3 border-t border-neutral-800 flex items-center justify-between gap-2 min-w-0">
-          <div className="text-[11px] text-neutral-300 font-mono truncate min-w-0">
+        <div className="pt-3 border-t border-neutral-800/90 flex items-center justify-between gap-2 min-w-0">
+          <div className="text-[11px] text-neutral-300 font-mono truncate min-w-0 flex items-center gap-1.5">
             {isTrulyVerified ? (
-              <span className="text-emerald-400">SHA-256: {app.sha256.slice(0, 10)}… (Verified)</span>
+              <button
+                type="button"
+                onClick={handleCopyHash}
+                title="Click to copy full verified SHA-256 hash"
+                className="text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1 truncate cursor-pointer transition-colors"
+              >
+                {copiedSha ? (
+                  <Check className="w-3 h-3 shrink-0" />
+                ) : (
+                  <Copy className="w-3 h-3 shrink-0 opacity-70 group-hover:opacity-100" />
+                )}
+                <span>SHA-256: {app.sha256.slice(0, 10)}… {copiedSha ? '(Copied!)' : '(Verified)'}</span>
+              </button>
             ) : hasProvidedChecksum ? (
-              <span className="text-sky-300">SHA-256: {app.sha256.slice(0, 10)}… (Provided)</span>
+              <button
+                type="button"
+                onClick={handleCopyHash}
+                title="Click to copy full provided SHA-256 hash"
+                className="text-sky-300 hover:text-sky-200 inline-flex items-center gap-1 truncate cursor-pointer transition-colors"
+              >
+                {copiedSha ? (
+                  <Check className="w-3 h-3 shrink-0" />
+                ) : (
+                  <Copy className="w-3 h-3 shrink-0 opacity-70 group-hover:opacity-100" />
+                )}
+                <span>SHA-256: {app.sha256.slice(0, 10)}… {copiedSha ? '(Copied!)' : '(Provided)'}</span>
+              </button>
             ) : (
               <span className="text-neutral-400">Checksum: Unverified</span>
             )}
@@ -215,7 +250,7 @@ export const AppCard: React.FC<AppCardProps> = ({
               type="button"
               onClick={(e) => onInstall(app, e)}
               aria-label={`Install ${app.name}`}
-              className="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm active:scale-95"
             >
               <Download className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Download</span>
@@ -226,3 +261,4 @@ export const AppCard: React.FC<AppCardProps> = ({
     </article>
   );
 };
+

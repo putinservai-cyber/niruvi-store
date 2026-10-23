@@ -1,21 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Search,
   ShieldCheck,
   Bookmark,
   PlusCircle,
   X,
-  User,
-  LogOut,
   Compass,
   Sun,
   Moon,
   Heart,
-  Package,
-  Building2,
 } from 'lucide-react';
 import { NiruviLogo } from './NiruviLogo';
-import { useAuth } from '../context/AuthContext';
 import { DEVELOPER_NAME } from '../config/site';
 
 export type NavTab =
@@ -52,20 +47,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleTheme,
   showSearch = true,
 }) => {
-  const { user, openAuthModal, openAccountModal, signOut } = useAuth();
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setUserMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -95,7 +77,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, [activeTab, onTabChange]);
 
   return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-neutral-950/95 border-b border-neutral-800">
+    <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-neutral-950/90 border-b border-neutral-800 shadow-sm">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-12 py-2.5 sm:py-3">
         {/* Responsive Primary Header Grid:
             - Mobile & Tablet (< 1024px): Row 1 has Brand (left) + Nav/Actions (right); Row 2 has full-width Search Bar
@@ -105,9 +87,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={() => onTabChange('browse')}
-            className="order-1 min-w-0 flex items-center gap-2.5 sm:gap-3 shrink-0 cursor-pointer group text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded-lg"
+            className="order-1 min-w-0 flex items-center gap-2.5 sm:gap-3 shrink-0 cursor-pointer group text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded-xl"
           >
-            <div className="relative flex items-center justify-center w-9 h-9 rounded-lg bg-neutral-900 border border-neutral-800 group-hover:border-sky-500/50 transition-colors shrink-0">
+            <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-neutral-900 border border-neutral-800 group-hover:border-sky-500/50 group-hover:bg-neutral-800 transition-all shrink-0 shadow-sm">
               <NiruviLogo className="w-6 h-6" />
             </div>
             <div className="min-w-0">
@@ -152,7 +134,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   }}
                   aria-label="Search Linux AppImages by name, category, publisher, or tag"
                   placeholder={`Search ${totalApps.toLocaleString()} Linux AppImages... ( / )`}
-                  className="w-full min-w-0 min-h-[40px] pl-10 pr-12 py-2 bg-neutral-900 border border-neutral-800 rounded-xl text-xs sm:text-sm text-white placeholder-neutral-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
+                  className="w-full min-w-0 min-h-[40px] pl-10 pr-12 py-2 bg-neutral-900/90 border border-neutral-800/90 rounded-xl text-xs sm:text-sm text-white placeholder-neutral-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors shadow-inner"
                 />
                 {searchQuery ? (
                   <button
@@ -181,7 +163,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="order-2 lg:order-3 flex items-center justify-end gap-1.5 sm:gap-2 shrink-0 min-w-0">
             <nav
               aria-label="Main store navigation"
-              className="hidden md:flex items-center gap-1 bg-neutral-900/80 p-1 rounded-xl border border-neutral-800"
+              className="hidden md:flex items-center gap-1 bg-neutral-900/80 p-1 rounded-xl border border-neutral-800/90"
             >
               <button
                 type="button"
@@ -189,7 +171,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 aria-current={activeTab === 'browse' ? 'page' : undefined}
                 className={`flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
                   activeTab === 'browse'
-                    ? 'bg-sky-600 text-white'
+                    ? 'bg-sky-600 text-white shadow-sm'
                     : 'text-neutral-300 hover:text-white hover:bg-neutral-800/80'
                 }`}
               >
@@ -203,7 +185,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 aria-current={activeTab === 'verifier' ? 'page' : undefined}
                 className={`flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
                   activeTab === 'verifier'
-                    ? 'bg-sky-600 text-white'
+                    ? 'bg-sky-600 text-white shadow-sm'
                     : 'text-neutral-300 hover:text-white hover:bg-neutral-800/80'
                 }`}
               >
@@ -218,7 +200,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 aria-current={activeTab === 'library' ? 'page' : undefined}
                 className={`flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
                   activeTab === 'library'
-                    ? 'bg-sky-600 text-white'
+                    ? 'bg-sky-600 text-white shadow-sm'
                     : 'text-neutral-300 hover:text-white hover:bg-neutral-800/80'
                 }`}
               >
@@ -235,7 +217,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 aria-current={activeTab === 'submit' ? 'page' : undefined}
                 className={`flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
                   activeTab === 'submit'
-                    ? 'bg-sky-600 text-white'
+                    ? 'bg-sky-600 text-white shadow-sm'
                     : 'text-neutral-300 hover:text-white hover:bg-neutral-800/80'
                 }`}
               >
@@ -249,7 +231,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 aria-current={activeTab === 'donate' ? 'page' : undefined}
                 className={`flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
                   activeTab === 'donate'
-                    ? 'bg-sky-600 text-white'
+                    ? 'bg-sky-600 text-white shadow-sm'
                     : 'text-neutral-300 hover:text-white hover:bg-neutral-800/80'
                 }`}
               >
@@ -264,114 +246,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={onToggleTheme}
                 aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
                 title={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
-                className="min-h-[38px] min-w-[38px] flex items-center justify-center p-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border border-neutral-800 transition-colors cursor-pointer shrink-0"
+                className="min-h-[38px] min-w-[38px] flex items-center justify-center p-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border border-neutral-800 transition-colors cursor-pointer shrink-0"
               >
                 {theme === 'light' ? (
                   <Moon className="w-4 h-4" aria-hidden="true" />
                 ) : (
                   <Sun className="w-4 h-4" aria-hidden="true" />
                 )}
-              </button>
-            )}
-
-            {/* Account Menu */}
-            {user ? (
-              <div className="relative shrink-0" ref={menuRef}>
-                <button
-                  type="button"
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  aria-expanded={userMenuOpen}
-                  aria-haspopup="menu"
-                  aria-label={`Account menu for ${user.displayName}`}
-                  className="min-h-[38px] flex items-center gap-2 pl-2 pr-2.5 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 transition-colors cursor-pointer"
-                >
-                  <img
-                    src={
-                      user.avatarUrl ||
-                      `https://api.dicebear.com/7.x/identicon/svg?seed=${user.username}`
-                    }
-                    alt={user.displayName}
-                    className="w-5 h-5 rounded-md object-cover bg-neutral-800 shrink-0"
-                  />
-                  <span className="hidden sm:block text-xs font-medium text-white max-w-[96px] truncate">
-                    {user.displayName}
-                  </span>
-                </button>
-
-                {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-xl bg-neutral-900 border border-neutral-800 shadow-xl py-1.5 z-50">
-                    <div className="px-3.5 py-2 border-b border-neutral-800">
-                      <p className="text-xs font-semibold text-white truncate">
-                        {user.displayName}
-                      </p>
-                      <p className="text-[11px] text-neutral-400 font-mono truncate">
-                        @{user.username}
-                      </p>
-                    </div>
-                    <div className="p-1 space-y-0.5">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setUserMenuOpen(false);
-                          onTabChange('account');
-                        }}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-neutral-300 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer"
-                      >
-                        <User className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>Account Dashboard</span>
-                      </button>
-
-                      {(user.role === 'DEVELOPER' || user.role === 'ADMIN' || user.role === 'MODERATOR') && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setUserMenuOpen(false);
-                            onTabChange('publisher');
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-neutral-300 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer"
-                        >
-                          <Package className="w-3.5 h-3.5 text-cyan-400" />
-                          <span>Publisher Dashboard</span>
-                        </button>
-                      )}
-
-                      {(user.role === 'ADMIN' || user.role === 'MODERATOR') && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setUserMenuOpen(false);
-                            onTabChange('admin');
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-neutral-300 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer"
-                        >
-                          <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
-                          <span>Moderation Console</span>
-                        </button>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setUserMenuOpen(false);
-                          signOut();
-                        }}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
-                      >
-                        <LogOut className="w-3.5 h-3.5" />
-                        <span>Sign Out</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={openAuthModal}
-                className="min-h-[38px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-800 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer shrink-0"
-              >
-                <User className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                <span>Sign In</span>
               </button>
             )}
           </div>

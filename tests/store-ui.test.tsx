@@ -5,7 +5,6 @@ import { render, screen, fireEvent, within, waitFor, cleanup } from '@testing-li
 import '@testing-library/jest-dom/vitest';
 import axe from 'axe-core';
 import { App } from '../src/App';
-import { AuthProvider } from '../src/context/AuthContext';
 import {
   APPS_CATALOG,
   TOTAL_CATALOG_COUNT,
@@ -40,9 +39,7 @@ afterEach(() => {
 
 function renderStore(props?: React.ComponentProps<typeof App>) {
   return render(
-    <AuthProvider>
-      <App initialCatalogOverride={SAMPLE_CATALOG} {...props} />
-    </AuthProvider>,
+    <App initialCatalogOverride={SAMPLE_CATALOG} {...props} />
   );
 }
 
@@ -364,31 +361,17 @@ describe('Niruvi Store — Community Submission (/submit), Worker API Merge & Ba
     expect(screen.getByRole('button', { name: /Report Bottles/i })).toBeInTheDocument();
   });
 
-  it('renders Cloudflare Turnstile Bot Protection on the Sign In, Create Account, and Password Reset views', () => {
+  it('operates with zero sign-in friction and provides Cloudflare Turnstile on community app submission', () => {
     renderStore();
 
-    const signInNavButtons = screen.getAllByRole('button', { name: /Sign In/i });
-    fireEvent.click(signInNavButtons[0]);
+    // Verify there are no Sign In or Log In buttons in the navigation
+    expect(screen.queryByRole('button', { name: /^Sign In$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Log In$/i })).not.toBeInTheDocument();
 
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByTestId('auth-diagnostics-component')).toBeInTheDocument();
-    expect(screen.getByText(/Auth & OAuth Diagnostics/i)).toBeInTheDocument();
-    expect(screen.getByText(/\/auth\/callback/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Continue with GitHub/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Continue with Google/i })).toBeInTheDocument();
-    expect(screen.getByText(/Cloudflare Turnstile Bot Protection/i)).toBeInTheDocument();
-    expect(screen.getByTestId('auth-turnstile-widget-container')).toBeInTheDocument();
-
-    // Switch to Create Account tab
-    fireEvent.click(screen.getByRole('tab', { name: /Create Account/i }));
-    expect(screen.getByText(/Cloudflare Turnstile Bot Protection/i)).toBeInTheDocument();
-    expect(screen.getByTestId('auth-turnstile-widget-container')).toBeInTheDocument();
-
-    // Switch back to Sign In and open Forgot password
-    fireEvent.click(screen.getByRole('tab', { name: /Sign In/i }));
-    fireEvent.click(screen.getByRole('button', { name: /Forgot password\?/i }));
-    expect(screen.getByText(/Cloudflare Turnstile Bot Protection/i)).toBeInTheDocument();
-    expect(screen.getByTestId('auth-turnstile-widget-container')).toBeInTheDocument();
+    // Navigate to Submit tab and verify Turnstile bot protection is present
+    const submitNavBtns = screen.getAllByRole('button', { name: /Submit/i });
+    fireEvent.click(submitNavBtns[0]);
+    expect(screen.getByTestId('turnstile-widget-container')).toBeInTheDocument();
   });
 
   it('renders Phase 3 Community Ratings & Reviews in app details and tracks Saved Library, Update Notifications, and Download History without vlatest', () => {
@@ -414,7 +397,7 @@ describe('Niruvi Store — Community Submission (/submit), Worker API Merge & Ba
       screen.getByRole('region', { name: /Community ratings and reviews/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /Sign in to Write a Review/i }),
+      screen.getByRole('button', { name: /Write a Review/i }),
     ).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Close application details/i }));
 

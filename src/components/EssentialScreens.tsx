@@ -59,14 +59,14 @@ export const WelcomeIntroScreen: React.FC<WelcomeIntroScreenProps> = ({
   return (
     <section
       aria-label="Welcome and platform introduction"
-      className="mb-6 p-5 sm:p-6 rounded-xl bg-neutral-900/70 border border-neutral-800"
+      className="mb-6 p-5 sm:p-6 rounded-2xl bg-neutral-900/80 backdrop-blur-sm border border-neutral-800 shadow-sm"
     >
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-5 border-b border-neutral-800/90">
         <div className="max-w-2xl">
           <p className="text-xs font-mono text-sky-400 mb-1.5">
             Welcome to Niruvi Store · Portable Linux Software Directory
           </p>
-          <h2 className="text-base sm:text-lg font-semibold text-white tracking-tight">
+          <h2 className="text-base sm:text-lg font-semibold text-white tracking-tight text-balance">
             Download, verify, and run standalone Linux applications without root or package manager lock-in.
           </h2>
           <p className="text-xs sm:text-sm text-neutral-300 mt-1.5 leading-relaxed">
@@ -77,14 +77,14 @@ export const WelcomeIntroScreen: React.FC<WelcomeIntroScreenProps> = ({
           type="button"
           onClick={onDismiss}
           aria-label="Dismiss welcome introduction"
-          className="self-start px-3 py-1.5 rounded-lg bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-xs font-medium text-neutral-300 hover:text-white transition-colors shrink-0 cursor-pointer"
+          className="self-start px-3 py-1.5 rounded-xl bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-xs font-medium text-neutral-300 hover:text-white transition-colors shrink-0 cursor-pointer"
         >
           Dismiss Intro
         </button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-4 border-b border-neutral-800/90 text-xs">
-        <div className="space-y-1">
+        <div className="p-3 rounded-xl bg-neutral-950/60 border border-neutral-800/60 space-y-1">
           <div className="font-semibold text-white flex items-center gap-2">
             <Download className="w-3.5 h-3.5 text-sky-400 shrink-0" aria-hidden="true" />
             <span>01. Direct Upstream Releases</span>
@@ -94,7 +94,7 @@ export const WelcomeIntroScreen: React.FC<WelcomeIntroScreenProps> = ({
           </p>
         </div>
 
-        <div className="space-y-1">
+        <div className="p-3 rounded-xl bg-neutral-950/60 border border-neutral-800/60 space-y-1">
           <div className="font-semibold text-white flex items-center gap-2">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" aria-hidden="true" />
             <span>02. Cryptographic SHA-256</span>
@@ -104,7 +104,7 @@ export const WelcomeIntroScreen: React.FC<WelcomeIntroScreenProps> = ({
           </p>
         </div>
 
-        <div className="space-y-1">
+        <div className="p-3 rounded-xl bg-neutral-950/60 border border-neutral-800/60 space-y-1">
           <div className="font-semibold text-white flex items-center gap-2">
             <Terminal className="w-3.5 h-3.5 text-amber-400 shrink-0" aria-hidden="true" />
             <span>03. Zero-Install Execution</span>
@@ -120,7 +120,7 @@ export const WelcomeIntroScreen: React.FC<WelcomeIntroScreenProps> = ({
           <button
             type="button"
             onClick={onOpenVerifier}
-            className="px-3.5 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm active:scale-95"
           >
             <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
             <span>Verify a Local .AppImage</span>
@@ -128,7 +128,7 @@ export const WelcomeIntroScreen: React.FC<WelcomeIntroScreenProps> = ({
           <button
             type="button"
             onClick={onOpenSubmit}
-            className="px-3.5 py-2 rounded-lg bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-neutral-200 text-xs font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-neutral-200 text-xs font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer active:scale-95"
           >
             <PlusCircle className="w-3.5 h-3.5 text-sky-400" aria-hidden="true" />
             <span>Submit a Package</span>
@@ -140,21 +140,21 @@ export const WelcomeIntroScreen: React.FC<WelcomeIntroScreenProps> = ({
           <button
             type="button"
             onClick={() => onQuickSearch('video')}
-            className="px-2 py-1 rounded bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 font-mono text-[11px] cursor-pointer"
+            className="px-2.5 py-1 rounded-lg bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 font-mono text-[11px] cursor-pointer transition-colors"
           >
             video
           </button>
           <button
             type="button"
             onClick={() => onQuickSearch('code')}
-            className="px-2 py-1 rounded bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 font-mono text-[11px] cursor-pointer"
+            className="px-2.5 py-1 rounded-lg bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 font-mono text-[11px] cursor-pointer transition-colors"
           >
             code
           </button>
           <button
             type="button"
             onClick={() => onQuickSearch('raster')}
-            className="px-2 py-1 rounded bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 font-mono text-[11px] cursor-pointer"
+            className="px-2.5 py-1 rounded-lg bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 font-mono text-[11px] cursor-pointer transition-colors"
           >
             raster
           </button>

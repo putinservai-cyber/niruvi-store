@@ -148,6 +148,7 @@ const memorySyncLogs: Array<{
 }> = [];
 const memoryReports: Array<Record<string, any>> = [];
 const memorySubmissions: Array<Record<string, any>> = [];
+const memoryReviews = new Map<string, Array<Record<string, any>>>();
 
 let cachedGoogleCerts: { certs: Record<string, string>; expiresAt: number } | null = null;
 let cachedGoogleJwks: { keys: any[]; expiresAt: number } | null = null;
@@ -159,7 +160,7 @@ export function buildSecurityHeaders(requestOrigin?: string | null): Record<stri
   const allowedOrigin = requestOrigin || '*';
   return {
     'Content-Security-Policy':
-      "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://apis.google.com https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https:; frame-src 'self' https://challenges.cloudflare.com https://*.firebaseapp.com https://accounts.google.com https://api.razorpay.com; frame-ancestors 'self' https://*.ai.studio https://*.google.com; object-src 'none'; base-uri 'self';",
+      "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https:; frame-src 'self' https://challenges.cloudflare.com; frame-ancestors 'self' https://*.ai.studio https://*.google.com; object-src 'none'; base-uri 'self';",
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
@@ -384,6 +385,21 @@ async function ensureD1Tables(db?: D1Database): Promise<void> {
           submitter_email TEXT,
           status TEXT NOT NULL DEFAULT 'pending_review',
           created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )`
+      )
+      .run();
+
+    await db
+      .prepare(
+        `CREATE TABLE IF NOT EXISTS app_reviews (
+          id TEXT PRIMARY KEY,
+          app_slug TEXT NOT NULL,
+          author_name TEXT NOT NULL,
+          rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+          title TEXT NOT NULL,
+          body TEXT NOT NULL,
+          distro TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )`
       )
       .run();
@@ -1559,6 +1575,139 @@ export default {
           201,
           origin
         );
+      }
+
+      // 16. GET /api/reviews — Cloudflare D1 Community Reviews
+      if (path === '/api/reviews' && method === 'GET') {
+        const rawSlug = url.searchParams.get('appSlug') || url.searchParams.get('slug') || '';
+        const cleanSlug = rawSlug.trim().toLowerCase();
+        if (!cleanSlug) {
+          return jsonResponse({ reviews: [] }, 200, origin);
+        }
+
+        if (env?.DB) {
+          await ensureD1Tables(env.DB);
+          const { results } = await env.DB.prepare(
+            `SELECT id, app_slug AS appSlug, author_name AS authorName, rating, title, body, distro, created_at AS createdAt
+             FROM app_reviews
+             WHERE lower(app_slug) = ?
+             ORDER BY created_at DESC
+             LIMIT 100`
+          )
+            .bind(cleanSlug)
+            .all<any>();
+          return jsonResponse({ reviews: results || [] }, 200, origin);
+        }
+
+        const memList = memoryReviews.get(cleanSlug) || [];
+        return jsonResponse({ reviews: memList }, 200, origin);
+      }
+
+      // 17. POST /api/reviews — Write a community review (No sign-in required)
+      if (path === '/api/reviews' && method === 'POST') {
+        const rl = await checkAuthRateLimit(request, env, 'reviews', 30);
+        if (!rl.allowed) {
+          return jsonResponse(
+            { error: 'Rate limit exceeded. Please wait before submitting another review.' },
+            429,
+            origin,
+            { 'Retry-After': String(rl.retryAfterSeconds) }
+          );
+        }
+
+        const body = (await request.json().catch(() => ({}))) as Record<string, any>;
+        const rawSlug = typeof body.appSlug === 'string' ? body.appSlug.trim().toLowerCase() : '';
+        const authorName = sanitizeText(body.authorName || 'Linux Community User', 60);
+        const rating = Math.max(1, Math.min(5, Math.round(Number(body.rating) || 5)));
+        const title = sanitizeText(body.title || '', 100);
+        const reviewBody = sanitizeText(body.body || '', 2000);
+        const distro = sanitizeText(body.distro || '', 60);
+
+        if (!rawSlug || !reviewBody || reviewBody.length < 5) {
+          return jsonResponse(
+            { error: 'Application slug and a review of at least 5 characters are required.' },
+            400,
+            origin
+          );
+        }
+
+        const reviewId =
+          typeof body.id === 'string' && body.id.trim()
+            ? body.id.trim()
+            : `rev_${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
+        const createdAt = new Date().toISOString();
+
+        if (env?.DB) {
+          await ensureD1Tables(env.DB);
+          await env.DB.prepare(
+            `INSERT INTO app_reviews (id, app_slug, author_name, rating, title, body, distro, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+             ON CONFLICT(id) DO UPDATE SET
+               author_name = excluded.author_name,
+               rating = excluded.rating,
+               title = excluded.title,
+               body = excluded.body,
+               distro = excluded.distro`
+          )
+            .bind(reviewId, rawSlug, authorName, rating, title, reviewBody, distro, createdAt)
+            .run();
+        } else {
+          const list = memoryReviews.get(rawSlug) || [];
+          const existingIdx = list.findIndex((r) => r.id === reviewId);
+          const reviewObj = {
+            id: reviewId,
+            appSlug: rawSlug,
+            authorName,
+            rating,
+            title,
+            body: reviewBody,
+            distro,
+            createdAt,
+          };
+          if (existingIdx >= 0) {
+            list[existingIdx] = reviewObj;
+          } else {
+            list.unshift(reviewObj);
+          }
+          memoryReviews.set(rawSlug, list);
+        }
+
+        return jsonResponse(
+          {
+            success: true,
+            review: {
+              id: reviewId,
+              appSlug: rawSlug,
+              authorName,
+              rating,
+              title,
+              body: reviewBody,
+              distro,
+              createdAt,
+            },
+          },
+          201,
+          origin
+        );
+      }
+
+      // 18. DELETE /api/reviews/:id
+      if (path.startsWith('/api/reviews/') && method === 'DELETE') {
+        const reviewId = decodeURIComponent(path.slice('/api/reviews/'.length)).trim();
+        if (!reviewId) {
+          return jsonResponse({ error: 'Review ID is required.' }, 400, origin);
+        }
+
+        if (env?.DB) {
+          await ensureD1Tables(env.DB);
+          await env.DB.prepare('DELETE FROM app_reviews WHERE id = ?').bind(reviewId).run();
+        } else {
+          for (const [slug, list] of memoryReviews.entries()) {
+            const filtered = list.filter((r) => r.id !== reviewId);
+            memoryReviews.set(slug, filtered);
+          }
+        }
+        return jsonResponse({ success: true, deleted: reviewId }, 200, origin);
       }
 
       if (path.startsWith('/api/admin/')) {

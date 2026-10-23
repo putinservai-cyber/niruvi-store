@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { buildApiUrl } from '../config/site';
-import { useAuth } from '../context/AuthContext';
 import { sanitizeErrorMessage } from '../utils/sanitize';
 import { fetchWithTimeoutAndRetry } from '../utils/network';
 import {
@@ -51,7 +50,6 @@ interface AdminModerationViewProps {
 }
 
 export const AdminModerationView: React.FC<AdminModerationViewProps> = ({ onBackToStore }) => {
-  const { user } = useAuth();
   const [adminToken, setAdminToken] = useState('');
   const [submissions, setSubmissions] = useState<AdminSubmissionItem[]>([]);
   const [reports, setReports] = useState<AdminReportItem[]>([]);
@@ -60,10 +58,6 @@ export const AdminModerationView: React.FC<AdminModerationViewProps> = ({ onBack
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [loadedOnce, setLoadedOnce] = useState(false);
   const [providers, setProviders] = useState<CatalogProvider[]>(() => createCatalogProviders());
-
-  const isAdminOrModeratorUser =
-    Boolean(user) && (user?.role === 'ADMIN' || user?.role === 'MODERATOR');
-  const isNonAdminSignedInUser = Boolean(user) && !isAdminOrModeratorUser;
 
   // Wipe in-memory admin token when leaving the console
   useEffect(() => {
@@ -93,8 +87,8 @@ export const AdminModerationView: React.FC<AdminModerationViewProps> = ({ onBack
 
   const fetchAdminData = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!adminToken.trim() && !isAdminOrModeratorUser) {
-      setError('Enter the Worker ADMIN_TOKEN secret or sign in with an Administrator account.');
+    if (!adminToken.trim()) {
+      setError('Enter the Worker ADMIN_TOKEN secret to unlock the moderation console.');
       return;
     }
 
@@ -132,7 +126,7 @@ export const AdminModerationView: React.FC<AdminModerationViewProps> = ({ onBack
   };
 
   const handleToggleVisibility = async (target: string, nextStatus: 'published' | 'hidden') => {
-    if (!adminToken.trim() && !isAdminOrModeratorUser) return;
+    if (!adminToken.trim()) return;
     setError(null);
     setStatusMessage(null);
 
@@ -167,7 +161,7 @@ export const AdminModerationView: React.FC<AdminModerationViewProps> = ({ onBack
   };
 
   const handleDeleteSubmission = async (target: string) => {
-    if (!adminToken.trim() && !isAdminOrModeratorUser) return;
+    if (!adminToken.trim()) return;
     setError(null);
     setStatusMessage(null);
 
@@ -229,20 +223,6 @@ export const AdminModerationView: React.FC<AdminModerationViewProps> = ({ onBack
           </button>
         </div>
       </div>
-
-      {isNonAdminSignedInUser && !loadedOnce && (
-        <div
-          role="status"
-          className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 flex items-center gap-2"
-        >
-          <Lock className="w-4 h-4 text-amber-400 shrink-0" aria-hidden="true" />
-          <span>
-            Signed in as <strong>@{user?.username}</strong> ({user?.role}). Admin routes require an{' '}
-            <code className="font-mono">ADMIN</code> / <code className="font-mono">MODERATOR</code>{' '}
-            role or a valid Worker <code className="font-mono">ADMIN_TOKEN</code> secret.
-          </span>
-        </div>
-      )}
 
       {/* Admin Token Form */}
       <form

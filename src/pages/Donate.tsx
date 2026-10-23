@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   Heart,
   Copy,
@@ -7,11 +7,9 @@ import {
   ArrowLeft,
   Coffee,
   CreditCard,
-  Smartphone,
-  QrCode,
+  Sparkles,
 } from 'lucide-react';
-import { DEVELOPER_NAME, KOFI_URL, RAZORPAY_URL, UPI_ID } from '../config/site';
-import { generateQrMatrix } from '../utils/upiQr';
+import { DEVELOPER_NAME, KOFI_URL, RAZORPAY_URL } from '../config/site';
 
 interface DonatePageProps {
   onBackToStore: () => void;
@@ -30,14 +28,6 @@ export const Donate: React.FC<DonatePageProps> = ({ onBackToStore }) => {
       // Ignore clipboard error
     }
   };
-
-  const upiDeepLink = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(
-    DEVELOPER_NAME
-  )}&cu=INR`;
-
-  const qrMatrix = useMemo(() => generateQrMatrix(upiDeepLink), [upiDeepLink]);
-  const quietZone = 3;
-  const viewBoxSize = qrMatrix.length + quietZone * 2;
 
   return (
     <article className="max-w-3xl mx-auto space-y-6 py-4 text-neutral-200">
@@ -61,12 +51,12 @@ export const Donate: React.FC<DonatePageProps> = ({ onBackToStore }) => {
           Support &amp; Donate to Niruvi Store
         </h1>
         <p className="text-sm text-neutral-300 leading-relaxed">
-          Support Niruvi Store directly using the official donation links or by scanning the UPI QR
-          code below.
+          Support Niruvi Store directly using our official secure donation and support platforms below.
+          Your contributions help maintain high-speed servers, SHA-256 verification updates, and open-source Linux AppImage tooling.
         </p>
       </header>
 
-      {/* Official Donation Links Only */}
+      {/* Official Donation Links */}
       <section aria-label="Official donation links" className="grid grid-cols-1 gap-4">
         {/* 1. Ko-fi */}
         <div className="p-5 rounded-2xl bg-neutral-900/70 border border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -83,6 +73,9 @@ export const Donate: React.FC<DonatePageProps> = ({ onBackToStore }) => {
             >
               {KOFI_URL}
             </a>
+            <p className="text-xs text-neutral-400">
+              Buy a coffee or support monthly creator goals securely via Ko-fi.
+            </p>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
@@ -111,7 +104,7 @@ export const Donate: React.FC<DonatePageProps> = ({ onBackToStore }) => {
               rel="noopener noreferrer"
               className="min-h-[40px] px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs inline-flex items-center gap-1.5 transition-colors"
             >
-              <span>Open ko-fi.com/putinservai</span>
+              <span>Open ko-fi.com</span>
               <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
             </a>
           </div>
@@ -122,7 +115,7 @@ export const Donate: React.FC<DonatePageProps> = ({ onBackToStore }) => {
           <div className="space-y-1 min-w-0">
             <div className="flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-sky-400 shrink-0" aria-hidden="true" />
-              <h2 className="text-base font-bold text-white">Razorpay</h2>
+              <h2 className="text-base font-bold text-white">Razorpay Support Page</h2>
             </div>
             <a
               href={RAZORPAY_URL}
@@ -132,6 +125,9 @@ export const Donate: React.FC<DonatePageProps> = ({ onBackToStore }) => {
             >
               {RAZORPAY_URL}
             </a>
+            <p className="text-xs text-neutral-400">
+              Contribute via cards, net banking, wallets, and domestic/international payments.
+            </p>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
@@ -160,91 +156,19 @@ export const Donate: React.FC<DonatePageProps> = ({ onBackToStore }) => {
               rel="noopener noreferrer"
               className="min-h-[40px] px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs inline-flex items-center gap-1.5 transition-colors"
             >
-              <span>Open razorpay.me/@putin</span>
+              <span>Open Razorpay Page</span>
               <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
             </a>
           </div>
         </div>
-
-        {/* 3. UPI ID + Scannable QR Code */}
-        <div className="p-5 sm:p-6 rounded-2xl bg-neutral-900/70 border border-neutral-800 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-3 w-full md:w-auto min-w-0">
-            <div className="flex items-center gap-2">
-              <Smartphone className="w-4 h-4 text-emerald-400 shrink-0" aria-hidden="true" />
-              <h2 className="text-base font-bold text-white">UPI (Scan QR or Copy ID)</h2>
-            </div>
-
-            <p className="text-xs sm:text-sm font-mono text-emerald-400 select-all truncate">
-              {UPI_ID}
-            </p>
-
-            <p className="text-xs text-neutral-400">
-              Scan the QR code with Google Pay, PhonePe, Paytm, BHIM, or any UPI app.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => handleCopy('upi', UPI_ID)}
-                aria-label="Copy UPI ID"
-                className="min-h-[40px] px-3.5 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                {copiedKey === 'upi' ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
-                    <span>Copied</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" aria-hidden="true" />
-                    <span>Copy UPI ID</span>
-                  </>
-                )}
-              </button>
-
-              <a
-                href={upiDeepLink}
-                className="min-h-[40px] px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center gap-1.5 transition-colors"
-              >
-                <QrCode className="w-3.5 h-3.5" aria-hidden="true" />
-                <span>Pay via UPI App</span>
-              </a>
-            </div>
-          </div>
-
-          {/* Scannable UPI QR Code Box */}
-          <div className="flex flex-col items-center gap-2 shrink-0">
-            <div className="p-3 rounded-2xl bg-white border-2 border-emerald-500/40 shadow-md">
-              <svg
-                role="img"
-                aria-label={`UPI QR Code for ${UPI_ID}`}
-                viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
-                className="w-40 h-40 sm:w-44 sm:h-44 block"
-                shapeRendering="crispEdges"
-              >
-                <rect width={viewBoxSize} height={viewBoxSize} fill="#ffffff" />
-                {qrMatrix.map((row, rIdx) =>
-                  row.map((cell, cIdx) =>
-                    cell ? (
-                      <rect
-                        key={`${rIdx}-${cIdx}`}
-                        x={cIdx + quietZone}
-                        y={rIdx + quietZone}
-                        width={1}
-                        height={1}
-                        fill="#000000"
-                      />
-                    ) : null
-                  )
-                )}
-              </svg>
-            </div>
-            <span className="text-[11px] font-mono text-neutral-400">
-              Scan to Pay · {UPI_ID}
-            </span>
-          </div>
-        </div>
       </section>
+
+      <div className="p-4 rounded-2xl bg-neutral-900/50 border border-neutral-800 flex items-center gap-3 text-xs text-neutral-400">
+        <Sparkles className="w-4 h-4 text-sky-400 shrink-0" aria-hidden="true" />
+        <span>
+          Thank you for supporting Niruvi Store! All contributions go directly toward open-source Linux packaging maintenance and community infrastructure.
+        </span>
+      </div>
     </article>
   );
 };

@@ -1,23 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useAuth } from '../context/AuthContext';
 import {
-  fetchPublicMarketplaceApp,
   fetchAppReviews,
   upsertAppReview,
   deleteAppReview,
   recordAppDownload,
-  syncLibraryBookmarkWithSupabase,
-  fetchUserLibraryFromSupabase,
-  MarketplaceApp,
   AppReviewRecord,
-} from '../lib/supabase';
+} from '../lib/cloudflare-db';
 import { APPS_CATALOG } from '../data/apps';
-import { generateNiruviProtocolUrl } from '../data/apps';
 import { AppMetadata } from '../types';
 import {
   Download,
   Terminal,
-  ShieldCheck,
   CheckCircle2,
   Copy,
   Check,
@@ -28,11 +21,53 @@ import {
   Loader2,
   Bookmark,
   BookmarkCheck,
-  Share2,
   Trash2,
-  Edit2,
   AlertCircle,
 } from 'lucide-react';
+
+export interface MarketplaceApp {
+  id: string;
+  publisher_id: string;
+  name: string;
+  slug: string;
+  short_description: string;
+  description: string;
+  category: string;
+  license: string;
+  website_url: string | null;
+  source_url: string | null;
+  icon_url: string | null;
+  status: 'published' | 'draft' | 'archived';
+  verified: boolean;
+  created_at: string;
+  updated_at: string;
+  publisher?: {
+    org_name: string;
+    slug: string;
+    verified: boolean;
+  };
+  versions?: Array<{
+    id: string;
+    app_id: string;
+    version: string;
+    release_notes: string | null;
+    release_date: string;
+    status: string;
+    created_at: string;
+    updated_at: string;
+    assets: Array<{
+      id: string;
+      version_id: string;
+      architecture: string;
+      download_url: string;
+      sha256: string;
+      file_size: number | null;
+      filename: string;
+      asset_type: string;
+      created_at: string;
+    }>;
+  }>;
+}
 
 interface AppDetailPageProps {
   slug: string;
@@ -40,19 +75,21 @@ interface AppDetailPageProps {
   onOpenInstallModal?: (app: AppMetadata) => void;
 }
 
+const LOCAL_STORAGE_SAVED_APPS_KEY = 'niruvi_saved_apps_v1';
+
 export const AppDetailPage: React.FC<AppDetailPageProps> = ({
   slug,
   onBackToStore,
   onOpenInstallModal,
 }) => {
-  const { user, openAuthModal } = useAuth();
   const [app, setApp] = useState<MarketplaceApp | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Reviews
   const [reviews, setReviews] = useState<AppReviewRecord[]>([]);
-  const [loadingReviews, setLoadingReviews] = useState(false);
+  const [, setLoadingReviews] = useState(false);
   const [userRating, setUserRating] = useState(5);
+  const [userAuthor, setUserAuthor] = useState('');
   const [userTitle, setUserTitle] = useState('');
   const [userBody, setUserBody] = useState('');
   const [userDistro, setUserDistro] = useState('Ubuntu / Debian');
@@ -77,13 +114,68 @@ export const AppDetailPage: React.FC<AppDetailPageProps> = ({
     let mounted = true;
     setLoading(true);
 
-    fetchPublicMarketplaceApp(slug)
+    // Fetch from API or fallback
+    fetch(`/api/catalog/${encodeURIComponent(slug)}`)
+      .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!mounted) return;
-        if (data) {
-          setApp(data);
+        if (data?.app) {
+          setApp(data.app);
         } else if (staticFallback) {
-          // Normalize static app to MarketplaceApp model
+          const authorName = staticFallback.publisher?.name || staticFallback.name;
+          const isVerified = staticFallback.trustTier === 'Official Developer';
+          const primaryArch = staticFallback.architectures?.[0] || 'x86_64';
+          setApp({
+            id: staticFallback.id,
+            publisher_id: 'community',
+            name: staticFallback.name,
+            slug: staticFallback.id,
+            short_description: staticFallback.description.slice(0, 150),
+            description: staticFallback.description,
+            category: staticFallback.category,
+            license: staticFallback.license,
+            website_url: staticFallback.homepageUrl || staticFallback.sourceUrl || null,
+            source_url: staticFallback.sourceUrl || staticFallback.repositoryUrl || null,
+            icon_url: staticFallback.icon || null,
+            status: 'published',
+            verified: isVerified,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            publisher: {
+              org_name: authorName,
+              slug: authorName.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+              verified: isVerified,
+            },
+            versions: [
+              {
+                id: `v_${staticFallback.id}`,
+                app_id: staticFallback.id,
+                version: staticFallback.version,
+                release_notes: 'Initial verified upstream release.',
+                release_date: new Date().toISOString(),
+                status: 'published',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                assets: [
+                  {
+                    id: `asset_${staticFallback.id}`,
+                    version_id: `v_${staticFallback.id}`,
+                    architecture: primaryArch,
+                    download_url: staticFallback.downloadUrl,
+                    sha256: staticFallback.sha256,
+                    file_size: null,
+                    filename: `${staticFallback.name}.AppImage`,
+                    asset_type: 'appimage',
+                    created_at: new Date().toISOString(),
+                  },
+                ],
+              },
+            ],
+          });
+        }
+      })
+      .catch(() => {
+        if (mounted && staticFallback) {
           const authorName = staticFallback.publisher?.name || staticFallback.name;
           const isVerified = staticFallback.trustTier === 'Official Developer';
           const primaryArch = staticFallback.architectures?.[0] || 'x86_64';
@@ -150,18 +242,20 @@ export const AppDetailPage: React.FC<AppDetailPageProps> = ({
         if (mounted) setLoadingReviews(false);
       });
 
+    // Check if bookmarked in local storage library
+    try {
+      const saved = JSON.parse(localStorage.getItem(LOCAL_STORAGE_SAVED_APPS_KEY) || '[]');
+      if (Array.isArray(saved)) {
+        setIsBookmarked(saved.includes(slug));
+      }
+    } catch {
+      // ignore
+    }
+
     return () => {
       mounted = false;
     };
   }, [slug, staticFallback]);
-
-  // Check if bookmarked in user library
-  useEffect(() => {
-    if (!user) return;
-    fetchUserLibraryFromSupabase(user.id).then((items) => {
-      setIsBookmarked(items.some((i) => i.appSlug.toLowerCase() === slug.toLowerCase()));
-    });
-  }, [user, slug]);
 
   const latestVersion = app?.versions?.[0];
   const latestAsset = latestVersion?.assets?.[0];
@@ -169,7 +263,6 @@ export const AppDetailPage: React.FC<AppDetailPageProps> = ({
   const handleDownload = () => {
     if (!app || !latestAsset) return;
     recordAppDownload({
-      userId: user?.id,
       appSlug: app.slug,
       version: latestVersion?.version || '1.0.0',
       arch: latestAsset.architecture,
@@ -177,44 +270,38 @@ export const AppDetailPage: React.FC<AppDetailPageProps> = ({
     window.location.href = latestAsset.download_url;
   };
 
-  const handleToggleLibrary = async () => {
-    if (!user) {
-      openAuthModal();
-      return;
-    }
+  const handleToggleLibrary = () => {
     const next = !isBookmarked;
     setIsBookmarked(next);
-    await syncLibraryBookmarkWithSupabase({
-      userId: user.id,
-      appSlug: slug,
-      pinnedVersion: latestVersion?.version,
-      bookmarked: next,
-    });
+    try {
+      const saved = JSON.parse(localStorage.getItem(LOCAL_STORAGE_SAVED_APPS_KEY) || '[]');
+      const set = new Set(Array.isArray(saved) ? saved : []);
+      if (next) {
+        set.add(slug);
+      } else {
+        set.delete(slug);
+      }
+      localStorage.setItem(LOCAL_STORAGE_SAVED_APPS_KEY, JSON.stringify(Array.from(set)));
+    } catch {
+      // ignore
+    }
   };
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      openAuthModal();
-      return;
-    }
     setSubmittingReview(true);
     setReviewMessage(null);
     try {
       const record = await upsertAppReview({
         appSlug: slug,
-        userId: user.id,
-        username: user.username,
-        displayName: user.displayName,
+        username: userAuthor.trim() || 'Community Member',
+        displayName: userAuthor.trim() || 'Community Member',
         rating: userRating,
         title: userTitle.trim(),
         body: userBody.trim(),
         distro: userDistro.trim(),
       });
-      setReviews((prev) => {
-        const without = prev.filter((r) => r.userId !== user.id);
-        return [record, ...without];
-      });
+      setReviews((prev) => [record, ...prev.filter((r) => r.id !== record.id)]);
       setReviewMessage('Your review has been published.');
       setUserTitle('');
       setUserBody('');
@@ -226,13 +313,7 @@ export const AppDetailPage: React.FC<AppDetailPageProps> = ({
   };
 
   const handleDeleteReview = async (reviewId: string) => {
-    if (!user) return;
-    const isStaff = user.role === 'ADMIN' || user.role === 'MODERATOR';
-    await deleteAppReview({
-      reviewId,
-      userId: user.id,
-      isModeratorOrAdmin: isStaff,
-    });
+    await deleteAppReview(reviewId);
     setReviews((prev) => prev.filter((r) => r.id !== reviewId));
   };
 
@@ -507,7 +588,7 @@ export const AppDetailPage: React.FC<AppDetailPageProps> = ({
             {/* Submit Review Box */}
             <form onSubmit={handleReviewSubmit} className="p-4 bg-neutral-950 border border-neutral-800 rounded-xl mb-6 space-y-3">
               <div className="text-xs font-semibold text-neutral-200">
-                {user ? `Write a review as ${user.displayName}` : 'Sign in to submit a review'}
+                Write a Community Review
               </div>
 
               {reviewMessage && (
@@ -516,23 +597,35 @@ export const AppDetailPage: React.FC<AppDetailPageProps> = ({
                 </div>
               )}
 
-              <div className="flex items-center gap-4">
-                <label className="text-xs text-neutral-400">Rating:</label>
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setUserRating(star)}
-                      className="p-1 hover:scale-110 transition"
-                    >
-                      <Star
-                        className={`w-4 h-4 ${
-                          star <= userRating ? 'fill-amber-400 text-amber-400' : 'text-neutral-600'
-                        }`}
-                      />
-                    </button>
-                  ))}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <label className="text-xs text-neutral-400">Rating:</label>
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setUserRating(star)}
+                        className="p-1 hover:scale-110 transition cursor-pointer"
+                      >
+                        <Star
+                          className={`w-4 h-4 ${
+                            star <= userRating ? 'fill-amber-400 text-amber-400' : 'text-neutral-600'
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex-1 min-w-[160px]">
+                  <input
+                    type="text"
+                    value={userAuthor}
+                    onChange={(e) => setUserAuthor(e.target.value)}
+                    placeholder="Your Name (optional)"
+                    className="w-full px-3 py-1.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-neutral-200 outline-none"
+                  />
                 </div>
               </div>
 
@@ -570,7 +663,7 @@ export const AppDetailPage: React.FC<AppDetailPageProps> = ({
                 <button
                   type="submit"
                   disabled={submittingReview}
-                  className="px-4 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-medium rounded-lg transition disabled:opacity-50"
+                  className="px-4 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-medium rounded-lg transition disabled:opacity-50 cursor-pointer"
                 >
                   {submittingReview ? 'Posting...' : 'Submit Review'}
                 </button>
@@ -603,15 +696,13 @@ export const AppDetailPage: React.FC<AppDetailPageProps> = ({
                             />
                           ))}
                         </div>
-                        {user && (user.id === rev.userId || user.role === 'ADMIN' || user.role === 'MODERATOR') && (
-                          <button
-                            onClick={() => handleDeleteReview(rev.id)}
-                            className="text-neutral-500 hover:text-red-400 p-1"
-                            title="Delete review"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
+                        <button
+                          onClick={() => handleDeleteReview(rev.id)}
+                          className="text-neutral-500 hover:text-red-400 p-1 cursor-pointer"
+                          title="Delete review"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
                     {rev.title && <div className="text-xs font-bold text-neutral-200">{rev.title}</div>}

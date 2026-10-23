@@ -1,6 +1,7 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
+import worker from './src/worker';
 
 const PORT = Number(process.env.PORT || 3000);
 const DIST_DIR = path.resolve(process.cwd(), 'dist');
@@ -37,18 +38,65 @@ function getSafeFilePath(urlPath: string): string | null {
   return target;
 }
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   const method = req.method || 'GET';
+  const rawUrl = req.url || '/';
+  // Strip subpath prefix if hosted under /niruvi-store
+  const effectiveUrl =
+    rawUrl.startsWith('/niruvi-store/')
+      ? rawUrl.slice('/niruvi-store'.length)
+      : rawUrl === '/niruvi-store'
+        ? '/'
+        : rawUrl;
+
+  // Route /api/* directly through Cloudflare Worker API & D1 handler
+  if (effectiveUrl.startsWith('/api/')) {
+    const chunks: Buffer[] = [];
+    req.on('data', (chunk) => chunks.push(chunk));
+    req.on('end', async () => {
+      try {
+        const fullUrl = `http://127.0.0.1:${PORT}${effectiveUrl}`;
+        const headers = new Headers();
+        for (const [k, v] of Object.entries(req.headers)) {
+          if (v) {
+            headers.set(k, Array.isArray(v) ? v.join(', ') : v);
+          }
+        }
+        const hasBody = method !== 'GET' && method !== 'HEAD';
+        const bodyBuffer = hasBody && chunks.length > 0 ? Buffer.concat(chunks) : undefined;
+        const webReq = new Request(fullUrl, {
+          method,
+          headers,
+          body: bodyBuffer,
+        });
+
+        const workerRes = await worker.fetch(webReq, {
+          JWT_SECRET: process.env.JWT_SECRET || 'niruvi_dev_secret_key_2026',
+          ADMIN_TOKEN: process.env.ADMIN_TOKEN || '',
+          GITHUB_TOKEN: process.env.GITHUB_TOKEN || '',
+        });
+
+        const responseHeaders: Record<string, string> = {};
+        workerRes.headers.forEach((v, k) => {
+          responseHeaders[k] = v;
+        });
+
+        res.writeHead(workerRes.status, responseHeaders);
+        const arrayBuf = await workerRes.arrayBuffer();
+        res.end(Buffer.from(arrayBuf));
+      } catch (err: any) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal server error' }));
+      }
+    });
+    return;
+  }
+
   if (method !== 'GET' && method !== 'HEAD') {
     res.writeHead(405, { 'Content-Type': 'text/plain' });
     res.end('Method Not Allowed');
     return;
   }
-
-  const rawUrl = req.url || '/';
-  // Strip subpath prefix if hosted under /niruvi-store
-  const effectiveUrl =
-    rawUrl.startsWith('/niruvi-store/') ? rawUrl.slice('/niruvi-store'.length) : rawUrl === '/niruvi-store' ? '/' : rawUrl;
 
   const targetPath = getSafeFilePath(effectiveUrl);
   if (!targetPath) {
@@ -100,6 +148,11 @@ const server = http.createServer((req, res) => {
   const headers: Record<string, string> = {
     'Content-Type': contentType,
     'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'SAMEORIGIN',
+    'X-XSS-Protection': '0',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+    'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https:; frame-src 'self' https://www.youtube-nocookie.com https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self';",
   };
 
   // Cache static hashed assets aggressively, html conservatively
