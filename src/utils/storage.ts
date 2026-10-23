@@ -81,7 +81,7 @@ export function toggleBookmark(appId: string): string[] {
   }
 }
 
-const TEST_ENTRY_ID_REGEX = /^(?:test[-_]?app|demo[-_]?app|mock[-_]?app|supabase[-_]?preview)$/i;
+const TEST_ENTRY_ID_REGEX = /^(?:test[-_]?app|demo[-_]?app|mock[-_]?app)$/i;
 
 export function getCustomApps(): AppMetadata[] {
   try {
@@ -94,8 +94,7 @@ export function getCustomApps(): AppMetadata[] {
           .filter(
             (app) =>
               Boolean(app.id && app.name) &&
-              !TEST_ENTRY_ID_REGEX.test(app.id) &&
-              !/supabase\s*preview/i.test(app.name)
+              !TEST_ENTRY_ID_REGEX.test(app.id)
           )
       : [];
   } catch {
@@ -106,7 +105,7 @@ export function getCustomApps(): AppMetadata[] {
 export function saveCustomApp(app: AppMetadata): void {
   try {
     const sanitized = sanitizeAppMetadata(app);
-    if (TEST_ENTRY_ID_REGEX.test(sanitized.id) || /supabase\s*preview/i.test(sanitized.name)) {
+    if (TEST_ENTRY_ID_REGEX.test(sanitized.id)) {
       return;
     }
     const current = getCustomApps();

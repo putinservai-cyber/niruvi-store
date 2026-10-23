@@ -35,7 +35,7 @@ describe('Cloudflare D1 Database — Migrations and Schema Definition', () => {
     const sql = fs.readFileSync(rootMigrationPath, 'utf-8');
 
     expect(sql).toContain('CREATE TABLE IF NOT EXISTS catalog_apps');
-    expect(sql).toContain('CREATE TABLE IF NOT EXISTS catalog_versions');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS catalog_releases');
     expect(sql).toContain('CREATE TABLE IF NOT EXISTS app_reviews');
     expect(sql).toContain('CREATE INDEX IF NOT EXISTS idx_app_reviews_slug');
   });

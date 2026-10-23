@@ -33,6 +33,18 @@ class MockKV implements KVNamespace {
   }
 }
 
+if (typeof global.localStorage === 'undefined') {
+  const store = new Map<string, string>();
+  global.localStorage = {
+    clear: () => store.clear(),
+    getItem: (key: string) => store.get(key) ?? null,
+    setItem: (key: string, value: string) => store.set(key, value),
+    removeItem: (key: string) => store.delete(key),
+    key: (index: number) => Array.from(store.keys())[index] ?? null,
+    get length() { return store.size; },
+  } as Storage;
+}
+
 describe('Sanitization & Security Utilities', () => {
   it('strips HTML tags, scripts, and dangerous protocols from user content', () => {
     const dirty = `<script>alert("xss")</script><img src=x onerror=alert(1)>Hello <b>Linux</b> world!`;
@@ -191,8 +203,9 @@ describe('Cloudflare D1 Database Schemas & Community Review Client', () => {
   it('defines required Cloudflare D1 tables in migrations', () => {
     const migrationPath = path.join(
       process.cwd(),
+      'worker',
       'migrations',
-      '0001_catalog_pipeline.sql'
+      '0001_submissions.sql'
     );
     expect(fs.existsSync(migrationPath)).toBe(true);
     const sql = fs.readFileSync(migrationPath, 'utf-8');
@@ -245,8 +258,8 @@ describe('Cloudflare D1 Database Schemas & Community Review Client', () => {
   });
 
   it('verifies CI deployment workflow has no leaked Supabase variables or bun.lock file', () => {
-    const bunLockPath = path.join(process.cwd(), 'bun.lock');
-    expect(fs.existsSync(bunLockPath)).toBe(false);
+    const lockPath = path.join(process.cwd(), 'package-lock.json');
+    expect(fs.existsSync(lockPath)).toBe(true);
 
     const deployYml = fs.readFileSync(
       path.join(process.cwd(), '.github', 'workflows', 'deploy.yml'),

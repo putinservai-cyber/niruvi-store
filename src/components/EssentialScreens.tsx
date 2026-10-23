@@ -13,6 +13,7 @@ import {
   ArrowRight,
   Compass,
   PlusCircle,
+  Copy,
 } from 'lucide-react';
 
 export interface WelcomeIntroScreenProps {
@@ -164,18 +165,26 @@ export const WelcomeIntroScreen: React.FC<WelcomeIntroScreenProps> = ({
   );
 };
 
+import { CloudflareVerificationScreen } from './CloudflareVerificationScreen';
+export { CloudflareVerificationScreen };
+
 export interface CatalogLoadingScreenProps {
   message?: string;
   skeletonCount?: number;
+  onComplete?: () => void;
+  isDismissable?: boolean;
+  onDismiss?: () => void;
 }
 
 /**
- * Screen 1: Loading Screen
- * Displayed while catalog pages or startup data are loading.
+ * Screen 1: Loading Screen (Cloudflare Security & SHA-256 Catalog Verification)
+ * Displayed while catalog pages, initial connection security, or startup data are verifying.
  */
 export const CatalogLoadingScreen: React.FC<CatalogLoadingScreenProps> = ({
   message = 'Synchronizing verified Linux AppImage catalog...',
-  skeletonCount = 6,
+  onComplete,
+  isDismissable = true,
+  onDismiss,
 }) => {
   return (
     <div
@@ -184,36 +193,13 @@ export const CatalogLoadingScreen: React.FC<CatalogLoadingScreenProps> = ({
       aria-busy="true"
       className="my-4 space-y-4"
     >
-      <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-neutral-900/70 border border-neutral-800 text-xs text-neutral-300">
-        <div className="flex items-center gap-2.5">
-          <RefreshCw className="w-4 h-4 text-sky-400 animate-spin shrink-0" aria-hidden="true" />
-          <span className="font-medium">{message}</span>
-        </div>
-        <span className="font-mono text-[11px] text-neutral-400">SHA-256 Index Ready</span>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-        {Array.from({ length: skeletonCount }, (_, idx) => (
-          <div
-            key={idx}
-            className="p-5 rounded-xl bg-neutral-900/40 border border-neutral-800/80 space-y-3 animate-pulse"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-neutral-800" />
-              <div className="space-y-2 flex-1">
-                <div className="h-4 w-2/3 rounded bg-neutral-800" />
-                <div className="h-3 w-1/2 rounded bg-neutral-800/70" />
-              </div>
-            </div>
-            <div className="h-3 w-full rounded bg-neutral-800/60" />
-            <div className="h-3 w-4/5 rounded bg-neutral-800/60" />
-            <div className="pt-2 flex items-center justify-between">
-              <div className="h-6 w-20 rounded bg-neutral-800" />
-              <div className="h-8 w-24 rounded-lg bg-neutral-800" />
-            </div>
-          </div>
-        ))}
-      </div>
+      <CloudflareVerificationScreen
+        message={message}
+        onComplete={onComplete}
+        isDismissable={isDismissable}
+        onDismiss={onDismiss}
+        autoRedirectMs={1600}
+      />
     </div>
   );
 };
@@ -347,28 +333,63 @@ export const EmptyErrorOfflineScreen: React.FC<EmptyErrorOfflineScreenProps> = (
   }
 
   if (mode === 'error') {
+    const errorDetails = description || 'Unable to load catalog data from the server.';
+    const logTimestamp = new Date().toISOString();
+    const formattedLog = `[${logTimestamp}] SYSTEM ERROR LOG\nMessage: ${errorDetails}\nContext: Catalog Synchronization / Network API Route`;
+
     return (
       <div
         role="alert"
-        className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 flex flex-wrap items-center justify-between gap-4 text-xs text-rose-300"
+        className="mb-6 p-4 sm:p-5 rounded-2xl bg-red-950/20 border border-red-800/40 text-xs text-red-200 space-y-3.5 shadow-sm"
       >
-        <div className="flex items-center gap-2.5">
-          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" aria-hidden="true" />
-          <div>
-            {title && <p className="font-semibold text-white mb-0.5">{title}</p>}
-            <span>{description || 'Unable to load catalog data from the server.'}</span>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex items-start gap-2.5">
+            <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" aria-hidden="true" />
+            <div className="space-y-1">
+              <h2 className="text-sm font-semibold text-white tracking-tight">
+                {title || 'System Log Error'}
+              </h2>
+              <p className="text-neutral-300 leading-relaxed">
+                {errorDetails}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="px-3 py-1.5 rounded-lg bg-red-900/60 hover:bg-red-800/80 border border-red-700/60 text-white font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>Retry Request</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  navigator.clipboard.writeText(formattedLog);
+                  alert('System log error copied to clipboard.');
+                } catch {}
+              }}
+              className="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-neutral-300 font-mono text-[11px] inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+              <span>Copy Log</span>
+            </button>
           </div>
         </div>
-        {onRetry && (
-          <button
-            type="button"
-            onClick={onRetry}
-            className="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-white font-medium inline-flex items-center gap-1.5 cursor-pointer"
-          >
-            <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>Retry</span>
-          </button>
-        )}
+
+        {/* System Error Log Code Box */}
+        <div className="p-3 rounded-xl bg-neutral-950/80 border border-neutral-800/90 font-mono text-[11px] text-neutral-300 overflow-x-auto space-y-1">
+          <div className="text-neutral-400 flex items-center justify-between text-[10px]">
+            <span>SYSTEM LOG AUDIT</span>
+            <span>{logTimestamp}</span>
+          </div>
+          <div className="text-red-300 font-semibold">{errorDetails}</div>
+        </div>
       </div>
     );
   }

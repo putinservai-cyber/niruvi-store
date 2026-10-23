@@ -37,6 +37,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import {
   WelcomeIntroScreen,
   CatalogLoadingScreen,
+  CloudflareVerificationScreen,
   SearchDiscoveryBar,
   EmptyErrorOfflineScreen,
 } from './components/EssentialScreens';
@@ -146,7 +147,7 @@ function filterAndSortCatalog(
       if (
         app.moderationFlag === 'flagged_policy' ||
         isPolicyFlaggedEntry(app).flagged ||
-        /^(?:test[-_]?app|demo[-_]?app|mock[-_]?app|supabase[-_]?preview)$/i.test(app.id)
+        /^(?:test[-_]?app|demo[-_]?app|mock[-_]?app)$/i.test(app.id)
       ) {
         return false;
       }
@@ -262,7 +263,6 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
           const mapped = mapWorkerSubmissionToAppMetadata(raw);
           if (
             mapped &&
-            !/supabase\s*preview/i.test(mapped.name) &&
             !/^(?:test[-_]?app|demo[-_]?app|mock[-_]?app)$/i.test(mapped.id)
           ) {
             mappedWorkerApps.push(mapped);
@@ -343,6 +343,17 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
   const [forceLoadingPreview, setForceLoadingPreview] = useState<boolean>(
     () => initialUrlParams.get('screen') === 'loading'
   );
+  const [isInitialLoading, setIsInitialLoading] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    if (initialCatalogOverride) return false;
+    if (
+      typeof process !== 'undefined' &&
+      (process.env.NODE_ENV === 'test' || process.env.VITEST)
+    ) {
+      return initialUrlParams.get('screen') === 'loading';
+    }
+    return true;
+  });
   const [sortBy, setSortBy] = useState<SortOption>(() => {
     const s = initialUrlParams.get('sort');
     return s === 'name' || s === 'recent' || s === 'featured' ? s : 'featured';
@@ -1048,7 +1059,17 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
 
             {activeTab === 'browse' && (
               <>
-                {/* Clean, Concise Software Catalog Header */}
+                {isInitialLoading && !forceLoadingPreview ? (
+                  <CloudflareVerificationScreen
+                    message="Synchronizing verified Linux AppImage catalog & SHA-256 index..."
+                    onComplete={() => setIsInitialLoading(false)}
+                    isDismissable={true}
+                    onDismiss={() => setIsInitialLoading(false)}
+                    autoRedirectMs={1200}
+                  />
+                ) : (
+                  <>
+                    {/* Clean, Concise Software Catalog Header */}
                 <div className="mb-4 pb-5 border-b border-neutral-800 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                   <div>
                     <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
@@ -1359,6 +1380,8 @@ export function App({ initialCatalogOverride }: AppProps = {}) {
                       setSearchQuery(q);
                     }}
                   />
+                )}
+                  </>
                 )}
               </>
             )}

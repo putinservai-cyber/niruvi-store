@@ -32,6 +32,13 @@ CREATE TABLE IF NOT EXISTS submission_reports (
   ip_hash TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS broken_reports (
+  id TEXT PRIMARY KEY,
+  app_id TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_submission_reports_slug ON submission_reports(app_slug, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_submission_reports_ip_hash ON submission_reports(ip_hash, created_at DESC);
 

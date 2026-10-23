@@ -95,7 +95,7 @@ export function calculatePasswordStrength(password: string): PasswordStrengthRes
 
 /**
  * Detects whether a string resembles a sensitive backend/server secret key
- * (e.g., Supabase service_role JWT, sb_secret_, GitHub PAT, Stripe/Razorpay secret).
+ * (e.g., service_role JWT, sb_secret_, GitHub PAT, Stripe/Razorpay secret).
  */
 export function isLikelySecretKey(input: unknown): boolean {
   if (typeof input !== 'string') return false;

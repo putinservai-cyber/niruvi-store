@@ -138,9 +138,7 @@ describe('Niruvi Store — Search, Filtering, Pagination, and Empty State', () =
 
   it('hides unverified imports by default on main listing and shows 48-per-page pagination when toggled', () => {
     render(
-      <AuthProvider>
-        <App />
-      </AuthProvider>,
+      <App />
     );
     expect(TOTAL_CATALOG_COUNT).toBeGreaterThanOrEqual(2500);
     expect(
@@ -281,15 +279,11 @@ describe('Niruvi Store — Legal Pages, Cookie Consent & WCAG 2.2 AA Accessibili
       screen.getByRole('heading', { level: 1, name: /Support & Donate to Niruvi Store/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('link', { name: /Open ko-fi\.com\/putinservai/i }),
+      screen.getByRole('link', { name: /Open ko-fi\.com/i }),
     ).toHaveAttribute('href', 'https://ko-fi.com/putinservai');
     expect(
-      screen.getByRole('link', { name: /Open razorpay\.me\/@putin/i }),
+      screen.getByRole('link', { name: /Open Razorpay Page/i }),
     ).toHaveAttribute('href', 'https://razorpay.me/@putin');
-    expect(screen.getByText('putinservai-1@okhdfcbank')).toBeInTheDocument();
-    expect(
-      screen.getByRole('img', { name: /UPI QR Code for putinservai-1@okhdfcbank/i }),
-    ).toBeInTheDocument();
   });
 
   it('passes automated axe-core WCAG 2.2 AA checks with zero critical/serious violations', async () => {

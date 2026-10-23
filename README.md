@@ -218,18 +218,13 @@ Every downloadable AppImage on Niruvi Store includes:
   - By default, the main store listing hides every catalog entry that lacks a direct `https://...*.AppImage` asset URL and a verified 64-character SHA-256 digest (`hiddenFromMainListing: true`), while preserving all `2,790` entries in `public/catalog.json` (zero data deleted).
   - Eliminated `"vlatest"` version displays across cards, detail modals, install dialogs, and SEO metadata; entries lacking a known upstream release tag display `"Version unknown"` only where unavoidable.
   - Added automated policy moderation (`isPolicyFlaggedEntry`) that blocks prohibited credential/account-scraping tools (such as `account-scraper`).
-- **Phase 2 Accounts, OAuth PKCE & Row Level Security (`src/lib/supabase.ts`, `supabase/migrations/0001_accounts_and_marketplace_rls.sql`)**:
-  - **OAuth 2.0 PKCE Sign-In (GitHub & Google)**: Configured `@supabase/supabase-js` with `flowType: 'pkce'`, `VITE_SUPABASE_URL`, and `VITE_SUPABASE_ANON_KEY`. Includes `isSafeAnonKey()` runtime protection that rejects any `service_role` or `sb_secret_` key from ever being initialized in the browser.
-  - **8-Table Marketplace Schema with Row Level Security (`ALTER TABLE ... ENABLE ROW LEVEL SECURITY`)**:
-    - `public.profiles` (`role IN ('user', 'publisher', 'moderator', 'admin')` stored strictly in Postgres; auto-provisioned via `handle_new_auth_user()` trigger on `auth.users`).
-    - `public.apps` (`status IN ('draft', 'pending', 'published', 'rejected', 'taken_down')` and `trust_tier IN ('publisher_verified', 'checksum_verified', 'unverified')`).
-    - `public.app_versions` (enforces direct `https://...*.AppImage` asset URLs, non-placeholder versions, and 64-character hex `sha256` per architecture).
-    - `public.reviews`, `public.library`, `public.downloads`, `public.reports`, and `public.audit_log`.
-  - **Server-Enforced Role & Moderation Triggers**: `guard_profile_updates_and_audit()` blocks any client attempt to self-escalate `role` and writes an immutable `public.audit_log` row on role changes; `guard_app_moderation_and_audit()` enforces moderator/admin privileges for publishing, rejecting, or taking down apps and logs every state transition.
-- **Phase 3 User Features (`src/lib/supabase.ts`, `src/components/MyLibraryView.tsx`, `src/components/AppDetailModal.tsx`, `src/App.tsx`)**:
-  - **Saved Library Sync & Update Notifications**: Anonymous users can browse, download, and bookmark apps without signing in; signed-in users automatically sync bookmarks (`public.library`), per-app update notification toggles (`notify_updates`), and upstream version comparisons across devices.
-  - **Anonymous & Authenticated Download History**: Records AppImage downloads (`public.downloads` + local history) with version, architecture (`x86_64`, `aarch64`, `armhf`), and timestamp.
-  - **Community Ratings & Reviews (1–5 Stars)**: Supports 1 review per user per app (`UNIQUE (app_id, user_id)`), Linux distro tagging, average star ratings, author edit/delete, and moderator/admin deletion.
+- **Cloudflare Workers & D1 Zero-Auth Backend (`src/worker.ts`, `migrations/0001_catalog_pipeline.sql`)**:
+  - **Zero-Friction Access**: Users can browse, search, download, verify SHA-256 checksums, and bookmark applications without creating accounts or signing in.
+  - **Cloudflare D1 Database**: D1 SQLite tables (`catalog_apps`, `catalog_releases`, `catalog_assets`, `submissions`, `submission_reports`, `app_reviews`) handle catalog indexing, community reviews, and report moderation.
+  - **Bot Protection**: Community submissions utilize Cloudflare Turnstile verification and server-side input validation.
+- **Client Features & User Tools (`src/components/MyLibraryView.tsx`, `src/components/AppDetailModal.tsx`, `src/App.tsx`)**:
+  - **Saved Library & Local Notifications**: Bookmarked apps, update notifications, and local download history are preserved across browser sessions.
+  - **Community Ratings & Reviews (1–5 Stars)**: Users can post community reviews with distro tags and rating stars, backed by Cloudflare D1.
 
 To report security vulnerabilities, see [SECURITY.md](SECURITY.md).
 

@@ -24,25 +24,6 @@ import {
   Info,
 } from 'lucide-react';
 
-declare global {
-  interface Window {
-    turnstile?: {
-      render: (
-        container: HTMLElement | string,
-        options: {
-          sitekey: string;
-          theme?: 'dark' | 'light' | 'auto';
-          callback?: (token: string) => void;
-          'expired-callback'?: () => void;
-          'error-callback'?: () => void;
-        }
-      ) => string;
-      reset?: (widgetId?: string) => void;
-      remove?: (widgetId?: string) => void;
-    };
-  }
-}
-
 interface SubmitAppViewProps {
   onAppAdded: (app: AppMetadata) => void;
   onNavigateToStore: () => void;
